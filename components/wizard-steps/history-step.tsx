@@ -86,12 +86,12 @@ export default function HistoryStep({ data, updateData, isMobile }) {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-white">Recent Events Attended</Label>
+        <Label className="text-white text-lg font-semibold">Recent Events Attended</Label>
         <div className="flex">
           <Input
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
-            className="bg-white/5 border-white/10 text-white focus:border-purple-500 focus:ring-purple-500 rounded-r-none"
+            className="bg-white/90 border-white/20 text-gray-900 placeholder:text-gray-500 focus:border-purple-500 focus:ring-purple-500 rounded-r-none"
             placeholder="Add an event you've attended"
             onKeyDown={(e) => e.key === "Enter" && addEvent()}
           />
@@ -109,15 +109,15 @@ export default function HistoryStep({ data, updateData, isMobile }) {
             <Badge
               key={index}
               variant="secondary"
-              className="bg-purple-900/50 hover:bg-purple-800/50 text-white border border-purple-500/30 px-2 py-1 text-xs sm:text-sm"
+              className="bg-purple-900/50 hover:bg-purple-800/50 text-white border border-purple-500/30 px-3 py-1.5 text-sm"
             >
               {event}
               <button
                 type="button"
                 onClick={() => removeEvent(event)}
-                className="ml-1 sm:ml-2 text-white/70 hover:text-white"
+                className="ml-2 text-white/70 hover:text-white"
               >
-                <X size={isMobile ? 12 : 14} />
+                <X size={isMobile ? 14 : 16} />
               </button>
             </Badge>
           ))}
@@ -131,15 +131,15 @@ export default function HistoryStep({ data, updateData, isMobile }) {
       </motion.div>
 
       {recentEventsAttended.length > 0 && (
-        <motion.div variants={itemVariants} className="space-y-2">
-          <Label className="text-white">Event Feedback</Label>
+        <motion.div variants={itemVariants} className="space-y-4">
+          <Label className="text-white text-lg font-semibold">Event Feedback</Label>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-sm text-gray-300">Select an event to provide feedback</Label>
+              <Label className="text-white text-sm">Select an event to provide feedback</Label>
               <select
                 value={currentEventForFeedback}
                 onChange={(e) => setCurrentEventForFeedback(e.target.value)}
-                className="w-full bg-white/5 border-white/10 text-white rounded-md p-2 focus:border-purple-500 focus:ring-purple-500 text-sm"
+                className="w-full bg-white/10 border-white/20 text-white rounded-md p-2.5 focus:border-purple-500 focus:ring-purple-500 text-sm"
               >
                 <option value="">Select an event</option>
                 {recentEventsAttended
@@ -153,21 +153,21 @@ export default function HistoryStep({ data, updateData, isMobile }) {
             </div>
 
             {currentEventForFeedback && (
-              <div className="space-y-2">
-                <Label className="text-sm text-gray-300">Your feedback for {currentEventForFeedback}</Label>
+              <div className="space-y-3">
+                <Label className="text-white text-sm">Your feedback for {currentEventForFeedback}</Label>
                 <Textarea
                   value={currentFeedback}
                   onChange={(e) => setCurrentFeedback(e.target.value)}
-                  className="bg-white/5 border-white/10 text-white focus:border-purple-500 focus:ring-purple-500 text-sm"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-purple-500 focus:ring-purple-500 text-sm min-h-[120px] p-3"
                   placeholder="What did you like or dislike about this event?"
-                  rows={3}
+                  rows={4}
                 />
                 <button
                   type="button"
                   onClick={addFeedback}
-                  className="mt-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md flex items-center justify-center text-sm"
+                  className="w-full px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-md flex items-center justify-center text-sm font-medium"
                 >
-                  <Plus size={isMobile ? 14 : 16} className="mr-1 sm:mr-2" />
+                  <Plus size={isMobile ? 16 : 18} className="mr-2" />
                   Add Feedback
                 </button>
               </div>
@@ -175,24 +175,24 @@ export default function HistoryStep({ data, updateData, isMobile }) {
           </div>
 
           {Object.keys(eventFeedback).length > 0 && (
-            <div className="mt-4 space-y-3">
-              <Label className="text-white">Your Feedback</Label>
-              <div className="space-y-3">
+            <div className="mt-6 space-y-4">
+              <Label className="text-white text-lg font-semibold">Your Feedback</Label>
+              <div className="space-y-4">
                 {Object.entries(eventFeedback).map(([event, feedback], index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/5 border border-white/10 rounded-lg p-3 sm:p-4 relative"
+                    className="bg-white/10 border border-white/20 rounded-lg p-4 relative"
                   >
-                    <h3 className="text-purple-400 font-medium text-sm">{event}</h3>
-                    <p className="text-white mt-1 text-sm">{feedback}</p>
+                    <h3 className="text-purple-400 font-medium text-sm mb-2">{event}</h3>
+                    <p className="text-white/90 text-sm leading-relaxed">{feedback}</p>
                     <button
                       type="button"
                       onClick={() => removeFeedback(event)}
-                      className="absolute top-2 right-2 text-gray-400 hover:text-white"
+                      className="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
                     >
-                      <Trash2 size={isMobile ? 14 : 16} />
+                      <Trash2 size={isMobile ? 16 : 18} />
                     </button>
                   </motion.div>
                 ))}
