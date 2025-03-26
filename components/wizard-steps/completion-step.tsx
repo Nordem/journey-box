@@ -3,7 +3,45 @@
 import { motion } from "framer-motion"
 import { CheckCircle2 } from "lucide-react"
 
-export default function CompletionStep({ data, isMobile }) {
+interface CompletionStepProps {
+  data: {
+    userProfile: {
+      name: string;
+      location: string;
+      currentTravelLocation: string;
+      languages: string[];
+      personalityTraits: string[];
+      goals: string[];
+    };
+    eventPreferences: {
+      categories: string[];
+      vibeKeywords: string[];
+      idealTimeSlots: string[];
+      budget: string;
+      preferredGroupType: string[];
+      preferredEventSize: string[];
+      maxDistanceKm: number;
+    };
+    restrictions: {
+      avoidCrowdedDaytimeConferences: boolean;
+      avoidOverlyFormalNetworking: boolean;
+      avoidFamilyKidsEvents: boolean;
+      noFamilyKidsEvents: boolean;
+    };
+    history: {
+      recentEventsAttended: any[];
+      eventFeedback: any[];
+    };
+    idealOutcomes: Array<{
+      description: string;
+    }>;
+    calendarEvents: any[];
+    deliverables: any[];
+  };
+  isMobile: boolean;
+}
+
+export default function CompletionStep({ data, isMobile }: CompletionStepProps) {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -40,7 +78,7 @@ export default function CompletionStep({ data, isMobile }) {
               damping: 20,
               delay: 0.2,
             }}
-            className={`${isMobile ? "w-20 h-20" : "w-24 h-24"} rounded-full bg-gradient-to-r from-purple-600/20 to-indigo-600/20 flex items-center justify-center`}
+            className={`${isMobile ? "w-20 h-20" : "w-24 h-24"} rounded-full bg-gradient-to-r from-purple-600/40 to-indigo-600/40 flex items-center justify-center`}
           >
             <motion.div
               initial={{ scale: 0 }}
@@ -51,7 +89,7 @@ export default function CompletionStep({ data, isMobile }) {
                 damping: 20,
                 delay: 0.4,
               }}
-              className={`${isMobile ? "w-16 h-16" : "w-20 h-20"} rounded-full bg-gradient-to-r from-purple-600/40 to-indigo-600/40 flex items-center justify-center`}
+              className={`${isMobile ? "w-16 h-16" : "w-20 h-20"} rounded-full bg-gradient-to-r from-purple-600/60 to-indigo-600/60 flex items-center justify-center`}
             >
               <motion.div
                 initial={{ scale: 0 }}
@@ -63,7 +101,7 @@ export default function CompletionStep({ data, isMobile }) {
                   delay: 0.6,
                 }}
               >
-                <CheckCircle2 className={`${isMobile ? "w-12 h-12" : "w-16 h-16"} text-purple-500`} />
+                <CheckCircle2 className={`${isMobile ? "w-12 h-12" : "w-16 h-16"} text-purple-400`} />
               </motion.div>
             </motion.div>
           </motion.div>
@@ -81,59 +119,51 @@ export default function CompletionStep({ data, isMobile }) {
 
       <motion.div variants={itemVariants}>
         <h2
-          className={`${isMobile ? "text-xl" : "text-2xl"} font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400`}
+          className={`${isMobile ? "text-xl" : "text-2xl"} font-bold text-white`}
         >
           Profile Complete!
         </h2>
-        <p className="text-gray-300 mt-2 max-w-md mx-auto text-sm sm:text-base">
+        <p className="text-gray-200 mt-2 max-w-md mx-auto text-sm sm:text-base">
           Thank you for completing your profile. We'll use this information to find the perfect events for you.
         </p>
       </motion.div>
 
       <motion.div
         variants={itemVariants}
-        className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6 max-w-md mx-auto"
+        className="bg-gray-800/80 border border-gray-700 rounded-xl p-4 sm:p-6 max-w-md mx-auto"
       >
         <h3 className="text-white font-medium mb-3 sm:mb-4 text-sm sm:text-base">Profile Summary</h3>
 
         <div className="space-y-2 sm:space-y-3 text-left">
-          <div>
-            <p className="text-gray-400 text-xs sm:text-sm">Name</p>
-            <p className="text-white text-sm sm:text-base">{data.userProfile.name || "Not provided"}</p>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-300 text-sm sm:text-base">Name</span>
+            <span className="text-white text-sm sm:text-base">{data.userProfile.name || "Not provided"}</span>
           </div>
-
-          <div>
-            <p className="text-gray-400 text-xs sm:text-sm">Current Location</p>
-            <p className="text-white text-sm sm:text-base">
-              {data.userProfile.currentTravelLocation || "Not provided"}
-            </p>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-300 text-sm sm:text-base">Location</span>
+            <span className="text-white text-sm sm:text-base">{data.userProfile.location || "Not provided"}</span>
           </div>
-
-          <div>
-            <p className="text-gray-400 text-xs sm:text-sm">Event Preferences</p>
-            <p className="text-white text-sm sm:text-base">
-              {data.eventPreferences.categories.length > 0
-                ? data.eventPreferences.categories.slice(0, 2).join(", ") +
-                  (data.eventPreferences.categories.length > 2 ? " and more..." : "")
-                : "Not provided"}
-            </p>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-300 text-sm sm:text-base">Current Travel Location</span>
+            <span className="text-white text-sm sm:text-base">{data.userProfile.currentTravelLocation || "Not provided"}</span>
           </div>
-
-          <div>
-            <p className="text-gray-400 text-xs sm:text-sm">Ideal Outcomes</p>
-            <p className="text-white text-sm sm:text-base">
-              {data.idealOutcomes.length > 0
-                ? data.idealOutcomes.slice(0, 2).join(", ") + (data.idealOutcomes.length > 2 ? " and more..." : "")
-                : "Not provided"}
-            </p>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-300 text-sm sm:text-base">Max Distance</span>
+            <span className="text-white text-sm sm:text-base">{data.eventPreferences.maxDistanceKm ? `${data.eventPreferences.maxDistanceKm}km` : "Not provided"}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-300 text-sm sm:text-base">Event Categories</span>
+            <span className="text-white text-sm sm:text-base">
+              {data.eventPreferences.categories?.length ? data.eventPreferences.categories.join(", ") : "Not provided"}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-300 text-sm sm:text-base">Ideal Outcomes</span>
+            <span className="text-white text-sm sm:text-base">
+              {data.idealOutcomes?.length ? data.idealOutcomes.map(o => o.description).join(", ") : "Not provided"}
+            </span>
           </div>
         </div>
-      </motion.div>
-
-      <motion.div variants={itemVariants}>
-        <p className="text-gray-400 text-xs sm:text-sm">
-          You can edit your profile at any time from your account settings.
-        </p>
       </motion.div>
     </motion.div>
   )

@@ -16,47 +16,66 @@ import { ChevronLeft, ChevronRight, Save } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useToast } from "@/hooks/use-toast"
 
+interface Step {
+  title: string;
+  description: string;
+  component: React.ReactNode;
+}
+
 interface CalendarEvent {
-  date: Date;
+  date: string;
   status: string;
-  description?: string;
+  description: string;
 }
 
 interface Deliverable {
   title: string;
-  date: Date;
-  note?: string;
+  date: string;
+  note: string;
+}
+
+interface UserProfileData {
+  name: string;
+  location: string;
+  currentTravelLocation?: string;
+  languages: string[];
+  personalityTraits: string[];
+  goals: string[];
+}
+
+interface EventPreferencesData {
+  categories: string[];
+  vibeKeywords: string[];
+  idealTimeSlots: string[];
+  budget: string;
+  preferredGroupType: string[];
+  preferredEventSize: string[];
+  maxDistanceKm: number;
+}
+
+interface RestrictionsData {
+  avoidCrowdedDaytimeConferences: boolean;
+  avoidOverlyFormalNetworking: boolean;
+  avoidFamilyKidsEvents: boolean;
+  noFamilyKidsEvents: boolean;
+}
+
+interface HistoryData {
+  recentEventsAttended: any[];
+  eventFeedback: any[];
+}
+
+interface IdealOutcome {
+  description: string;
 }
 
 interface FormData {
-  userProfile: {
-    name: string;
-    location: string;
-    currentTravelLocation?: string;
-    languages: string[];
-    personalityTraits: string[];
-    goals: string[];
-  };
-  eventPreferences: {
-    categories: string[];
-    vibeKeywords: string[];
-    idealTimeSlots: string[];
-    budget: string;
-    preferredGroupType: string[];
-    preferredEventSize: string[];
-    maxDistanceKm: number;
-  };
-  restrictions: {
-    avoidCrowdedDaytimeConferences: boolean;
-    avoidOverlyFormalNetworking: boolean;
-    avoidFamilyKidsEvents: boolean;
-  };
-  history: {
-    recentEventsAttended: string[];
-    eventFeedback: string[];
-  };
-  idealOutcomes: string[];
-  calendarEvents: CalendarEvent[];
+  userProfile: UserProfileData;
+  eventPreferences: EventPreferencesData;
+  restrictions: RestrictionsData;
+  history: HistoryData;
+  idealOutcomes: IdealOutcome[];
+  calendarEvents: Record<string, string>;
   deliverables: Deliverable[];
 }
 
@@ -66,16 +85,12 @@ interface StepProps {
   isMobile: boolean;
 }
 
-interface Step {
-  title: string;
-  component: React.ReactNode;
-}
-
 export default function RegistrationWizard() {
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
+  const [isMobile, setIsMobile] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     userProfile: {
       name: "",
@@ -89,7 +104,7 @@ export default function RegistrationWizard() {
       categories: [],
       vibeKeywords: [],
       idealTimeSlots: [],
-      budget: "medium",
+      budget: "",
       preferredGroupType: [],
       preferredEventSize: [],
       maxDistanceKm: 1000,
@@ -98,17 +113,17 @@ export default function RegistrationWizard() {
       avoidCrowdedDaytimeConferences: false,
       avoidOverlyFormalNetworking: false,
       avoidFamilyKidsEvents: false,
+      noFamilyKidsEvents: false,
     },
     history: {
       recentEventsAttended: [],
       eventFeedback: [],
     },
     idealOutcomes: [],
-    calendarEvents: [],
+    calendarEvents: {},
     deliverables: [],
   })
 
-  const isMobile = useMediaQuery("(max-width: 640px)")
   const isTablet = useMediaQuery("(min-width: 641px) and (max-width: 1024px)")
   const totalSteps = 8
 
@@ -147,156 +162,183 @@ export default function RegistrationWizard() {
       setIsSubmitting(true)
       setError(null)
 
-      // Log the data being sent
-      console.log('Sending data:', JSON.stringify({
+      const requestBody = {
         userProfile: formData.userProfile,
         eventPreferences: formData.eventPreferences,
         restrictions: formData.restrictions,
         history: formData.history,
-        idealOutcomes: formData.idealOutcomes.map(description => ({ description })),
-        calendarEvents: formData.calendarEvents.map(event => ({
-          date: event.date,
-          status: event.status,
-          description: event.description
-        })),
-        deliverables: formData.deliverables.map(deliverable => ({
-          title: deliverable.title,
-          date: deliverable.date,
-          note: deliverable.note
-        }))
-      }, null, 2));
-
-      const response = await fetch('/api/user/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userProfile: formData.userProfile,
-          eventPreferences: formData.eventPreferences,
-          restrictions: formData.restrictions,
-          history: formData.history,
-          idealOutcomes: formData.idealOutcomes.map(description => ({ description })),
-          calendarEvents: formData.calendarEvents.map(event => ({
-            date: event.date,
-            status: event.status,
-            description: event.description
-          })),
-          deliverables: formData.deliverables.map(deliverable => ({
-            title: deliverable.title,
-            date: deliverable.date,
-            note: deliverable.note
-          }))
+        idealOutcomes: formData.idealOutcomes,
+        calendarEvents: Object.entries(formData.calendarEvents || {}).map(([date, event]) => {
+          const [status = "", description = ""] = (event || "").split(" – ")
+          return { date, status, description }
         }),
-      });
+        deliverables: formData.deliverables,
+      }
 
-      let data;
+      console.log("Sending request to /api/register:", requestBody)
+
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(requestBody),
+      })
+
+      console.log("Response status:", response.status)
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()))
+      
+      const text = await response.text()
+      console.log("Raw response text:", text)
+
+      // If the response is empty, handle it gracefully
+      if (!text.trim()) {
+        console.warn("Received empty response from server")
+        throw new Error(`Server returned empty response with status ${response.status}`)
+      }
+
+      let data = null
       try {
-        const text = await response.text();
-        console.log('Raw response:', text);
-        data = text ? JSON.parse(text) : null;
+        data = JSON.parse(text)
       } catch (e) {
-        console.error('Error parsing response:', e);
-        throw new Error('Invalid response from server');
+        console.error("Failed to parse response as JSON:", e)
+        console.error("Response content type:", response.headers.get("content-type"))
+        console.error("Response text:", text.substring(0, 1000)) // Log first 1000 chars in case response is very long
+        
+        // If we got HTML instead of JSON, make the error more helpful
+        if (text.trim().startsWith("<!DOCTYPE html>") || text.trim().startsWith("<html")) {
+          throw new Error("Server returned HTML instead of JSON. This might indicate a server error.")
+        }
+        
+        throw new Error(`Invalid JSON response from server (Status: ${response.status})`)
       }
 
       if (!response.ok) {
-        throw new Error(data?.error || 'Failed to create user profile');
+        const errorMessage = data?.message || data?.error || `Registration failed: ${response.status} ${response.statusText}`
+        throw new Error(errorMessage)
       }
 
-      if (!data?.user) {
-        throw new Error('No user data received');
-      }
-
+      console.log("Registration successful:", data)
       toast({
         title: "Success!",
-        description: "Profile has been created successfully.",
+        description: "Your profile has been created successfully.",
         variant: "default",
-      });
-
-      setCurrentStep(totalSteps - 1);
+      })
+      
+      // Move to the completion step
+      setCurrentStep(totalSteps - 1)
     } catch (error) {
-      console.error('Error submitting form:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      console.error("Registration error:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to create profile"
+      setError(errorMessage)
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const steps: Step[] = [
     {
-      title: "Personal Profile",
+      title: "Basic Info",
+      description: "Tell us about yourself",
       component: (
         <UserProfileStep
           data={formData.userProfile}
-          updateData={(data: FormData['userProfile']) => updateFormData("userProfile", data)}
+          updateData={(data: UserProfileData) => setFormData({ ...formData, userProfile: data })}
           isMobile={isMobile}
         />
       ),
     },
     {
       title: "Event Preferences",
+      description: "What kind of events do you like?",
       component: (
         <EventPreferencesStep
           data={formData.eventPreferences}
-          updateData={(data: FormData['eventPreferences']) => updateFormData("eventPreferences", data)}
+          updateData={(data: EventPreferencesData) => setFormData({ ...formData, eventPreferences: data })}
           isMobile={isMobile}
         />
       ),
     },
     {
       title: "Restrictions",
+      description: "What would you prefer to avoid?",
       component: (
         <RestrictionsStep
           data={formData.restrictions}
-          updateData={(data: FormData['restrictions']) => updateFormData("restrictions", data)}
+          updateData={(data: RestrictionsData) => setFormData({ ...formData, restrictions: data })}
           isMobile={isMobile}
         />
       ),
     },
     {
       title: "Event History",
+      description: "Tell us about your past experiences",
       component: (
         <HistoryStep
           data={formData.history}
-          updateData={(data: FormData['history']) => updateFormData("history", data)}
+          updateData={(data: HistoryData) => setFormData({ ...formData, history: data })}
           isMobile={isMobile}
         />
       ),
     },
     {
       title: "Ideal Outcomes",
+      description: "What do you want to achieve?",
       component: (
         <OutcomesStep
-          data={formData.idealOutcomes}
-          updateData={(data: string[]) => setFormData((prev) => ({ ...prev, idealOutcomes: data }))}
+          data={formData.idealOutcomes.map(o => o.description)}
+          updateData={(data: string[]) => setFormData({ ...formData, idealOutcomes: data.map(d => ({ description: d })) })}
           isMobile={isMobile}
         />
       ),
     },
     {
       title: "Calendar",
+      description: "When are you available?",
       component: (
         <CalendarStep
           data={formData.calendarEvents}
-          updateData={(data: CalendarEvent[]) => setFormData((prev) => ({ ...prev, calendarEvents: data }))}
+          updateData={(data: Record<string, string>) => setFormData({ ...formData, calendarEvents: data })}
           isMobile={isMobile}
         />
       ),
     },
     {
       title: "Deliverables",
+      description: "What are your goals?",
       component: (
         <DeliverablesStep
           data={formData.deliverables}
-          updateData={(data: Deliverable[]) => setFormData((prev) => ({ ...prev, deliverables: data }))}
+          updateData={(data: Deliverable[]) => setFormData({ ...formData, deliverables: data })}
           isMobile={isMobile}
         />
       ),
     },
     {
       title: "Complete",
-      component: <CompletionStep data={formData} isMobile={isMobile} />,
+      description: "Review your profile",
+      component: (
+        <CompletionStep
+          data={{
+            ...formData,
+            userProfile: {
+              ...formData.userProfile,
+              currentTravelLocation: formData.userProfile.currentTravelLocation || "",
+            },
+            calendarEvents: Object.entries(formData.calendarEvents).map(([date, event]) => {
+              const [status = "", description = ""] = (event || "").split(" – ")
+              return { date, status, description }
+            }),
+          }}
+          isMobile={isMobile}
+        />
+      ),
     },
   ]
 
