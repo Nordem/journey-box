@@ -162,17 +162,27 @@ export default function RegistrationWizard() {
       setIsSubmitting(true)
       setError(null)
 
+      // Format calendar events properly for the API
+      const formattedCalendarEvents = Object.entries(formData.calendarEvents || {}).map(([date, event]) => {
+        const [status = "", description = ""] = (event || "").split(" – ")
+        return { date, status, description }
+      })
+
       const requestBody = {
         userProfile: formData.userProfile,
         eventPreferences: formData.eventPreferences,
         restrictions: formData.restrictions,
-        history: formData.history,
+        history: {
+          recentEventsAttended: formData.history.recentEventsAttended || [],
+          eventFeedback: formData.history.eventFeedback || []
+        },
         idealOutcomes: formData.idealOutcomes,
-        calendarEvents: Object.entries(formData.calendarEvents || {}).map(([date, event]) => {
-          const [status = "", description = ""] = (event || "").split(" – ")
-          return { date, status, description }
-        }),
-        deliverables: formData.deliverables,
+        calendarEvents: formattedCalendarEvents,
+        deliverables: formData.deliverables.map(deliverable => ({
+          ...deliverable,
+          // Ensure date is in ISO format
+          date: deliverable.date
+        }))
       }
 
       console.log("Sending request to /api/register:", requestBody)
