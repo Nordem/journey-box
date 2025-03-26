@@ -10,6 +10,9 @@ async function main() {
   const events = [
     {
       name: "Palenque y Cañon del Sumidero",
+      location: "Chiapas, Mexico",
+      date: new Date("2024-01-16"),
+      music: [],
       city: "Chiapas",
       country: "Mexico",
       startDate: new Date("2024-01-16"),
@@ -22,6 +25,9 @@ async function main() {
     },
     {
       name: "Tour a Cenotes y Las Coloradas",
+      location: "Merida, Yucatan, Mexico",
+      date: new Date("2024-01-23"),
+      music: [],
       city: "Merida",
       state: "Yucatan",
       country: "Mexico",
@@ -35,6 +41,9 @@ async function main() {
     },
     {
       name: "Hierve el Agua y Mirador de Cristal",
+      location: "Oaxaca, Mexico",
+      date: new Date("2024-02-13"),
+      music: [],
       city: "Oaxaca",
       country: "Mexico",
       startDate: new Date("2024-02-13"),
@@ -47,6 +56,9 @@ async function main() {
     },
     {
       name: "Sky Bike y Puente de Dios",
+      location: "Huasteca, San Luis Potosí, Mexico",
+      date: new Date("2024-02-20"),
+      music: [],
       city: "Huasteca",
       state: "San Luis Potosí",
       country: "Mexico",
@@ -60,6 +72,9 @@ async function main() {
     },
     {
       name: "Bahías Huatulco y Kayak al Amanecer",
+      location: "Huatulco, Oaxaca, Mexico",
+      date: new Date("2024-02-27"),
+      music: [],
       city: "Huatulco",
       state: "Oaxaca",
       country: "Mexico",
