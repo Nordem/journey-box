@@ -14,6 +14,8 @@ export async function POST(request: Request) {
     
     // Extract all the form data
     const {
+      userId, // Supabase user ID
+      email,
       userProfile,
       eventPreferences, 
       restrictions,
@@ -24,6 +26,14 @@ export async function POST(request: Request) {
     } = body
     
     // Basic validation
+    if (!userId) {
+      console.error('Missing required user ID')
+      return NextResponse.json(
+        { success: false, message: 'User ID is required' },
+        { status: 400 }
+      )
+    }
+
     if (!userProfile || !userProfile.name) {
       console.error('Missing required user profile data')
       return NextResponse.json(
@@ -36,9 +46,12 @@ export async function POST(request: Request) {
     
     // Use a transaction to ensure all related data is saved together
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Create the user record first
+      // 1. Create the user record with Supabase ID
       const user = await tx.user.create({
-        data: {}
+        data: {
+          id: userId, // Use the Supabase user ID
+          // Add email field if your User model has one
+        }
       })
       
       console.log('Created user with ID:', user.id)

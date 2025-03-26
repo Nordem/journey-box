@@ -10,11 +10,14 @@ import OutcomesStep from "./wizard-steps/outcomes-step"
 import CalendarStep from "./wizard-steps/calendar-step"
 import DeliverablesStep from "./wizard-steps/deliverables-step"
 import CompletionStep from "./wizard-steps/completion-step"
+import AuthStep from "./wizard-steps/auth-step"
 import WizardProgress from "./wizard-progress"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Save } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/lib/supabase"
+import { useRouter } from "next/navigation"
 
 interface Step {
   title: string;
@@ -69,7 +72,14 @@ interface IdealOutcome {
   description: string;
 }
 
+interface AuthData {
+  email: string;
+  password: string;
+  confirmPassword?: string;
+}
+
 interface FormData {
+  auth: AuthData;
   userProfile: UserProfileData;
   eventPreferences: EventPreferencesData;
   restrictions: RestrictionsData;
@@ -91,7 +101,13 @@ export default function RegistrationWizard() {
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
   const [isMobile, setIsMobile] = useState(false)
+  const router = useRouter()
   const [formData, setFormData] = useState<FormData>({
+    auth: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
     userProfile: {
       name: "",
       location: "",
@@ -125,7 +141,7 @@ export default function RegistrationWizard() {
   })
 
   const isTablet = useMediaQuery("(min-width: 641px) and (max-width: 1024px)")
-  const totalSteps = 8
+  const totalSteps = 9
 
   const updateFormData = useCallback((section: keyof FormData, data: Partial<FormData[keyof FormData]>) => {
     setFormData((prev) => ({
@@ -162,13 +178,41 @@ export default function RegistrationWizard() {
       setIsSubmitting(true)
       setError(null)
 
+      // Validate passwords match
+      if (formData.auth.password !== formData.auth.confirmPassword) {
+        throw new Error("Passwords do not match")
+      }
+
+      // 1. Create Supabase user
+      console.log("Creating Supabase user...")
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.auth.email,
+        password: formData.auth.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        }
+      })
+
+      if (authError) {
+        throw new Error(`Authentication error: ${authError.message}`)
+      }
+
+      if (!authData.user) {
+        throw new Error("Failed to create user account")
+      }
+
+      console.log("User created successfully:", authData.user.id)
+
       // Format calendar events properly for the API
       const formattedCalendarEvents = Object.entries(formData.calendarEvents || {}).map(([date, event]) => {
         const [status = "", description = ""] = (event || "").split(" – ")
         return { date, status, description }
       })
 
+      // 2. Send user registration data to API
       const requestBody = {
+        userId: authData.user.id, // Include Supabase user ID
+        email: formData.auth.email,
         userProfile: formData.userProfile,
         eventPreferences: formData.eventPreferences,
         restrictions: formData.restrictions,
@@ -232,7 +276,7 @@ export default function RegistrationWizard() {
       console.log("Registration successful:", data)
       toast({
         title: "Success!",
-        description: "Your profile has been created successfully.",
+        description: "Your profile has been created successfully. Check your email for confirmation.",
         variant: "default",
       })
       
@@ -253,6 +297,17 @@ export default function RegistrationWizard() {
   }
 
   const steps: Step[] = [
+    {
+      title: "Create Account",
+      description: "Set up your login",
+      component: (
+        <AuthStep
+          data={formData.auth}
+          updateData={(data: AuthData) => setFormData({ ...formData, auth: data })}
+          isMobile={isMobile}
+        />
+      ),
+    },
     {
       title: "Basic Info",
       description: "Tell us about yourself",
@@ -337,6 +392,7 @@ export default function RegistrationWizard() {
         <CompletionStep
           data={{
             ...formData,
+            email: formData.auth.email,
             userProfile: {
               ...formData.userProfile,
               currentTravelLocation: formData.userProfile.currentTravelLocation || "",

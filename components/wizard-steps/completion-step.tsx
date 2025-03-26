@@ -2,166 +2,116 @@
 
 import { motion } from "framer-motion"
 import { CheckCircle2 } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Mail, ArrowRight } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface CompletionStepProps {
-  data: {
-    userProfile: {
-      name: string;
-      location: string;
-      currentTravelLocation: string;
-      languages: string[];
-      personalityTraits: string[];
-      goals: string[];
-    };
-    eventPreferences: {
-      categories: string[];
-      vibeKeywords: string[];
-      idealTimeSlots: string[];
-      budget: string;
-      preferredGroupType: string[];
-      preferredEventSize: string[];
-      maxDistanceKm: number;
-    };
-    restrictions: {
-      avoidCrowdedDaytimeConferences: boolean;
-      avoidOverlyFormalNetworking: boolean;
-      avoidFamilyKidsEvents: boolean;
-      noFamilyKidsEvents: boolean;
-    };
-    history: {
-      recentEventsAttended: any[];
-      eventFeedback: any[];
-    };
-    idealOutcomes: Array<{
-      description: string;
-    }>;
-    calendarEvents: any[];
-    deliverables: any[];
-  };
-  isMobile: boolean;
+  data: any
+  isMobile: boolean
 }
 
 export default function CompletionStep({ data, isMobile }: CompletionStepProps) {
+  const router = useRouter()
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-      },
-    },
+        staggerChildren: 0.1
+      }
+    }
   }
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
-      opacity: 1,
-    },
+      opacity: 1
+    }
+  }
+
+  const goToDashboard = () => {
+    router.push('/dashboard')
   }
 
   return (
     <motion.div
+      className="space-y-6"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="text-center space-y-6 sm:space-y-8 py-4 sm:py-8"
     >
-      <motion.div variants={itemVariants} className="flex justify-center">
-        <div className="relative">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{
-              type: "spring",
-              stiffness: 260,
-              damping: 20,
-              delay: 0.2,
-            }}
-            className={`${isMobile ? "w-20 h-20" : "w-24 h-24"} rounded-full bg-gradient-to-r from-purple-600/40 to-indigo-600/40 flex items-center justify-center`}
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{
-                type: "spring",
-                stiffness: 260,
-                damping: 20,
-                delay: 0.4,
-              }}
-              className={`${isMobile ? "w-16 h-16" : "w-20 h-20"} rounded-full bg-gradient-to-r from-purple-600/60 to-indigo-600/60 flex items-center justify-center`}
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                  delay: 0.6,
-                }}
-              >
-                <CheckCircle2 className={`${isMobile ? "w-12 h-12" : "w-16 h-16"} text-purple-400`} />
-              </motion.div>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className={`absolute -top-2 -right-2 ${isMobile ? "w-6 h-6" : "w-8 h-8"} bg-indigo-500 rounded-full flex items-center justify-center`}
-          >
-            <span className={`text-white ${isMobile ? "text-base" : "text-lg"}`}>✓</span>
-          </motion.div>
+      <motion.div variants={itemVariants} className="mb-8 text-center">
+        <div className="flex justify-center mb-4">
+          <div className="bg-green-100 p-3 rounded-full">
+            <CheckCircle2 className="h-10 w-10 text-green-600" />
+          </div>
         </div>
-      </motion.div>
-
-      <motion.div variants={itemVariants}>
-        <h2
-          className={`${isMobile ? "text-xl" : "text-2xl"} font-bold text-white`}
-        >
-          Profile Complete!
-        </h2>
-        <p className="text-gray-200 mt-2 max-w-md mx-auto text-sm sm:text-base">
-          Thank you for completing your profile. We'll use this information to find the perfect events for you.
+        <h2 className="text-2xl font-bold mb-2">Registration Complete!</h2>
+        <p className="text-gray-600">
+          Thank you for creating your profile. We've sent a verification email to <span className="font-medium">{data.email}</span>.
         </p>
       </motion.div>
 
-      <motion.div
-        variants={itemVariants}
-        className="bg-gray-800/80 border border-gray-700 rounded-xl p-4 sm:p-6 max-w-md mx-auto"
-      >
-        <h3 className="text-white font-medium mb-3 sm:mb-4 text-sm sm:text-base">Profile Summary</h3>
+      <motion.div variants={itemVariants}>
+        <Card className="p-6 bg-blue-50 border-blue-200">
+          <div className="flex items-start space-x-4">
+            <div className="bg-blue-100 p-2 rounded-full">
+              <Mail className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-blue-800 mb-2">Next Steps</h3>
+              <ol className="space-y-2 text-sm text-blue-800">
+                <li>1. Check your email for a verification link</li>
+                <li>2. Click the link to verify your account</li>
+                <li>3. You'll be redirected to your personal dashboard</li>
+              </ol>
+              <p className="mt-4 text-sm text-blue-700">
+                If you don't see the email, please check your spam folder.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
 
-        <div className="space-y-2 sm:space-y-3 text-left">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-300 text-sm sm:text-base">Name</span>
-            <span className="text-white text-sm sm:text-base">{data.userProfile.name || "Not provided"}</span>
+      <motion.div variants={itemVariants} className="pt-4">
+        <Button 
+          variant="default" 
+          className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+          onClick={goToDashboard}
+        >
+          <span className="mr-2">Go to Dashboard</span>
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+        <p className="text-center text-sm text-gray-500 mt-2">
+          You'll need to verify your email to access all features
+        </p>
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="space-y-4">
+        <h3 className="font-semibold">Your Profile Summary</h3>
+        <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+          <div>
+            <span className="text-sm text-gray-500">Name:</span>
+            <p className="font-medium">{data.userProfile.name}</p>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-300 text-sm sm:text-base">Location</span>
-            <span className="text-white text-sm sm:text-base">{data.userProfile.location || "Not provided"}</span>
+          <div>
+            <span className="text-sm text-gray-500">Location:</span>
+            <p className="font-medium">{data.userProfile.location}</p>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-300 text-sm sm:text-base">Current Travel Location</span>
-            <span className="text-white text-sm sm:text-base">{data.userProfile.currentTravelLocation || "Not provided"}</span>
+          <div>
+            <span className="text-sm text-gray-500">Events Preferences:</span>
+            <p className="font-medium">
+              {data.eventPreferences.categories.join(', ') || 'None specified'}
+            </p>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-300 text-sm sm:text-base">Max Distance</span>
-            <span className="text-white text-sm sm:text-base">{data.eventPreferences.maxDistanceKm ? `${data.eventPreferences.maxDistanceKm}km` : "Not provided"}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-300 text-sm sm:text-base">Event Categories</span>
-            <span className="text-white text-sm sm:text-base">
-              {data.eventPreferences.categories?.length ? data.eventPreferences.categories.join(", ") : "Not provided"}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-300 text-sm sm:text-base">Ideal Outcomes</span>
-            <span className="text-white text-sm sm:text-base">
-              {data.idealOutcomes?.length ? data.idealOutcomes.map(o => o.description).join(", ") : "Not provided"}
-            </span>
+          <div>
+            <span className="text-sm text-gray-500">Calendar Events:</span>
+            <p className="font-medium">
+              {data.calendarEvents.length} event(s) added
+            </p>
           </div>
         </div>
       </motion.div>
