@@ -92,7 +92,7 @@ export default function RegistrationWizard() {
       budget: "medium",
       preferredGroupType: [],
       preferredEventSize: [],
-      maxDistanceKm: 20,
+      maxDistanceKm: 1000,
     },
     restrictions: {
       avoidCrowdedDaytimeConferences: false,
