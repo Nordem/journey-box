@@ -106,16 +106,32 @@ model Deliverable {
 // EVENTS
 
 model Event {
-  id         String   @id @default(uuid())
-  name       String
-  location   String
-  date       DateTime
-  music      String[]
-  activities String[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              String        @id @default(uuid())
+  name            String
+  city            String
+  state           String?
+  country         String        @default("Mexico")
+  startDate       DateTime
+  endDate         DateTime
+  description     String
+  highlights      String[]
+  activities      String[]
+  category        EventCategory
+  isHighlight     Boolean       @default(false)
+  price           Float?
+  maxParticipants Int?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
 
-  // Optional relations to connect events with users
-  // Uncomment these if you want to track event attendance
-  // attendees   User[]     @relation("UserEvents")
+// Event categories enum for consistent categorization
+enum EventCategory {
+  ADVENTURE
+  CULTURAL
+  NATURE
+  URBAN
+  BEACH
+  MOUNTAIN
+  GASTRONOMY
+  WELLNESS
 }
