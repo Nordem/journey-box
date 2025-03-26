@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// USER
+
+model User {
+  id               String            @id @default(uuid())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  userProfile      UserProfile?
+  eventPreferences EventPreferences?
+  restrictions     Restrictions?
+  history          History?
+  idealOutcomes    IdealOutcome[]
+  calendarEvents   CalendarEvent[]
+  deliverables     Deliverable[]
+}
+
+model UserProfile {
+  id                    String   @id @default(uuid())
+  name                  String
+  location              String
+  currentTravelLocation String?
+  languages             String[]
+  personalityTraits     String[]
+  goals                 String[]
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String   @unique
+}
+
+model EventPreferences {
+  id                 String   @id @default(uuid())
+  categories         String[]
+  vibeKeywords       String[]
+  idealTimeSlots     String[]
+  budget             String
+  preferredGroupType String[]
+  preferredEventSize String[]
+  maxDistanceKm      Int
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String   @unique
+}
+
+model Restrictions {
+  id                             String  @id @default(uuid())
+  avoidCrowdedDaytimeConferences Boolean @default(false)
+  avoidOverlyFormalNetworking    Boolean @default(false)
+  avoidFamilyKidsEvents          Boolean @default(false)
+  user                           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                         String  @unique
+}
+
+model History {
+  id                   String          @id @default(uuid())
+  recentEventsAttended String[]
+  eventFeedback        EventFeedback[]
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String          @unique
+}
+
+model EventFeedback {
+  id        String  @id @default(uuid())
+  eventName String
+  feedback  String
+  history   History @relation(fields: [historyId], references: [id], onDelete: Cascade)
+  historyId String
+}
+
+model IdealOutcome {
+  id          String @id @default(uuid())
+  description String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+}
+
+model CalendarEvent {
+  id          String   @id @default(uuid())
+  date        DateTime
+  status      String // "Free", "Booked", "Deliverable"
+  description String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+}
+
+model Deliverable {
+  id     String   @id @default(uuid())
+  title  String
+  date   DateTime
+  note   String?
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+}
+
+// EVENTS
+
+model Event {
+  id         String   @id @default(uuid())
+  name       String
+  location   String
+  date       DateTime
+  music      String[]
+  activities String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Optional relations to connect events with users
+  // Uncomment these if you want to track event attendance
+  // attendees   User[]     @relation("UserEvents")
+}
