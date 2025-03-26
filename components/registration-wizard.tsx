@@ -14,6 +14,7 @@ import WizardProgress from "./wizard-progress"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Save } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { useToast } from "@/hooks/use-toast"
 
 interface CalendarEvent {
   date: Date;
@@ -74,6 +75,7 @@ export default function RegistrationWizard() {
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
   const [formData, setFormData] = useState<FormData>({
     userProfile: {
       name: "",
@@ -205,6 +207,12 @@ export default function RegistrationWizard() {
       if (!data?.user) {
         throw new Error('No user data received');
       }
+
+      toast({
+        title: "Success!",
+        description: "Profile has been created successfully.",
+        variant: "default",
+      });
 
       setCurrentStep(totalSteps - 1);
     } catch (error) {
