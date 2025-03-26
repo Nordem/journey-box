@@ -115,7 +115,7 @@ export default function OutcomesStep({ data, updateData, isMobile }) {
                 <Badge
                   key={index}
                   variant="outline"
-                  className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800 cursor-pointer text-xs"
+                  className="bg-gray-800/50 border border-gray-600 text-gray-100 hover:bg-gray-700/50 hover:border-gray-500 cursor-pointer text-sm px-3 py-1.5 transition-colors"
                   onClick={() => addOutcome(o)}
                 >
                   + {o}
