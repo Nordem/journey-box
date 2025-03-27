@@ -99,6 +99,8 @@ export default function RegistrationWizard() {
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveCompleted, setSaveCompleted] = useState(false)
   const { toast } = useToast()
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
@@ -177,6 +179,15 @@ export default function RegistrationWizard() {
     try {
       setIsSubmitting(true)
       setError(null)
+      setIsSaving(true)
+      setSaveCompleted(false)
+      
+      // Show persistent toast while saving
+      const savingToast = toast({
+        title: "Saving Profile",
+        description: "Please wait while we save your profile information...",
+        variant: "default",
+      })
 
       // Validate passwords match
       if (formData.auth.password !== formData.auth.confirmPassword) {
@@ -275,18 +286,24 @@ export default function RegistrationWizard() {
 
       // Only show success when both user creation and profile saving succeed
       console.log("Registration successful:", data)
+      // Dismiss the saving toast
+      savingToast.dismiss()
       toast({
         title: "Success!",
         description: "Your profile has been created successfully. Check your email for confirmation.",
         variant: "default",
       })
       
+      setIsSaving(false)
+      setSaveCompleted(true)
       // Move to the completion step
       setCurrentStep(totalSteps - 1)
     } catch (error) {
       console.error("Registration error:", error)
       const errorMessage = error instanceof Error ? error.message : "Failed to create profile"
       setError(errorMessage)
+      setIsSaving(false)
+      setSaveCompleted(false)
       toast({
         title: "Error",
         description: errorMessage,
@@ -407,6 +424,8 @@ export default function RegistrationWizard() {
             }),
           }}
           isMobile={isMobile}
+          isSaving={isSaving}
+          saveCompleted={saveCompleted}
         />
       ),
     },
@@ -495,13 +514,13 @@ export default function RegistrationWizard() {
           ) : (
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSaving}
               className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
               size={isMobile ? "sm" : "default"}
             >
               <span className="relative z-10 flex items-center">
-                {isSubmitting ? "Saving..." : "Save Profile"}
-                {!isSubmitting && <Save className={`${isMobile ? "ml-1 h-3 w-3" : "ml-2 h-4 w-4"}`} />}
+                {isSubmitting || isSaving ? "Saving..." : "Save Profile"}
+                {!isSubmitting && !isSaving && <Save className={`${isMobile ? "ml-1 h-3 w-3" : "ml-2 h-4 w-4"}`} />}
               </span>
             </Button>
           )}

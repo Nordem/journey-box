@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { CheckCircle2 } from "lucide-react"
+import { Clock, CheckCircle2, Loader2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Mail, ArrowRight } from "lucide-react"
@@ -10,9 +10,11 @@ import { useRouter } from "next/navigation"
 interface CompletionStepProps {
   data: any
   isMobile: boolean
+  isSaving?: boolean
+  saveCompleted?: boolean
 }
 
-export default function CompletionStep({ data, isMobile }: CompletionStepProps) {
+export default function CompletionStep({ data, isMobile, isSaving = false, saveCompleted = false }: CompletionStepProps) {
   const router = useRouter()
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -45,13 +47,31 @@ export default function CompletionStep({ data, isMobile }: CompletionStepProps) 
     >
       <motion.div variants={itemVariants} className="mb-8 text-center">
         <div className="flex justify-center mb-4">
-          <div className="bg-green-100 p-3 rounded-full">
-            <CheckCircle2 className="h-10 w-10 text-green-600" />
+          <div className={`${isSaving ? "bg-blue-100" : (saveCompleted ? "bg-green-100" : "bg-yellow-100")} p-3 rounded-full`}>
+            {isSaving ? (
+              <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
+            ) : (
+              saveCompleted ? (
+                <CheckCircle2 className="h-10 w-10 text-green-600" />
+              ) : (
+                <Clock className="h-10 w-10 text-yellow-600" />
+              )
+            )}
           </div>
         </div>
-        <h2 className="text-2xl font-bold mb-2">Registration Complete!</h2>
+        <h2 className="text-2xl font-bold mb-2">
+          {isSaving ? "Profile Information Submitted" : (saveCompleted ? "Registration Complete!" : "Finalizing Registration")}
+        </h2>
         <p className="text-gray-600">
-          Thank you for creating your profile. We've sent a verification email to <span className="font-medium">{data.email}</span>.
+          {isSaving ? (
+            <>Your information is being processed and saved to our database. We've sent a verification email to <span className="font-medium">{data.email}</span>.</>
+          ) : (
+            saveCompleted ? (
+              <>Your profile has been successfully saved to our database. We've sent a verification email to <span className="font-medium">{data.email}</span>.</>
+            ) : (
+              <>Your profile is being finalized. Please wait while we complete the process. A verification email will be sent to <span className="font-medium">{data.email}</span>.</>
+            )
+          )}
         </p>
       </motion.div>
 
@@ -62,31 +82,49 @@ export default function CompletionStep({ data, isMobile }: CompletionStepProps) 
               <Mail className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-blue-800 mb-2">Next Steps</h3>
+              <h3 className="font-semibold text-blue-800 mb-2">
+                {isSaving || !saveCompleted ? "Complete Your Registration" : "Next Steps"}
+              </h3>
               <ol className="space-y-2 text-sm text-blue-800">
-                <li>1. Check your email for a verification link</li>
-                <li>2. Click the link to verify your account</li>
-                <li>3. You'll be redirected to your personal dashboard</li>
+                {(isSaving || !saveCompleted) && <li>1. Wait for your profile to be saved to our database</li>}
+                <li>{(isSaving || !saveCompleted) ? "2" : "1"}. Check your email for a verification link</li>
+                <li>{(isSaving || !saveCompleted) ? "3" : "2"}. Click the link to verify your account</li>
+                <li>{(isSaving || !saveCompleted) ? "4" : "3"}. You'll be redirected to your personal dashboard</li>
               </ol>
               <p className="mt-4 text-sm text-blue-700">
-                If you don't see the email, please check your spam folder.
+                If you don't see the email{(isSaving || !saveCompleted) ? " after your profile is saved" : ""}, please check your spam folder.
               </p>
             </div>
           </div>
         </Card>
       </motion.div>
 
+      {(isSaving || !saveCompleted) && (
+        <motion.div 
+          variants={itemVariants} 
+          className="flex items-center justify-center py-4 space-x-2 text-blue-600"
+        >
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="text-sm font-medium">
+            {isSaving ? "Saving profile information..." : "Finalizing your profile..."}
+          </span>
+        </motion.div>
+      )}
+
       <motion.div variants={itemVariants} className="pt-4">
         <Button 
           variant="default" 
           className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
           onClick={goToDashboard}
+          disabled={isSaving || !saveCompleted}
         >
-          <span className="mr-2">Go to Dashboard</span>
+          <span className="mr-2">Continue to Dashboard</span>
           <ArrowRight className="h-4 w-4" />
         </Button>
         <p className="text-center text-sm text-gray-500 mt-2">
-          You'll need to verify your email to access all features
+          {isSaving || !saveCompleted
+            ? "Your dashboard will be fully accessible once your profile is saved and your email is verified" 
+            : "Your dashboard is ready, but you'll need to verify your email to access all features"}
         </p>
       </motion.div>
 
