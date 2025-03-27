@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: Request,
@@ -16,6 +14,8 @@ export async function GET(
         { status: 400 }
       )
     }
+    
+    console.log(`Fetching user data for ID: ${userId}`)
     
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -35,12 +35,14 @@ export async function GET(
     })
     
     if (!user) {
+      console.log(`User not found in database with ID: ${userId}`)
       return NextResponse.json(
-        { success: false, message: 'User not found' },
+        { success: false, message: 'User not found', id: userId },
         { status: 404 }
       )
     }
     
+    console.log(`Successfully found user with ID: ${userId}, has profile: ${!!user.userProfile}`)
     return NextResponse.json(user)
   } catch (error) {
     console.error('Error fetching user data:', error)

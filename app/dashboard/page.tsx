@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LogOut, User, Calendar, FileText, Target } from "lucide-react"
+import { LogOut, User, Calendar, FileText, Target, RefreshCw, AlertTriangle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface UserData {
@@ -25,11 +25,159 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [userData, setUserData] = useState<UserData | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [isCreatingProfile, setIsCreatingProfile] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
+  // Function to fetch user profile data
+  const fetchUserData = async (userId: string) => {
+    try {
+      setRefreshing(true)
+      console.log(`Fetching user data for ID: ${userId}`)
+      
+      const response = await fetch(`/api/user/${userId}`)
+      console.log(`API response status: ${response.status}`)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          // User exists in Supabase but profile doesn't exist yet
+          console.warn(`User authenticated but profile not found for ID: ${userId}`)
+          setUserData(null)
+          
+          toast({
+            title: "Profile Not Found",
+            description: "Your Supabase account exists but you need to create a profile. Use the 'Create Profile' button below.",
+            variant: "destructive",
+          })
+        } else {
+          const errorText = await response.text()
+          console.error(`Failed to fetch user data: ${response.status} - ${errorText}`)
+          throw new Error(`Failed to fetch user data: ${response.status} ${errorText}`)
+        }
+      } else {
+        const data = await response.json()
+        console.log("User data retrieved successfully:", data.id)
+        setUserData(data)
+        
+        toast({
+          title: "Data Loaded",
+          description: "Your profile data has been successfully loaded.",
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load your profile data. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
+  // Function to create a minimal profile for users who already authenticated with Supabase
+  const createMinimalProfile = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You need to be logged in to create a profile",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsCreatingProfile(true)
+      
+      // Show toast while creating profile
+      const creatingToast = toast({
+        title: "Creating Profile",
+        description: "Please wait while we create your profile...",
+        variant: "default",
+      })
+
+      // Create a minimal profile for the user
+      const requestBody = {
+        userId: user.id,
+        email: user.email,
+        userProfile: {
+          name: user.email.split('@')[0] || "New User",
+          location: "Not specified",
+          languages: [],
+          personalityTraits: [],
+          goals: []
+        },
+        eventPreferences: {
+          categories: [],
+          vibeKeywords: [],
+          idealTimeSlots: [],
+          budget: "Not specified",
+          preferredGroupType: [],
+          preferredEventSize: [],
+          maxDistanceKm: 50
+        },
+        restrictions: {
+          avoidCrowdedDaytimeConferences: false,
+          avoidOverlyFormalNetworking: false,
+          avoidFamilyKidsEvents: false
+        },
+        history: {
+          recentEventsAttended: [],
+          eventFeedback: []
+        },
+        idealOutcomes: [],
+        calendarEvents: [],
+        deliverables: []
+      }
+
+      console.log("Creating minimal profile with data:", requestBody)
+
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(requestBody),
+      })
+
+      const data = await response.json()
+      
+      creatingToast.dismiss()
+      
+      if (response.ok) {
+        console.log("Profile created successfully:", data)
+        toast({
+          title: "Success!",
+          description: "Your profile has been created successfully. You can now view your dashboard.",
+          variant: "default",
+        })
+        // Refresh user data to show the new profile
+        fetchUserData(user.id)
+      } else {
+        console.error("Failed to create profile:", data)
+        toast({
+          title: "Error",
+          description: data.message || "Failed to create your profile",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error creating profile:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while creating your profile",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCreatingProfile(false)
+    }
+  }
+
+  // Check if user is logged in and fetch their data
   useEffect(() => {
-    // Check if user is logged in
     const checkUser = async () => {
       try {
         setLoading(true)
@@ -40,32 +188,12 @@ export default function Dashboard() {
           return
         }
 
+        console.log('User authenticated:', session.user.id)
+        console.log('Supabase user email:', session.user.email)
         setUser(session.user)
         
         // Fetch user profile data
-        try {
-          const response = await fetch(`/api/user/${session.user.id}`)
-          
-          if (!response.ok) {
-            if (response.status === 404) {
-              // User exists in Supabase but profile doesn't exist yet
-              console.warn('User authenticated but profile not found')
-              setUserData(null)
-            } else {
-              throw new Error('Failed to fetch user data')
-            }
-          } else {
-            const data = await response.json()
-            setUserData(data)
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error)
-          toast({
-            title: "Error",
-            description: "Failed to load your profile data. Please try again.",
-            variant: "destructive",
-          })
-        }
+        await fetchUserData(session.user.id)
       } catch (error) {
         console.error('Error checking authentication:', error)
       } finally {
@@ -74,11 +202,18 @@ export default function Dashboard() {
     }
 
     checkUser()
-  }, [router, toast])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  const handleRefresh = () => {
+    if (user) {
+      fetchUserData(user.id)
+    }
   }
 
   if (loading) {
@@ -107,275 +242,320 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">Welcome back, {userData?.userProfile?.name || user?.email}</p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh} 
+              disabled={refreshing}
+              className="flex items-center"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? "Refreshing..." : "Refresh Data"}
+            </Button>
+            {!userData && (
+              <Button 
+                variant="default" 
+                onClick={createMinimalProfile}
+                disabled={isCreatingProfile}
+                className="flex items-center bg-blue-600 text-white hover:bg-blue-700"
+              >
+                <AlertTriangle className="mr-2 h-4 w-4" />
+                {isCreatingProfile ? "Creating..." : "Create Profile"}
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="profile">
-              <User className="mr-2 h-4 w-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="preferences">
-              <Target className="mr-2 h-4 w-4" />
-              Preferences
-            </TabsTrigger>
-            <TabsTrigger value="calendar">
-              <Calendar className="mr-2 h-4 w-4" />
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger value="deliverables">
-              <FileText className="mr-2 h-4 w-4" />
-              Deliverables
-            </TabsTrigger>
-          </TabsList>
+        {!userData ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Not Found</CardTitle>
+              <CardDescription>We couldn't find your profile in our database</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">
+                You're authenticated with Supabase, but it seems you don't have a profile in our database.
+                This can happen if:
+              </p>
+              <ul className="list-disc pl-6 mb-6 space-y-2">
+                <li>You signed up but never completed the registration wizard</li>
+                <li>You created your account through Supabase directly</li>
+                <li>There was an error during the profile creation process</li>
+              </ul>
+              <p className="mb-4">
+                Click the "Create Profile" button above to create a basic profile that you can update later.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="profile">
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger value="preferences">
+                <Target className="mr-2 h-4 w-4" />
+                Preferences
+              </TabsTrigger>
+              <TabsTrigger value="calendar">
+                <Calendar className="mr-2 h-4 w-4" />
+                Calendar
+              </TabsTrigger>
+              <TabsTrigger value="deliverables">
+                <FileText className="mr-2 h-4 w-4" />
+                Deliverables
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="profile" className="space-y-6">
-            {userData?.userProfile ? (
-              <>
+            <TabsContent value="profile" className="space-y-6">
+              {userData?.userProfile ? (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Personal Information</CardTitle>
+                      <CardDescription>Your basic profile information</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Name</h3>
+                          <p className="text-lg">{userData.userProfile.name}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Location</h3>
+                          <p className="text-lg">{userData.userProfile.location}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Current Travel Location</h3>
+                          <p className="text-lg">{userData.userProfile.currentTravelLocation || "None specified"}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Languages</h3>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {userData.userProfile.languages?.length > 0 ? 
+                              userData.userProfile.languages.map((lang: string, i: number) => (
+                                <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
+                                  {lang}
+                                </span>
+                              )) : 
+                              <p>None specified</p>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Personality & Goals</CardTitle>
+                      <CardDescription>Your traits and objectives</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Personality Traits</h3>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {userData.userProfile.personalityTraits?.length > 0 ? 
+                              userData.userProfile.personalityTraits.map((trait: string, i: number) => (
+                                <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
+                                  {trait}
+                                </span>
+                              )) : 
+                              <p>None specified</p>
+                            }
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Goals</h3>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {userData.userProfile.goals?.length > 0 ? 
+                              userData.userProfile.goals.map((goal: string, i: number) => (
+                                <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
+                                  {goal}
+                                </span>
+                              )) : 
+                              <p>None specified</p>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Personal Information</CardTitle>
-                    <CardDescription>Your basic profile information</CardDescription>
+                    <CardTitle>Profile Incomplete</CardTitle>
+                    <CardDescription>Your profile information is not available</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Name</h3>
-                        <p className="text-lg">{userData.userProfile.name}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Location</h3>
-                        <p className="text-lg">{userData.userProfile.location}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Current Travel Location</h3>
-                        <p className="text-lg">{userData.userProfile.currentTravelLocation || "None specified"}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Languages</h3>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {userData.userProfile.languages?.length > 0 ? 
-                            userData.userProfile.languages.map((lang: string, i: number) => (
-                              <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
-                                {lang}
-                              </span>
-                            )) : 
-                            <p>None specified</p>
-                          }
-                        </div>
-                      </div>
-                    </div>
+                    <p>You may need to complete the registration process or reload the page.</p>
                   </CardContent>
                 </Card>
+              )}
+            </TabsContent>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Personality & Goals</CardTitle>
-                    <CardDescription>Your traits and objectives</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Personality Traits</h3>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {userData.userProfile.personalityTraits?.length > 0 ? 
-                            userData.userProfile.personalityTraits.map((trait: string, i: number) => (
-                              <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
-                                {trait}
-                              </span>
-                            )) : 
-                            <p>None specified</p>
-                          }
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Goals</h3>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {userData.userProfile.goals?.length > 0 ? 
-                            userData.userProfile.goals.map((goal: string, i: number) => (
-                              <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
-                                {goal}
-                              </span>
-                            )) : 
-                            <p>None specified</p>
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            ) : (
+            <TabsContent value="preferences" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Profile Incomplete</CardTitle>
-                  <CardDescription>Your profile information is not available</CardDescription>
+                  <CardTitle>Event Preferences</CardTitle>
+                  <CardDescription>Your preferred event types and settings</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>You may need to complete the registration process or reload the page.</p>
+                  {userData?.eventPreferences ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Categories</h3>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {userData.eventPreferences.categories?.length > 0 ? 
+                            userData.eventPreferences.categories.map((cat: string, i: number) => (
+                              <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm">
+                                {cat}
+                              </span>
+                            )) : 
+                            <p>None specified</p>
+                          }
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Vibe Keywords</h3>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {userData.eventPreferences.vibeKeywords?.length > 0 ? 
+                            userData.eventPreferences.vibeKeywords.map((vibe: string, i: number) => (
+                              <span key={i} className="bg-amber-100 text-amber-800 px-2 py-1 rounded-md text-sm">
+                                {vibe}
+                              </span>
+                            )) : 
+                            <p>None specified</p>
+                          }
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Budget</h3>
+                        <p className="text-lg">{userData.eventPreferences.budget || "Not specified"}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Max Distance</h3>
+                        <p className="text-lg">{userData.eventPreferences.maxDistanceKm} km</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No event preferences available</p>
+                  )}
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
 
-          <TabsContent value="preferences" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Event Preferences</CardTitle>
-                <CardDescription>Your preferred event types and settings</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {userData?.eventPreferences ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-medium text-sm text-muted-foreground mb-1">Categories</h3>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {userData.eventPreferences.categories?.length > 0 ? 
-                          userData.eventPreferences.categories.map((cat: string, i: number) => (
-                            <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm">
-                              {cat}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Restrictions</CardTitle>
+                  <CardDescription>Your event restrictions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {userData?.restrictions ? (
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="flex items-start">
+                        <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidCrowdedDaytimeConferences ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                        <div>
+                          <h3 className="font-medium">Avoid Crowded Daytime Conferences</h3>
+                          <p className="text-sm text-muted-foreground">{userData.restrictions.avoidCrowdedDaytimeConferences ? 'Yes' : 'No'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidOverlyFormalNetworking ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                        <div>
+                          <h3 className="font-medium">Avoid Overly Formal Networking</h3>
+                          <p className="text-sm text-muted-foreground">{userData.restrictions.avoidOverlyFormalNetworking ? 'Yes' : 'No'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidFamilyKidsEvents ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                        <div>
+                          <h3 className="font-medium">Avoid Family/Kids Events</h3>
+                          <p className="text-sm text-muted-foreground">{userData.restrictions.avoidFamilyKidsEvents ? 'Yes' : 'No'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No restrictions available</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="calendar" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Calendar Events</CardTitle>
+                  <CardDescription>Your scheduled events</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {userData?.calendarEvents && userData.calendarEvents.length > 0 ? (
+                    <div className="space-y-4">
+                      {userData.calendarEvents.map((event: any, i: number) => (
+                        <div key={i} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-medium">{new Date(event.date).toLocaleDateString()}</h3>
+                              <p className="text-sm text-muted-foreground">Status: {event.status}</p>
+                            </div>
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              event.status === 'Free' ? 'bg-green-100 text-green-800' : 
+                              event.status === 'Booked' ? 'bg-blue-100 text-blue-800' : 
+                              'bg-amber-100 text-amber-800'
+                            }`}>
+                              {event.status}
                             </span>
-                          )) : 
-                          <p>None specified</p>
-                        }
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-sm text-muted-foreground mb-1">Vibe Keywords</h3>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {userData.eventPreferences.vibeKeywords?.length > 0 ? 
-                          userData.eventPreferences.vibeKeywords.map((vibe: string, i: number) => (
-                            <span key={i} className="bg-amber-100 text-amber-800 px-2 py-1 rounded-md text-sm">
-                              {vibe}
-                            </span>
-                          )) : 
-                          <p>None specified</p>
-                        }
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-sm text-muted-foreground mb-1">Budget</h3>
-                      <p className="text-lg">{userData.eventPreferences.budget || "Not specified"}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-sm text-muted-foreground mb-1">Max Distance</h3>
-                      <p className="text-lg">{userData.eventPreferences.maxDistanceKm} km</p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No event preferences available</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Restrictions</CardTitle>
-                <CardDescription>Your event restrictions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {userData?.restrictions ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="flex items-start">
-                      <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidCrowdedDaytimeConferences ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                      <div>
-                        <h3 className="font-medium">Avoid Crowded Daytime Conferences</h3>
-                        <p className="text-sm text-muted-foreground">{userData.restrictions.avoidCrowdedDaytimeConferences ? 'Yes' : 'No'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidOverlyFormalNetworking ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                      <div>
-                        <h3 className="font-medium">Avoid Overly Formal Networking</h3>
-                        <p className="text-sm text-muted-foreground">{userData.restrictions.avoidOverlyFormalNetworking ? 'Yes' : 'No'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidFamilyKidsEvents ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                      <div>
-                        <h3 className="font-medium">Avoid Family/Kids Events</h3>
-                        <p className="text-sm text-muted-foreground">{userData.restrictions.avoidFamilyKidsEvents ? 'Yes' : 'No'}</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No restrictions available</p>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="calendar" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Calendar Events</CardTitle>
-                <CardDescription>Your scheduled events</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {userData?.calendarEvents && userData.calendarEvents.length > 0 ? (
-                  <div className="space-y-4">
-                    {userData.calendarEvents.map((event: any, i: number) => (
-                      <div key={i} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium">{new Date(event.date).toLocaleDateString()}</h3>
-                            <p className="text-sm text-muted-foreground">Status: {event.status}</p>
                           </div>
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            event.status === 'Free' ? 'bg-green-100 text-green-800' : 
-                            event.status === 'Booked' ? 'bg-blue-100 text-blue-800' : 
-                            'bg-amber-100 text-amber-800'
-                          }`}>
-                            {event.status}
-                          </span>
+                          {event.description && (
+                            <p className="mt-2">{event.description}</p>
+                          )}
                         </div>
-                        {event.description && (
-                          <p className="mt-2">{event.description}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No calendar events available</p>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No calendar events available</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="deliverables" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Deliverables</CardTitle>
-                <CardDescription>Your goals and commitments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {userData?.deliverables && userData.deliverables.length > 0 ? (
-                  <div className="space-y-4">
-                    {userData.deliverables.map((deliverable: any, i: number) => (
-                      <div key={i} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-medium">{deliverable.title}</h3>
-                          <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
-                            {new Date(deliverable.date).toLocaleDateString()}
-                          </span>
+            <TabsContent value="deliverables" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Deliverables</CardTitle>
+                  <CardDescription>Your goals and commitments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {userData?.deliverables && userData.deliverables.length > 0 ? (
+                    <div className="space-y-4">
+                      {userData.deliverables.map((deliverable: any, i: number) => (
+                        <div key={i} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-medium">{deliverable.title}</h3>
+                            <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                              {new Date(deliverable.date).toLocaleDateString()}
+                            </span>
+                          </div>
+                          {deliverable.note && (
+                            <p className="mt-2 text-sm">{deliverable.note}</p>
+                          )}
                         </div>
-                        {deliverable.note && (
-                          <p className="mt-2 text-sm">{deliverable.note}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No deliverables available</p>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No deliverables available</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </div>
   )

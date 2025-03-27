@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-// Initialize Prisma client outside of handler to reuse connections
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function POST(request: Request) {
   console.log('Registration request received')
@@ -52,15 +50,80 @@ export async function POST(request: Request) {
     
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
+      include: { userProfile: true }
     })
     
     if (existingUser) {
-      console.log('User already exists with ID:', userId)
-      return NextResponse.json(
-        { success: false, message: 'User with this ID already exists' },
-        { status: 409 }
-      )
+      console.log('User already exists with ID:', userId, 'Has profile:', !!existingUser.userProfile)
+      
+      // If user exists but has no profile, we could update it
+      if (!existingUser.userProfile) {
+        console.log('User exists but has no profile. Creating profile...')
+        
+        try {
+          // Use a transaction to create all the missing data
+          const updatedUser = await prisma.$transaction(async (tx) => {
+            // Create user profile
+            await tx.userProfile.create({
+              data: {
+                name: userProfile.name,
+                location: userProfile.location || 'Not specified',
+                currentTravelLocation: userProfile.currentTravelLocation,
+                languages: userProfile.languages || [],
+                personalityTraits: userProfile.personalityTraits || [],
+                goals: userProfile.goals || [],
+                userId: existingUser.id
+              }
+            })
+            
+            // Create event preferences if provided
+            if (eventPreferences) {
+              await tx.eventPreferences.create({
+                data: {
+                  categories: eventPreferences.categories || [],
+                  vibeKeywords: eventPreferences.vibeKeywords || [],
+                  idealTimeSlots: eventPreferences.idealTimeSlots || [],
+                  budget: eventPreferences.budget || '',
+                  preferredGroupType: eventPreferences.preferredGroupType || [],
+                  preferredEventSize: eventPreferences.preferredEventSize || [],
+                  maxDistanceKm: eventPreferences.maxDistanceKm || 0,
+                  userId: existingUser.id
+                }
+              })
+            }
+            
+            // Create other data as needed...
+            
+            return existingUser
+          })
+          
+          console.log('Profile created for existing user:', updatedUser.id)
+          return NextResponse.json({
+            success: true,
+            message: "Profile added to existing user",
+            data: {
+              userId: updatedUser.id,
+              email: email,
+              updated: true
+            }
+          })
+        } catch (error) {
+          console.error('Error updating existing user:', error)
+          return NextResponse.json(
+            { 
+              success: false, 
+              message: error instanceof Error ? `Error updating user: ${error.message}` : 'Failed to update user'
+            },
+            { status: 500 }
+          )
+        }
+      } else {
+        return NextResponse.json(
+          { success: false, message: 'User with this ID already exists and has a profile' },
+          { status: 409 }
+        )
+      }
     }
     
     console.log('Starting database transaction for user ID:', userId)
@@ -80,7 +143,7 @@ export async function POST(request: Request) {
       await tx.userProfile.create({
         data: {
           name: userProfile.name,
-          location: userProfile.location,
+          location: userProfile.location || 'Not specified',
           currentTravelLocation: userProfile.currentTravelLocation,
           languages: userProfile.languages || [],
           personalityTraits: userProfile.personalityTraits || [],
@@ -197,6 +260,21 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('Registration error:', error)
+    
+    // Handle Prisma specific errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // P2002 is the error code for unique constraint violation
+      if (error.code === 'P2002') {
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: 'A user with this ID already exists. Try refreshing your dashboard.'
+          },
+          { status: 409 }
+        )
+      }
+    }
+    
     return NextResponse.json(
       { 
         success: false, 
