@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   try {
     // Parse the request body
     const body = await request.json()
-    console.log('Request body parsed successfully', body)
+    console.log('Request body parsed successfully')
     
     // Extract all the form data
     const {
@@ -25,11 +25,19 @@ export async function POST(request: Request) {
       deliverables
     } = body
     
-    // Basic validation
+    // Validate required fields
     if (!userId) {
       console.error('Missing required user ID')
       return NextResponse.json(
         { success: false, message: 'User ID is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!email) {
+      console.error('Missing required email')
+      return NextResponse.json(
+        { success: false, message: 'Email is required' },
         { status: 400 }
       )
     }
@@ -42,15 +50,27 @@ export async function POST(request: Request) {
       )
     }
     
-    console.log('Starting database transaction')
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+    
+    if (existingUser) {
+      console.log('User already exists with ID:', userId)
+      return NextResponse.json(
+        { success: false, message: 'User with this ID already exists' },
+        { status: 409 }
+      )
+    }
+    
+    console.log('Starting database transaction for user ID:', userId)
     
     // Use a transaction to ensure all related data is saved together
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create the user record with Supabase ID
       const user = await tx.user.create({
         data: {
-          id: userId, // Use the Supabase user ID
-          // Add email field if your User model has one
+          id: userId // Use the Supabase user ID
         }
       })
       
@@ -171,6 +191,7 @@ export async function POST(request: Request) {
       message: "Profile created successfully",
       data: {
         userId: result.id,
+        email: email,
         createdAt: result.createdAt
       }
     })
@@ -183,9 +204,5 @@ export async function POST(request: Request) {
       },
       { status: 500 }
     )
-  } finally {
-    // No need to disconnect for serverless functions, 
-    // but good to clean up for long-running servers
-    // await prisma.$disconnect()
   }
 } 

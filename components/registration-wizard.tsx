@@ -211,7 +211,7 @@ export default function RegistrationWizard() {
 
       // 2. Send user registration data to API
       const requestBody = {
-        userId: authData.user.id, // Include Supabase user ID
+        userId: authData.user.id, // Use the Supabase user ID
         email: formData.auth.email,
         userProfile: formData.userProfile,
         eventPreferences: formData.eventPreferences,
@@ -273,6 +273,7 @@ export default function RegistrationWizard() {
         throw new Error(errorMessage)
       }
 
+      // Only show success when both user creation and profile saving succeed
       console.log("Registration successful:", data)
       toast({
         title: "Success!",
@@ -291,6 +292,9 @@ export default function RegistrationWizard() {
         description: errorMessage,
         variant: "destructive",
       })
+      
+      // If Supabase user was created but profile saving failed, we might need to clean up
+      // Consider adding code here to delete the Supabase user in case of failure
     } finally {
       setIsSubmitting(false)
     }
