@@ -26,7 +26,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [refreshing, setRefreshing] = useState(false)
-  const [isCreatingProfile, setIsCreatingProfile] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -47,7 +46,7 @@ export default function Dashboard() {
           
           toast({
             title: "Profile Not Found",
-            description: "Your Supabase account exists but you need to create a profile. Use the 'Create Profile' button below.",
+            description: "You need to complete the registration process first.",
             variant: "destructive",
           })
         } else {
@@ -77,103 +76,9 @@ export default function Dashboard() {
     }
   }
 
-  // Function to create a minimal profile for users who already authenticated with Supabase
-  const createMinimalProfile = async () => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You need to be logged in to create a profile",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      setIsCreatingProfile(true)
-      
-      // Show toast while creating profile
-      const creatingToast = toast({
-        title: "Creating Profile",
-        description: "Please wait while we create your profile...",
-        variant: "default",
-      })
-
-      // Create a minimal profile for the user
-      const requestBody = {
-        userId: user.id,
-        email: user.email,
-        userProfile: {
-          name: user.email.split('@')[0] || "New User",
-          location: "Not specified",
-          languages: [],
-          personalityTraits: [],
-          goals: []
-        },
-        eventPreferences: {
-          categories: [],
-          vibeKeywords: [],
-          idealTimeSlots: [],
-          budget: "Not specified",
-          preferredGroupType: [],
-          preferredEventSize: [],
-          maxDistanceKm: 50
-        },
-        restrictions: {
-          avoidCrowdedDaytimeConferences: false,
-          avoidOverlyFormalNetworking: false,
-          avoidFamilyKidsEvents: false
-        },
-        history: {
-          recentEventsAttended: [],
-          eventFeedback: []
-        },
-        idealOutcomes: [],
-        calendarEvents: [],
-        deliverables: []
-      }
-
-      console.log("Creating minimal profile with data:", requestBody)
-
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(requestBody),
-      })
-
-      const data = await response.json()
-      
-      creatingToast.dismiss()
-      
-      if (response.ok) {
-        console.log("Profile created successfully:", data)
-        toast({
-          title: "Success!",
-          description: "Your profile has been created successfully. You can now view your dashboard.",
-          variant: "default",
-        })
-        // Refresh user data to show the new profile
-        fetchUserData(user.id)
-      } else {
-        console.error("Failed to create profile:", data)
-        toast({
-          title: "Error",
-          description: data.message || "Failed to create your profile",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Error creating profile:", error)
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while creating your profile",
-        variant: "destructive",
-      })
-    } finally {
-      setIsCreatingProfile(false)
-    }
+  // Navigate to registration
+  const goToRegistration = () => {
+    router.push('/register');
   }
 
   // Check if user is logged in and fetch their data
@@ -252,17 +157,6 @@ export default function Dashboard() {
               <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
               {refreshing ? "Refreshing..." : "Refresh Data"}
             </Button>
-            {!userData && (
-              <Button 
-                variant="default" 
-                onClick={createMinimalProfile}
-                disabled={isCreatingProfile}
-                className="flex items-center bg-blue-600 text-white hover:bg-blue-700"
-              >
-                <AlertTriangle className="mr-2 h-4 w-4" />
-                {isCreatingProfile ? "Creating..." : "Create Profile"}
-              </Button>
-            )}
             <Button variant="outline" onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
@@ -287,8 +181,14 @@ export default function Dashboard() {
                 <li>There was an error during the profile creation process</li>
               </ul>
               <p className="mb-4">
-                Click the "Create Profile" button above to create a basic profile that you can update later.
+                You need to complete the registration process to access your dashboard.
               </p>
+              <Button 
+                onClick={goToRegistration}
+                className="w-full bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Go to Registration
+              </Button>
             </CardContent>
           </Card>
         ) : (
