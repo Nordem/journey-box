@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LogOut, User, Calendar, FileText, Target } from "lucide-react"
-import { toast } from "@/components/ui/use-toast"
 import { useToast } from "@/hooks/use-toast"
 
 interface UserData {
@@ -27,6 +26,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [userData, setUserData] = useState<UserData | null>(null)
   const router = useRouter()
+  const { toast } = useToast()
 
   useEffect(() => {
     // Check if user is logged in
@@ -41,7 +41,6 @@ export default function Dashboard() {
         }
 
         setUser(session.user)
-        const { toast } = useToast()
         
         // Fetch user profile data
         try {
@@ -75,7 +74,7 @@ export default function Dashboard() {
     }
 
     checkUser()
-  }, [router])
+  }, [router, toast])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
