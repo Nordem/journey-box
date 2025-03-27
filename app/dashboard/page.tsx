@@ -8,11 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LogOut, User, Calendar, FileText, Target } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 interface UserData {
   id: string
   userProfile: any
   eventPreferences: any
+  restrictions: any
   history: any
   idealOutcomes: any[]
   calendarEvents: any[]
@@ -38,18 +41,34 @@ export default function Dashboard() {
         }
 
         setUser(session.user)
+        const { toast } = useToast()
         
         // Fetch user profile data
-        const response = await fetch(`/api/user/${session.user.id}`)
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data')
+        try {
+          const response = await fetch(`/api/user/${session.user.id}`)
+          
+          if (!response.ok) {
+            if (response.status === 404) {
+              // User exists in Supabase but profile doesn't exist yet
+              console.warn('User authenticated but profile not found')
+              setUserData(null)
+            } else {
+              throw new Error('Failed to fetch user data')
+            }
+          } else {
+            const data = await response.json()
+            setUserData(data)
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+          toast({
+            title: "Error",
+            description: "Failed to load your profile data. Please try again.",
+            variant: "destructive",
+          })
         }
-        
-        const data = await response.json()
-        setUserData(data)
       } catch (error) {
-        console.error('Error fetching user data:', error)
+        console.error('Error checking authentication:', error)
       } finally {
         setLoading(false)
       }
@@ -116,82 +135,92 @@ export default function Dashboard() {
           </TabsList>
 
           <TabsContent value="profile" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Your basic profile information</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {userData?.userProfile ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-medium text-sm text-muted-foreground mb-1">Name</h3>
-                      <p className="text-lg">{userData.userProfile.name}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-sm text-muted-foreground mb-1">Location</h3>
-                      <p className="text-lg">{userData.userProfile.location}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-sm text-muted-foreground mb-1">Current Travel Location</h3>
-                      <p className="text-lg">{userData.userProfile.currentTravelLocation || "None specified"}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-sm text-muted-foreground mb-1">Languages</h3>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {userData.userProfile.languages?.length > 0 ? 
-                          userData.userProfile.languages.map((lang: string, i: number) => (
-                            <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
-                              {lang}
-                            </span>
-                          )) : 
-                          <p>None specified</p>
-                        }
+            {userData?.userProfile ? (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Personal Information</CardTitle>
+                    <CardDescription>Your basic profile information</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Name</h3>
+                        <p className="text-lg">{userData.userProfile.name}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Location</h3>
+                        <p className="text-lg">{userData.userProfile.location}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Current Travel Location</h3>
+                        <p className="text-lg">{userData.userProfile.currentTravelLocation || "None specified"}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Languages</h3>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {userData.userProfile.languages?.length > 0 ? 
+                            userData.userProfile.languages.map((lang: string, i: number) => (
+                              <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
+                                {lang}
+                              </span>
+                            )) : 
+                            <p>None specified</p>
+                          }
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No profile information available</p>
-                )}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Personality & Goals</CardTitle>
-                <CardDescription>Your traits and objectives</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-medium text-sm text-muted-foreground mb-1">Personality Traits</h3>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {userData?.userProfile?.personalityTraits?.length > 0 ? 
-                        userData.userProfile.personalityTraits.map((trait: string, i: number) => (
-                          <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
-                            {trait}
-                          </span>
-                        )) : 
-                        <p>None specified</p>
-                      }
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Personality & Goals</CardTitle>
+                    <CardDescription>Your traits and objectives</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Personality Traits</h3>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {userData.userProfile.personalityTraits?.length > 0 ? 
+                            userData.userProfile.personalityTraits.map((trait: string, i: number) => (
+                              <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
+                                {trait}
+                              </span>
+                            )) : 
+                            <p>None specified</p>
+                          }
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Goals</h3>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {userData.userProfile.goals?.length > 0 ? 
+                            userData.userProfile.goals.map((goal: string, i: number) => (
+                              <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
+                                {goal}
+                              </span>
+                            )) : 
+                            <p>None specified</p>
+                          }
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-sm text-muted-foreground mb-1">Goals</h3>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {userData?.userProfile?.goals?.length > 0 ? 
-                        userData.userProfile.goals.map((goal: string, i: number) => (
-                          <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
-                            {goal}
-                          </span>
-                        )) : 
-                        <p>None specified</p>
-                      }
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Profile Incomplete</CardTitle>
+                  <CardDescription>Your profile information is not available</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p>You may need to complete the registration process or reload the page.</p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="preferences" className="space-y-6">
