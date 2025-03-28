@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
 
 interface Category {
@@ -9,8 +9,6 @@ interface Category {
 
 export async function GET() {
   try {
-    const supabase = createClient();
-    
     // Try to fetch events from database
     try {
       // First try to get events from Prisma

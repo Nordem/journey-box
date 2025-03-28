@@ -127,3 +127,4 @@ build-iPhoneSimulator/
 .build/
 xcuserdata/
 DerivedData/
+.vercel
