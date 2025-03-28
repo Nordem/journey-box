@@ -220,46 +220,31 @@ export default function Dashboard() {
             }
           } else {
             const data = await response.json();
-            console.log("User data retrieved successfully:", data.id);
-            setUserData(data);
+            console.log('Fetched user data:', data);
             
-            // After getting user data, fetch recommended events and all events separately
-            // to prevent one failure from blocking the other
-            try {
-              await fetchRecommendedEvents(data);
-            } catch (recError) {
-              console.error("Error fetching recommended events:", recError);
+            if (!data.userProfile) {
+              console.warn('User data received but no profile found');
+              setUserData(null);
+              toast({
+                title: "Profile Not Found",
+                description: "Your profile data is incomplete. Please complete the registration process.",
+                variant: "destructive",
+              });
+            } else {
+              setUserData(data);
             }
-            
-            try {
-              await fetchAllEvents();
-            } catch (eventsError) {
-              console.error("Error fetching all events:", eventsError);
-            }
-            
-            toast({
-              title: "Data Loaded",
-              description: "Your profile data has been successfully loaded.",
-            });
           }
-        } catch (fetchError) {
-          console.error("Error in fetch operation:", fetchError);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
           toast({
             title: "Error",
-            description: "Failed to load your profile data. Please try again.",
+            description: "Failed to fetch your profile data. Please try again.",
             variant: "destructive",
           });
         }
-      } else {
-        console.log("Running in SSR context or missing userId, skipping fetch");
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load your profile data. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error in fetchUserData:', error);
     } finally {
       setRefreshing(false);
     }
@@ -279,6 +264,17 @@ export default function Dashboard() {
         
         if (!session) {
           router.push('/login')
+          return
+        }
+
+        // Check if email is confirmed
+        if (!session.user.email_confirmed_at) {
+          console.log('User email not confirmed:', session.user.email)
+          toast({
+            title: "Email Not Verified",
+            description: "Please check your email and verify your account before accessing the dashboard.",
+            variant: "destructive",
+          })
           return
         }
 

@@ -290,7 +290,7 @@ export default function RegistrationWizard() {
       savingToast.dismiss()
       toast({
         title: "Success!",
-        description: "Your profile has been created successfully. Check your email for confirmation.",
+        description: "Your profile has been created successfully. Please check your email to verify your account.",
         variant: "default",
       })
       

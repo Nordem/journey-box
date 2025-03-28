@@ -3,12 +3,13 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
 export async function POST(request: Request) {
+  console.log('=== REGISTRATION REQUEST START ===')
   console.log('Registration request received')
   
   try {
     // Parse the request body
     const body = await request.json()
-    console.log('Request body parsed successfully')
+    console.log('Request body:', JSON.stringify(body, null, 2))
     
     // Extract all the form data
     const {
@@ -32,14 +33,6 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!email) {
-      console.error('Missing required email')
-      return NextResponse.json(
-        { success: false, message: 'Email is required' },
-        { status: 400 }
-      )
-    }
-
     if (!userProfile || !userProfile.name) {
       console.error('Missing required user profile data')
       return NextResponse.json(
@@ -49,115 +42,41 @@ export async function POST(request: Request) {
     }
     
     // IMPORTANT DEBUG
+    console.log('=== REGISTRATION DETAILS ===')
     console.log('Registering user with ID:', userId)
-    console.log('User email:', email)
     console.log('User profile name:', userProfile.name)
     
     // Check if user already exists
+    console.log('Checking if user exists...')
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },
       include: { userProfile: true }
     })
     
     if (existingUser) {
-      console.log('User already exists with ID:', userId, 'Has profile:', !!existingUser.userProfile)
-      
-      if (existingUser.userProfile) {
-        // User already exists with a profile, no need to create a new one
-        return NextResponse.json({
-          success: true,
-          message: "User already exists with a profile",
-          data: {
-            userId: existingUser.id,
-            email: email,
-            alreadyExists: true
-          }
-        })
-      }
-      
-      // If user exists but has no profile, update with the new profile data
-      console.log('User exists but has no profile. Creating profile...')
-      
-      try {
-        // Use a transaction to create all the missing data
-        const updatedUser = await prisma.$transaction(async (tx) => {
-          // Create user profile
-          const profile = await tx.userProfile.create({
-            data: {
-              name: userProfile.name,
-              location: userProfile.location || 'Not specified',
-              currentTravelLocation: userProfile.currentTravelLocation,
-              languages: userProfile.languages || [],
-              personalityTraits: userProfile.personalityTraits || [],
-              goals: userProfile.goals || [],
-              userId: existingUser.id
-            }
-          })
-          
-          console.log('Created profile for existing user:', profile.id)
-          
-          // Create event preferences if provided
-          if (eventPreferences) {
-            await tx.eventPreferences.create({
-              data: {
-                categories: eventPreferences.categories || [],
-                vibeKeywords: eventPreferences.vibeKeywords || [],
-                idealTimeSlots: eventPreferences.idealTimeSlots || [],
-                budget: eventPreferences.budget || '',
-                preferredGroupType: eventPreferences.preferredGroupType || [],
-                preferredEventSize: eventPreferences.preferredEventSize || [],
-                maxDistanceKm: eventPreferences.maxDistanceKm || 0,
-                userId: existingUser.id
-              }
-            })
-          }
-          
-          // Create restrictions if provided
-          if (restrictions) {
-            await tx.restrictions.create({
-              data: {
-                avoidCrowdedDaytimeConferences: restrictions.avoidCrowdedDaytimeConferences || false,
-                avoidOverlyFormalNetworking: restrictions.avoidOverlyFormalNetworking || false,
-                avoidFamilyKidsEvents: restrictions.avoidFamilyKidsEvents || false,
-                userId: existingUser.id
-              }
-            })
-          }
-          
-          // Create other data as needed...
-          
-          // Similar implementation as the full creation below for other data types
-          
-          return existingUser
-        })
-        
-        console.log('Profile created for existing user:', updatedUser.id)
-        return NextResponse.json({
-          success: true,
-          message: "Profile added to existing user",
-          data: {
-            userId: updatedUser.id,
-            email: email,
-            updated: true
-          }
-        })
-      } catch (error) {
-        console.error('Error updating existing user:', error)
-        // Detailed error logging
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-          console.error('Prisma error code:', error.code)
-          console.error('Prisma error message:', error.message)
-          console.error('Prisma error meta:', error.meta)
+      console.log('User already exists, updating profile...')
+      // Update existing user's profile
+      const updatedProfile = await prisma.userProfile.update({
+        where: { userId: existingUser.id },
+        data: {
+          name: userProfile.name,
+          location: userProfile.location || 'Not specified',
+          currentTravelLocation: userProfile.currentTravelLocation,
+          languages: userProfile.languages || [],
+          personalityTraits: userProfile.personalityTraits || [],
+          goals: userProfile.goals || [],
         }
-        
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: error instanceof Error ? `Error updating user: ${error.message}` : 'Failed to update user'
-          },
-          { status: 500 }
-        )
-      }
+      })
+      
+      console.log('Updated profile for existing user:', updatedProfile.id)
+      return NextResponse.json({
+        success: true,
+        message: "Profile updated successfully",
+        data: {
+          userId: existingUser.id,
+          updatedAt: existingUser.updatedAt
+        }
+      })
     }
     
     console.log('Starting database transaction for NEW user ID:', userId)
@@ -166,6 +85,7 @@ export async function POST(request: Request) {
     try {
       const result = await prisma.$transaction(async (tx) => {
         // 1. Create the user record with Supabase ID
+        console.log('Creating new user record...')
         const user = await tx.user.create({
           data: {
             id: userId // Use the Supabase user ID
@@ -175,6 +95,7 @@ export async function POST(request: Request) {
         console.log('Created user with ID:', user.id)
         
         // 2. Create user profile
+        console.log('Creating user profile...')
         const profile = await tx.userProfile.create({
           data: {
             name: userProfile.name,
@@ -284,6 +205,7 @@ export async function POST(request: Request) {
       })
       
       console.log('Transaction completed successfully, user created with ID:', result.id)
+      console.log('=== REGISTRATION REQUEST END ===')
       
       // Return success response
       return NextResponse.json({
@@ -291,7 +213,6 @@ export async function POST(request: Request) {
         message: "Profile created successfully",
         data: {
           userId: result.id,
-          email: email,
           createdAt: result.createdAt
         }
       })

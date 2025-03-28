@@ -1,25 +1,17 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["views"]
   binaryTargets   = ["native", "rhel-openssl-3.0.x"]
 }
- 
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-// USER
-
 model User {
-  id               String            @id @default(uuid())
+  id               String            @id
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   userProfile      UserProfile?
@@ -52,8 +44,8 @@ model EventPreferences {
   preferredGroupType String[]
   preferredEventSize String[]
   maxDistanceKm      Int
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Restrictions {
@@ -61,40 +53,40 @@ model Restrictions {
   avoidCrowdedDaytimeConferences Boolean @default(false)
   avoidOverlyFormalNetworking    Boolean @default(false)
   avoidFamilyKidsEvents          Boolean @default(false)
-  user                           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                         String  @unique
+  user                           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model History {
   id                   String          @id @default(uuid())
   recentEventsAttended String[]
+  userId               String          @unique
   eventFeedback        EventFeedback[]
   user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId               String          @unique
 }
 
 model EventFeedback {
   id        String  @id @default(uuid())
   eventName String
   feedback  String
-  history   History @relation(fields: [historyId], references: [id], onDelete: Cascade)
   historyId String
+  history   History @relation(fields: [historyId], references: [id], onDelete: Cascade)
 }
 
 model IdealOutcome {
   id          String @id @default(uuid())
   description String
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CalendarEvent {
   id          String   @id @default(uuid())
   date        DateTime
-  status      String // "Free", "Booked", "Deliverable"
+  status      String
   description String?
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Deliverable {
@@ -102,35 +94,32 @@ model Deliverable {
   title  String
   date   DateTime
   note   String?
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
-// EVENTS
 
 model Event {
   id              String        @id @default(uuid())
   name            String
-  location        String?       // Keep for backward compatibility
-  date            DateTime?     // Keep for backward compatibility
-  music           String[]      // Keep for backward compatibility
-  city            String
-  state           String?
-  country         String        @default("Mexico")
-  startDate       DateTime
-  endDate         DateTime
-  description     String
-  highlights      String[]
   activities      String[]
-  category        EventCategory
-  isHighlight     Boolean       @default(false)
-  price           Float?
-  maxParticipants Int?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  category        EventCategory
+  city            String
+  country         String        @default("Mexico")
+  description     String
+  endDate         DateTime
+  highlights      String[]
+  isHighlight     Boolean       @default(false)
+  maxParticipants Int?
+  price           Float?
+  startDate       DateTime
+  state           String?
+  date            DateTime?
+  location        String?
+  music           String[]
 }
 
-// Event categories enum for consistent categorization
 enum EventCategory {
   ADVENTURE
   CULTURAL

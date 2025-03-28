@@ -124,7 +124,7 @@ export default function CompletionStep({ data, isMobile, isSaving = false, saveC
         <p className="text-center text-sm text-gray-500 mt-2">
           {isSaving || !saveCompleted
             ? "Your dashboard will be fully accessible once your profile is saved and your email is verified" 
-            : "Your dashboard is ready, but you'll need to verify your email to access all features"}
+            : "Please verify your email before accessing your dashboard. Check your inbox for the verification link."}
         </p>
       </motion.div>
 
