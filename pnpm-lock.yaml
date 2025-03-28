@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@prisma/client': 6.5.0
+  prisma: 6.5.0
+
 importers:
 
   .:
@@ -150,7 +154,7 @@ importers:
         specifier: ^8.14.1
         version: 8.14.1
       prisma:
-        specifier: ^6.5.0
+        specifier: 6.5.0
         version: 6.5.0(typescript@5.8.2)
       react:
         specifier: ^19
@@ -602,7 +606,7 @@ packages:
     resolution: {integrity: sha512-M6w1Ql/BeiGoZmhMdAZUXHu5sz5HubyVcKukbLs3l0ELcQb8hTUJxtGEChhv4SVJ0QJlwtLnwOLgIRQhpsm9dw==}
     engines: {node: '>=18.18'}
     peerDependencies:
-      prisma: '*'
+      prisma: 6.5.0
       typescript: '>=5.1.0'
     peerDependenciesMeta:
       prisma:
