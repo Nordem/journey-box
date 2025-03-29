@@ -220,6 +220,9 @@ export default function Dashboard() {
         
         // Fetch user profile data
         await fetchUserData(session.user.id)
+        
+        // Fetch all events
+        await fetchAllEvents()
       } catch (error) {
         console.error('Error checking authentication:', error)
       } finally {
@@ -230,6 +233,14 @@ export default function Dashboard() {
     checkUser()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
+
+  // Add effect to fetch recommended events when user data changes
+  useEffect(() => {
+    if (userData?.userProfile) {
+      console.log('Fetching recommended events for user:', userData.userProfile.name)
+      fetchRecommendedEvents(userData)
+    }
+  }, [userData])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
