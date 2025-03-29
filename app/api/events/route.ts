@@ -9,10 +9,13 @@ interface Category {
 
 export async function GET() {
   try {
+    console.log("Starting events fetch...");
+    
     // Try to fetch events from database
     try {
       // First try to get events from Prisma
       try {
+        console.log("Attempting to fetch events from Prisma...");
         const dbEvents = await prisma.event.findMany({
           select: {
             id: true,
@@ -26,6 +29,7 @@ export async function GET() {
         });
         
         if (dbEvents && dbEvents.length > 0) {
+          console.log(`Found ${dbEvents.length} events in Prisma`);
           // Transform Prisma events to match the expected format
           const formattedEvents = dbEvents.map(event => ({
             id: event.id,
@@ -43,15 +47,13 @@ export async function GET() {
           });
         }
         
-        // Return empty array if no events found in Prisma
-        console.log("No events found in Prisma database");
-        return NextResponse.json({ events: [], source: "empty_prisma" });
+        console.log("No events found in Prisma, trying Supabase...");
       } catch (prismaError) {
         console.error("Prisma query failed:", prismaError);
-        // Continue to try Supabase
       }
       
       // Try Supabase if Prisma failed
+      console.log("Attempting to fetch events from Supabase...");
       const { data: events, error } = await supabase
         .from('events')
         .select(`
@@ -65,13 +67,16 @@ export async function GET() {
         `);
       
       if (error) {
-        throw error; // Will be caught by outer catch
+        console.error("Supabase query error:", error);
+        throw error;
       }
       
       if (!events || events.length === 0) {
         console.log("No events found in Supabase");
         return NextResponse.json({ events: [], source: "empty_supabase" });
       }
+      
+      console.log(`Found ${events.length} events in Supabase`);
       
       // Fetch categories separately if needed
       const categoriesMap: Record<string, string> = {};

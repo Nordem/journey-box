@@ -17,9 +17,6 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 // Function to get events from database
 async function getEvents() {
   try {
-    const supabase = createClient();
-    
-    // Fetch events without attempting to join with categories
     const { data: events, error } = await supabase
       .from('events')
       .select(`
@@ -34,6 +31,11 @@ async function getEvents() {
     
     if (error) {
       console.error("Error fetching events:", error);
+      return [];
+    }
+    
+    if (!events || events.length === 0) {
+      console.log("No events found in database");
       return [];
     }
     

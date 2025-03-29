@@ -39,76 +39,36 @@ export default function Dashboard() {
   const fetchAllEvents = async () => {
     try {
       setLoadingAllEvents(true);
+      console.log("Fetching all events...");
       
-      // Create mock data as a fallback in case API fails
-      const mockEvents = [
-        {
-          id: "1",
-          name: "Tech Conference 2023",
-          location: "San Francisco, CA",
-          date: "2023-11-15",
-          music: ["Ambient", "Electronic"],
-          activities: ["Networking", "Workshops", "Presentations"],
-          category_name: "Technology"
-        },
-        {
-          id: "2",
-          name: "Creative Arts Festival",
-          location: "New York, NY",
-          date: "2023-12-05",
-          music: ["Jazz", "Indie"],
-          activities: ["Exhibitions", "Live Performances", "Workshops"],
-          category_name: "Arts"
-        },
-        {
-          id: "3",
-          name: "Startup Pitch Night",
-          location: "Austin, TX",
-          date: "2023-10-20",
-          music: ["Lofi"],
-          activities: ["Pitching", "Networking", "Fundraising"],
-          category_name: "Business"
+      const response = await fetch('/api/events', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      ];
+      });
       
-      // Set mock data for now to ensure UI works
-      setAllEvents(mockEvents);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch events: ${response.status}`);
+      }
       
-      // Try to fetch real data in the background if possible
-      if (typeof window !== 'undefined') {
-        // Use XMLHttpRequest instead of fetch
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api/events');
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 5000; // 5 seconds timeout
-        
-        xhr.onload = function() {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const data = JSON.parse(xhr.responseText);
-              if (data && Array.isArray(data.events) && data.events.length > 0) {
-                setAllEvents(data.events);
-                console.log(`Loaded ${data.events.length} events from API`);
-              }
-            } catch (parseError) {
-              console.error("Error parsing events data:", parseError);
-            }
-          }
-        };
-        
-        xhr.onerror = function() {
-          console.error("XHR request failed");
-        };
-        
-        xhr.ontimeout = function() {
-          console.error("XHR request timed out");
-        };
-        
-        // Send the request
-        xhr.send();
+      const data = await response.json();
+      console.log(`Received ${data.events.length} events from API`);
+      
+      if (data && Array.isArray(data.events)) {
+        setAllEvents(data.events);
+      } else {
+        console.error("Invalid events data received:", data);
+        setAllEvents([]);
       }
     } catch (error) {
       console.error("Error in fetchAllEvents:", error);
+      setAllEvents([]);
+      toast({
+        title: "Error",
+        description: "Failed to fetch events. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingAllEvents(false);
     }
@@ -118,67 +78,43 @@ export default function Dashboard() {
   const fetchRecommendedEvents = async (userProfile: any) => {
     try {
       setLoadingRecommendedEvents(true);
+      console.log("Fetching recommended events...");
       
-      // Create mock data as a fallback
-      const mockRecommendedEvents = [
-        {
-          id: "1",
-          name: "AI Developers Conference",
-          location: "San Francisco, CA",
-          date: "2023-12-10",
-          music: ["Ambient"],
-          activities: ["Coding", "Workshops", "Networking"],
-          category_name: "Technology"
+      if (!userProfile) {
+        console.warn("No user profile provided for recommendations");
+        setRecommendedEvents([]);
+        return;
+      }
+      
+      const response = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
-        {
-          id: "4",
-          name: "Digital Marketing Summit",
-          location: "Chicago, IL",
-          date: "2023-11-28",
-          music: ["Lofi", "Jazz"],
-          activities: ["Presentations", "Networking", "Case Studies"],
-          category_name: "Marketing"
-        }
-      ];
+        body: JSON.stringify({ userProfile })
+      });
       
-      // Set mock data initially to ensure UI works
-      setRecommendedEvents(mockRecommendedEvents);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch recommendations: ${response.status}`);
+      }
       
-      // Try to fetch real data if possible
-      if (typeof window !== 'undefined' && userProfile) {
-        // Use XMLHttpRequest instead of fetch
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/api/recommendations');
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 5000; // 5 seconds timeout
-        
-        xhr.onload = function() {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const data = JSON.parse(xhr.responseText);
-              if (data && Array.isArray(data.events) && data.events.length > 0) {
-                setRecommendedEvents(data.events);
-                console.log(`Found ${data.events.length} recommended events from API`);
-              }
-            } catch (parseError) {
-              console.error("Error parsing recommended events data:", parseError);
-            }
-          }
-        };
-        
-        xhr.onerror = function() {
-          console.error("XHR request failed");
-        };
-        
-        xhr.ontimeout = function() {
-          console.error("XHR request timed out");
-        };
-        
-        // Send the request with the user profile data
-        xhr.send(JSON.stringify({ userProfile }));
+      const data = await response.json();
+      console.log(`Received ${data.events.length} recommended events from API`);
+      
+      if (data && Array.isArray(data.events)) {
+        setRecommendedEvents(data.events);
+      } else {
+        console.error("Invalid recommended events data received:", data);
+        setRecommendedEvents([]);
       }
     } catch (error) {
       console.error("Error in fetchRecommendedEvents:", error);
+      setRecommendedEvents([]);
+      toast({
+        title: "Error",
+        description: "Failed to fetch recommended events. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingRecommendedEvents(false);
     }
