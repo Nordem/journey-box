@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LogOut, User, Calendar, FileText, Target, RefreshCw, AlertTriangle, Star } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-// Import types from types folder
+// Import types and service
 import { Event } from "@/types"
+import { getRecommendedEvents } from "@/services/userMatchingEvents"
 
 interface UserData {
   id: string
@@ -74,7 +75,7 @@ export default function Dashboard() {
     }
   };
 
-  // Function to fetch recommended events from API
+  // Function to fetch recommended events using the service directly
   const fetchRecommendedEvents = async (userProfile: any) => {
     try {
       setLoadingRecommendedEvents(true);
@@ -86,27 +87,19 @@ export default function Dashboard() {
         return;
       }
       
-      const response = await fetch('/api/recommendations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userProfile })
+      const recommendedEvents = await getRecommendedEvents({
+        userProfile: userProfile.userProfile,
+        eventPreferences: userProfile.eventPreferences,
+        restrictions: userProfile.restrictions,
+        calendarAvailability: userProfile.calendarEvents?.reduce((acc: any, event: any) => {
+          acc[event.date] = event.status;
+          return acc;
+        }, {}) || {}
       });
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch recommendations: ${response.status}`);
-      }
+      console.log(`Received ${recommendedEvents.length} recommended events from service`);
+      setRecommendedEvents(recommendedEvents);
       
-      const data = await response.json();
-      console.log(`Received ${data.events.length} recommended events from API`);
-      
-      if (data && Array.isArray(data.events)) {
-        setRecommendedEvents(data.events);
-      } else {
-        console.error("Invalid recommended events data received:", data);
-        setRecommendedEvents([]);
-      }
     } catch (error) {
       console.error("Error in fetchRecommendedEvents:", error);
       setRecommendedEvents([]);

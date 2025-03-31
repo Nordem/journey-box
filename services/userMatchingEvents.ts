@@ -9,9 +9,7 @@
 // node matchCollaborators.js
 
 import axios from "axios";
-import { supabase } from "@/lib/supabase";
 
-// Define OpenAI API response type
 interface OpenAIResponse {
   choices: Array<{
     message: {
@@ -65,50 +63,53 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 export async function getRecommendedEvents(userProfile: UserProfile): Promise<RecommendedEvent[]> {
   try {
-    console.log("Fetching events for user:", userProfile.userProfile.name);
+    const eventsResponse = await fetch('/api/events', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     
-    // Fetch all events from database
-    const { data: events, error } = await supabase
-      .from('events')
-      .select(`
-        id,
-        name,
-        location,
-        date,
-        music,
-        activities,
-        category_id,
-        event_categories!inner(name)
-      `);
-    
-    if (error) {
-      console.error("Error fetching events:", error);
-      return [];
+    if (!eventsResponse.ok) {
+      throw new Error(`Failed to fetch events: ${eventsResponse.status}`);
     }
+    
+    const eventsData = await eventsResponse.json();
+    const events = eventsData.events;
     
     if (!events || events.length === 0) {
       console.log("No events found in database");
       return [];
     }
 
+    console.log(`Found ${events.length} events to analyze`);
     const recommendedEvents: RecommendedEvent[] = [];
-    
-    for (const event of events) {
-      const categoryName = Array.isArray(event.event_categories) && event.event_categories.length > 0 
-        ? event.event_categories[0].name 
-        : 'Uncategorized';
 
-      const prompt = `Analyze this event and determine if it's a good match for the user. 
-      If it's a match, provide a match score (0-100) and specific reasons why it matches.
-      Format your response as JSON: { "isMatch": boolean, "score": number, "reasons": string[] }
+    // Format events list with more details
+    const eventsList = events.map((event: Event) => `
+Event: ${event.name}
+Location: ${event.location}
+Date: ${event.date}
+Category: ${event.category_id || 'Uncategorized'}
+Music: ${event.music.join(", ")}
+Activities: ${event.activities.join(", ")}
+---`).join("\n");
 
-Event:
-- Name: ${event.name}
-- Location: ${event.location}
-- Date: ${event.date}
-- Category: ${categoryName}
-- Music: ${event.music.join(", ")}
-- Activities: ${event.activities.join(", ")}
+    const openaiResponse = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are an expert event matcher AI. Your task is to analyze multiple events and determine which ones match a user's profile and preferences. Consider all aspects of the user's profile and the event details to make comprehensive match assessments. Respond with JSON only." 
+          },
+          { 
+            role: "user", 
+            content: `Analyze these events and determine which ones are good matches for the user based on their profile and preferences.
+
+Available Events:
+${eventsList}
 
 User Profile:
 - Name: ${userProfile.userProfile.name}
@@ -117,57 +118,58 @@ User Profile:
 - Languages: ${userProfile.userProfile.languages.join(", ")}
 - Personality Traits: ${userProfile.userProfile.personalityTraits.join(", ")}
 - Goals: ${userProfile.userProfile.goals.join(", ")}
-- Event Categories: ${userProfile.eventPreferences.categories.join(", ")}
+- Preferred Categories: ${userProfile.eventPreferences.categories.join(", ")}
 - Vibe Keywords: ${userProfile.eventPreferences.vibeKeywords.join(", ")}
 - Budget: ${userProfile.eventPreferences.budget}
-- Max Distance (km): ${userProfile.eventPreferences.maxDistanceKm}
-- Availability: ${!userProfile.calendarAvailability[event.date] ? "Available" : "Not Available"}
-- Restrictions: ${Object.entries(userProfile.restrictions).map(([key, val]) => `${key}: ${val}`).join(", ")}`;
+- Max Distance: ${userProfile.eventPreferences.maxDistanceKm} km
+- Restrictions: ${Object.entries(userProfile.restrictions).map(([key, val]) => `${key}: ${val}`).join(", ")}
+- Calendar Availability: ${Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ")}
 
+For each event, provide a match score (0-100) and specific reasons why it matches or doesn't match.
+Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }`
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const openaiData = openaiResponse.data as OpenAIResponse;
+    if (openaiData.choices && openaiData.choices.length > 0) {
+      const content = openaiData.choices[0].message.content.trim();
       try {
-        const response = await axios.post(
-          "https://api.openai.com/v1/chat/completions",
-          {
-            model: "gpt-4",
-            messages: [
-              { role: "system", content: "You are an expert event matcher AI. Respond with JSON only." },
-              { role: "user", content: prompt },
-            ],
-            max_tokens: 500,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${OPENAI_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const data = response.data as OpenAIResponse;
-        if (data.choices && data.choices.length > 0) {
-          const content = data.choices[0].message.content.trim();
-          try {
-            const matchResult = JSON.parse(content);
-            if (matchResult.isMatch) {
-              recommendedEvents.push({
-                ...event,
-                matchScore: matchResult.score,
-                matchReasons: matchResult.reasons
-              });
+        // Clean the response to ensure it's valid JSON
+        const cleanContent = content.replace(/^[^{]*({.*})[^}]*$/, '$1');
+        const matchResults = JSON.parse(cleanContent);
+        if (matchResults.matches) {
+          matchResults.matches.forEach((match: any) => {
+            if (match.isMatch && match.score >= 60) {
+              const event = events.find((e: Event) => e.name === match.eventName);
+              if (event) {
+                recommendedEvents.push({
+                  ...event,
+                  matchScore: match.score,
+                  matchReasons: match.reasons
+                });
+              }
             }
-          } catch (parseError) {
-            console.error(`Error parsing OpenAI response for event ${event.name}:`, parseError);
-          }
+          });
         }
-      } catch (error) {
-        console.error(`Error matching event ${event.name}:`, error);
+      } catch (parseError) {
+        console.error("Error parsing OpenAI response:", parseError);
+        console.error("Raw response:", content);
       }
     }
 
-    // Sort by match score in descending order
     return recommendedEvents.sort((a, b) => b.matchScore - a.matchScore);
   } catch (error) {
-    console.error("Error getting recommended events:", error);
+    console.error("Error in getRecommendedEvents:", error);
     return [];
   }
 }
