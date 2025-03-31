@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     }
 
     // Prepare the prompt for OpenAI
-    const prompt = `Given the following user profile and events, recommend the best matches based on preferences and restrictions. Return only a JSON array of event IDs in order of best match to worst match.
+    const prompt = `Given the following user profile and events, recommend the best matches based on preferences and restrictions. For each recommended event, provide specific reasons why it matches the user's profile. Return a JSON array of objects containing event IDs and match reasons.
 
 User Profile:
 ${JSON.stringify(userProfile.userProfile, null, 2)}
@@ -56,7 +56,7 @@ ${JSON.stringify(userProfile.restrictions, null, 2)}
 Available Events:
 ${JSON.stringify(events, null, 2)}
 
-Return only a JSON array of event IDs in order of best match to worst match. Example: ["event-id-1", "event-id-2", "event-id-3"]`
+Return a JSON array of objects with event IDs and match reasons. Example: [{"eventId": "event-id-1", "matchReasons": ["reason1", "reason2"]}, {"eventId": "event-id-2", "matchReasons": ["reason1", "reason2"]}]`
 
     // Get recommendations from OpenAI
     const completion = await openai.chat.completions.create({
@@ -64,7 +64,7 @@ Return only a JSON array of event IDs in order of best match to worst match. Exa
       messages: [
         {
           role: "system",
-          content: "You are an event matching assistant. Your task is to match events to users based on their profile, preferences, and restrictions. Return only a JSON array of event IDs in order of best match to worst match."
+          content: "You are an event matching assistant. Your task is to match events to users based on their profile, preferences, and restrictions. For each recommended event, provide specific reasons why it matches the user's profile."
         },
         {
           role: "user",
@@ -76,10 +76,10 @@ Return only a JSON array of event IDs in order of best match to worst match. Exa
     })
 
     const content = completion.choices[0].message.content
-    let recommendedEventIds: string[] = []
+    let recommendedEvents: Array<{eventId: string, matchReasons: string[]}> = []
 
     try {
-      recommendedEventIds = JSON.parse(content || '[]')
+      recommendedEvents = JSON.parse(content || '[]')
     } catch (parseError) {
       return NextResponse.json(
         { success: false, message: 'Failed to parse recommendations' },
@@ -87,12 +87,21 @@ Return only a JSON array of event IDs in order of best match to worst match. Exa
       )
     }
 
-    // Get the recommended events in order
-    const recommendedEvents = recommendedEventIds
-      .map(id => events.find(event => event.id === id))
-      .filter((event): event is NonNullable<typeof event> => event !== undefined)
+    // Get the recommended events in order with their match reasons
+    const recommendedEventsWithDetails = recommendedEvents
+      .map(({eventId, matchReasons}) => {
+        const event = events.find(event => event.id === eventId)
+        if (event) {
+          return {
+            ...event,
+            matchReasons
+          }
+        }
+        return null
+      })
+      .filter((event): event is NonNullable<typeof event> => event !== null)
 
-    return NextResponse.json({ events: recommendedEvents })
+    return NextResponse.json({ events: recommendedEventsWithDetails })
   } catch (error) {
     return NextResponse.json(
       { success: false, message: 'Internal server error' },

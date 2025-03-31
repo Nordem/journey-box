@@ -9,6 +9,7 @@ export interface Event {
   activities: string[];
   category_id?: string;
   category_name?: string;
+  matchReasons?: string[];
 }
 
 export interface Collaborator {

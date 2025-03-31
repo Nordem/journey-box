@@ -437,6 +437,19 @@ export default function Dashboard() {
                                 </span>
                               ))}
                             </div>
+                            {event.matchReasons && event.matchReasons.length > 0 && (
+                              <div className="mt-3">
+                                <h4 className="text-sm font-medium text-gray-700 mb-1">Why this event matches your profile:</h4>
+                                <ul className="space-y-1">
+                                  {event.matchReasons.map((reason, i) => (
+                                    <li key={i} className="text-sm text-gray-600 flex items-start">
+                                      <span className="text-blue-500 mr-1">•</span>
+                                      {reason}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
