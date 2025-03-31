@@ -40,8 +40,6 @@ export default function Dashboard() {
   const fetchAllEvents = async () => {
     try {
       setLoadingAllEvents(true);
-      console.log("Fetching all events...");
-      
       const response = await fetch('/api/events', {
         method: 'GET',
         headers: {
@@ -54,16 +52,13 @@ export default function Dashboard() {
       }
       
       const data = await response.json();
-      console.log(`Received ${data.events.length} events from API`);
       
       if (data && Array.isArray(data.events)) {
         setAllEvents(data.events);
       } else {
-        console.error("Invalid events data received:", data);
         setAllEvents([]);
       }
     } catch (error) {
-      console.error("Error in fetchAllEvents:", error);
       setAllEvents([]);
       toast({
         title: "Error",
@@ -79,10 +74,8 @@ export default function Dashboard() {
   const fetchRecommendedEvents = async (userProfile: any) => {
     try {
       setLoadingRecommendedEvents(true);
-      console.log("Fetching recommended events...");
       
       if (!userProfile) {
-        console.warn("No user profile provided for recommendations");
         setRecommendedEvents([]);
         return;
       }
@@ -97,11 +90,9 @@ export default function Dashboard() {
         }, {}) || {}
       });
       
-      console.log(`Received ${recommendedEvents.length} recommended events from service`);
       setRecommendedEvents(recommendedEvents);
       
     } catch (error) {
-      console.error("Error in fetchRecommendedEvents:", error);
       setRecommendedEvents([]);
       toast({
         title: "Error",
@@ -117,11 +108,9 @@ export default function Dashboard() {
   const fetchUserData = async (userId: string) => {
     try {
       setRefreshing(true);
-      console.log(`Fetching user data for ID: ${userId}`);
       
       if (typeof window !== 'undefined' && userId) {
         try {
-          // Use a simpler fetch approach
           const response = await fetch(`/api/user/${userId}`, {
             method: 'GET',
             headers: {
@@ -129,14 +118,9 @@ export default function Dashboard() {
             }
           });
           
-          console.log(`API response status: ${response.status}`);
-          
           if (!response.ok) {
             if (response.status === 404) {
-              // User exists in Supabase but profile doesn't exist yet
-              console.warn(`User authenticated but profile not found for ID: ${userId}`);
               setUserData(null);
-              
               toast({
                 title: "Profile Not Found",
                 description: "You need to complete the registration process first.",
@@ -144,15 +128,12 @@ export default function Dashboard() {
               });
             } else {
               const errorText = await response.text();
-              console.error(`Failed to fetch user data: ${response.status} - ${errorText}`);
               throw new Error(`Failed to fetch user data: ${response.status} ${errorText}`);
             }
           } else {
             const data = await response.json();
-            console.log('Fetched user data:', data);
             
             if (!data.userProfile) {
-              console.warn('User data received but no profile found');
               setUserData(null);
               toast({
                 title: "Profile Not Found",
@@ -164,7 +145,6 @@ export default function Dashboard() {
             }
           }
         } catch (error) {
-          console.error('Error fetching user data:', error);
           toast({
             title: "Error",
             description: "Failed to fetch your profile data. Please try again.",
@@ -173,7 +153,7 @@ export default function Dashboard() {
         }
       }
     } catch (error) {
-      console.error('Error in fetchUserData:', error);
+      // Handle error silently
     } finally {
       setRefreshing(false);
     }
@@ -196,9 +176,7 @@ export default function Dashboard() {
           return
         }
 
-        // Check if email is confirmed
         if (!session.user.email_confirmed_at) {
-          console.log('User email not confirmed:', session.user.email)
           toast({
             title: "Email Not Verified",
             description: "Please check your email and verify your account before accessing the dashboard.",
@@ -207,17 +185,11 @@ export default function Dashboard() {
           return
         }
 
-        console.log('User authenticated:', session.user.id)
-        console.log('Supabase user email:', session.user.email)
         setUser(session.user)
-        
-        // Fetch user profile data
         await fetchUserData(session.user.id)
-        
-        // Fetch all events
         await fetchAllEvents()
       } catch (error) {
-        console.error('Error checking authentication:', error)
+        // Handle error silently
       } finally {
         setLoading(false)
       }
@@ -230,7 +202,6 @@ export default function Dashboard() {
   // Add effect to fetch recommended events when user data changes
   useEffect(() => {
     if (userData?.userProfile) {
-      console.log('Fetching recommended events for user:', userData.userProfile.name)
       fetchRecommendedEvents(userData)
     }
   }, [userData])

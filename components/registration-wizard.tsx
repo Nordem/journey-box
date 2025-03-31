@@ -267,10 +267,6 @@ export default function RegistrationWizard() {
       try {
         data = JSON.parse(text)
       } catch (e) {
-        console.error("Failed to parse response as JSON:", e)
-        console.error("Response content type:", response.headers.get("content-type"))
-        console.error("Response text:", text.substring(0, 1000)) // Log first 1000 chars in case response is very long
-        
         // If we got HTML instead of JSON, make the error more helpful
         if (text.trim().startsWith("<!DOCTYPE html>") || text.trim().startsWith("<html")) {
           throw new Error("Server returned HTML instead of JSON. This might indicate a server error.")
@@ -284,8 +280,6 @@ export default function RegistrationWizard() {
         throw new Error(errorMessage)
       }
 
-      // Only show success when both user creation and profile saving succeed
-      console.log("Registration successful:", data)
       // Dismiss the saving toast
       savingToast.dismiss()
       toast({
@@ -299,7 +293,6 @@ export default function RegistrationWizard() {
       // Move to the completion step
       setCurrentStep(totalSteps - 1)
     } catch (error) {
-      console.error("Registration error:", error)
       const errorMessage = error instanceof Error ? error.message : "Failed to create profile"
       setError(errorMessage)
       setIsSaving(false)
