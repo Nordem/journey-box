@@ -57,10 +57,9 @@ interface EventPreferencesData {
 }
 
 interface RestrictionsData {
-  avoidCrowdedDaytimeConferences: boolean;
-  avoidOverlyFormalNetworking: boolean;
-  avoidFamilyKidsEvents: boolean;
-  noFamilyKidsEvents: boolean;
+  avoidFamilyKidsEvents: boolean
+  avoidCrowdedDaytimeConferences: boolean
+  avoidOverlyFormalNetworking: boolean
 }
 
 interface HistoryData {
@@ -122,16 +121,15 @@ export default function RegistrationWizard() {
       categories: [],
       vibeKeywords: [],
       idealTimeSlots: [],
-      budget: "",
+      budget: "medium",
       preferredGroupType: [],
       preferredEventSize: [],
       maxDistanceKm: 1000,
     },
     restrictions: {
-      avoidCrowdedDaytimeConferences: false,
-      avoidOverlyFormalNetworking: false,
       avoidFamilyKidsEvents: false,
-      noFamilyKidsEvents: false,
+      avoidCrowdedDaytimeConferences: false,
+      avoidOverlyFormalNetworking: false
     },
     history: {
       recentEventsAttended: [],
@@ -226,7 +224,11 @@ export default function RegistrationWizard() {
         email: formData.auth.email,
         userProfile: formData.userProfile,
         eventPreferences: formData.eventPreferences,
-        restrictions: formData.restrictions,
+        restrictions: {
+          avoidFamilyKidsEvents: formData.restrictions.avoidFamilyKidsEvents,
+          avoidCrowdedDaytimeConferences: formData.restrictions.avoidCrowdedDaytimeConferences,
+          avoidOverlyFormalNetworking: formData.restrictions.avoidOverlyFormalNetworking
+        },
         history: {
           recentEventsAttended: formData.history.recentEventsAttended || [],
           eventFeedback: formData.history.eventFeedback || []
@@ -496,7 +498,7 @@ export default function RegistrationWizard() {
             <Button
               onClick={handleNext}
               disabled={isSubmitting}
-              className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
+              className="group relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white"
               size={isMobile ? "sm" : "default"}
             >
               <span className="relative z-10 flex items-center">
@@ -508,7 +510,7 @@ export default function RegistrationWizard() {
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || isSaving}
-              className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
+              className="group relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white"
               size={isMobile ? "sm" : "default"}
             >
               <span className="relative z-10 flex items-center">

@@ -5,33 +5,45 @@ import { motion } from "framer-motion"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 
-export default function RestrictionsStep({ data, updateData, isMobile }) {
+interface RestrictionsData {
+  avoidFamilyKidsEvents: boolean
+  avoidCrowdedDaytimeConferences: boolean
+  avoidOverlyFormalNetworking: boolean
+}
+
+interface RestrictionsStepProps {
+  data: RestrictionsData
+  updateData: (data: RestrictionsData) => void
+  isMobile: boolean
+}
+
+export default function RestrictionsStep({ data, updateData, isMobile }: RestrictionsStepProps) {
   const [avoidCrowdedDaytimeConferences, setAvoidCrowdedDaytimeConferences] = useState(
     data.avoidCrowdedDaytimeConferences || false,
   )
   const [avoidOverlyFormalNetworking, setAvoidOverlyFormalNetworking] = useState(
     data.avoidOverlyFormalNetworking || false,
   )
-  const [noFamilyKidsEvents, setNoFamilyKidsEvents] = useState(data.noFamilyKidsEvents || false)
+  const [avoidFamilyKidsEvents, setAvoidFamilyKidsEvents] = useState(data.avoidFamilyKidsEvents || false)
 
   useEffect(() => {
     // Only update when values actually change, not on every render
     const newData = {
       avoidCrowdedDaytimeConferences,
       avoidOverlyFormalNetworking,
-      noFamilyKidsEvents,
+      avoidFamilyKidsEvents,
     }
 
     // Check if data has actually changed before updating
     const hasChanged =
       avoidCrowdedDaytimeConferences !== data.avoidCrowdedDaytimeConferences ||
       avoidOverlyFormalNetworking !== data.avoidOverlyFormalNetworking ||
-      noFamilyKidsEvents !== data.noFamilyKidsEvents
+      avoidFamilyKidsEvents !== data.avoidFamilyKidsEvents
 
     if (hasChanged) {
       updateData(newData)
     }
-  }, [avoidCrowdedDaytimeConferences, avoidOverlyFormalNetworking, noFamilyKidsEvents, data, updateData])
+  }, [avoidCrowdedDaytimeConferences, avoidOverlyFormalNetworking, avoidFamilyKidsEvents, data, updateData])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -93,12 +105,12 @@ export default function RestrictionsStep({ data, updateData, isMobile }) {
         <div className="border-t border-white/5 pt-5 sm:pt-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label className="text-white text-sm sm:text-base">No Family/Kids Events</Label>
+              <Label className="text-white text-sm sm:text-base">Avoid Family/Kids Events</Label>
               <p className="text-xs sm:text-sm text-gray-400">Exclude events designed for families or children</p>
             </div>
             <Switch
-              checked={noFamilyKidsEvents}
-              onCheckedChange={setNoFamilyKidsEvents}
+              checked={avoidFamilyKidsEvents}
+              onCheckedChange={setAvoidFamilyKidsEvents}
               className="data-[state=checked]:bg-purple-600"
             />
           </div>

@@ -61,7 +61,7 @@ export default function UserProfileStep({ data, updateData, isMobile }: UserProf
       currentTravelLocation,
       languages,
       personalityTraits,
-      goals,
+      goals
     }
 
     // Check if data has actually changed before updating
@@ -79,36 +79,90 @@ export default function UserProfileStep({ data, updateData, isMobile }: UserProf
   }, [name, location, currentTravelLocation, languages, personalityTraits, goals, data, updateData])
 
   const addLanguage = () => {
-    if (language && !languages.includes(language)) {
-      setLanguages([...languages, language])
+    if (language.trim() && !languages.includes(language.trim())) {
+      const newLanguages = [...languages, language.trim()]
+      setLanguages(newLanguages)
       setLanguage("")
+      updateData({
+        name,
+        location,
+        currentTravelLocation,
+        languages: newLanguages,
+        personalityTraits,
+        goals
+      })
     }
   }
 
   const removeLanguage = (lang: string) => {
-    setLanguages(languages.filter((l: string) => l !== lang))
+    const newLanguages = languages.filter(l => l !== lang)
+    setLanguages(newLanguages)
+    updateData({
+      name,
+      location,
+      currentTravelLocation,
+      languages: newLanguages,
+      personalityTraits,
+      goals
+    })
   }
 
   const addTrait = (t: string) => {
-    if (t && !personalityTraits.includes(t)) {
-      setPersonalityTraits([...personalityTraits, t])
+    if (t.trim() && !personalityTraits.includes(t.trim())) {
+      const newTraits = [...personalityTraits, t.trim()]
+      setPersonalityTraits(newTraits)
       setTrait("")
+      updateData({
+        name,
+        location,
+        currentTravelLocation,
+        languages,
+        personalityTraits: newTraits,
+        goals
+      })
     }
   }
 
   const removeTrait = (t: string) => {
-    setPersonalityTraits(personalityTraits.filter((pt: string) => pt !== t))
+    const newTraits = personalityTraits.filter(trait => trait !== t)
+    setPersonalityTraits(newTraits)
+    updateData({
+      name,
+      location,
+      currentTravelLocation,
+      languages,
+      personalityTraits: newTraits,
+      goals
+    })
   }
 
   const addGoal = (g: string) => {
-    if (g && !goals.includes(g)) {
-      setGoals([...goals, g])
+    if (g.trim() && !goals.includes(g.trim())) {
+      const newGoals = [...goals, g.trim()]
+      setGoals(newGoals)
       setGoal("")
+      updateData({
+        name,
+        location,
+        currentTravelLocation,
+        languages,
+        personalityTraits,
+        goals: newGoals
+      })
     }
   }
 
   const removeGoal = (g: string) => {
-    setGoals(goals.filter((gl: string) => gl !== g))
+    const newGoals = goals.filter(goal => goal !== g)
+    setGoals(newGoals)
+    updateData({
+      name,
+      location,
+      currentTravelLocation,
+      languages,
+      personalityTraits,
+      goals: newGoals
+    })
   }
 
   const containerVariants = {
