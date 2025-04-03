@@ -54,61 +54,61 @@ export default function Sidebar2({
   const mainNavItems = [
     {
       title: "Descubrir Viajes",
-      href: "/",
+      href: "/dashboard",
       icon: Compass,
-      isActive: pathname === "/",
+      isActive: pathname === "/dashboard",
     },
     {
       title: "Mis Aventuras",
-      href: "/",
+      href: "/dashboard",
       icon: Briefcase,
-      isActive: pathname === "/",
+      isActive: pathname === "/dashboard",
     },
     {
       title: "Favoritos",
-      href: "/",
+      href: "/dashboard",
       icon: Heart,
-      isActive: pathname === "/",
+      isActive: pathname === "/dashboard",
     },
     {
       title: "Notificaciones",
-      href: "/",
+      href: "/dashboard",
       icon: Bell,
-      isActive: pathname === "/",
+      isActive: pathname === "/dashboard",
     },
   ]
 
   const adminNavItems = [
     {
       title: "Gestionar Viajes",
-      href: "/", //   href: "/admin/trips",
+      href: "/admin/trips", //   href: "/admin/trips",
       icon: Edit3,
-      isActive: pathname === "/",
+      isActive: pathname === "/admin/trips",
     },
     {
       title: "Participantes",
-      href: "/",
+      href: "/dashboard",
       icon: Users,
-      isActive: pathname === "/",
+      isActive: pathname === "/dashboard",
     },
     {
       title: "Estadísticas",
-      href: "/",
+      href: "/dashboard",
       icon: BarChart2,
-      isActive: pathname === "/",
+      isActive: pathname === "/dashboard",
     },
     {
       title: "Notificaciones",
-      href: "/",
+      href: "/dashboard",
       icon: Bell,
-      isActive: pathname === "/",
+      isActive: pathname === "/dashboard",
       showBadge: true,
     },
     {
       title: "Configuración",
-      href: "/",
+      href: "/dashboard",
       icon: Settings,
-      isActive: pathname === "/",
+      isActive: pathname === "/dashboard",
     },
   ]
 
