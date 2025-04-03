@@ -4,8 +4,10 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Card } from "@/components/ui/card"
+import { User, MapPin, Globe, Languages, Heart, Target } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { X, Plus } from "lucide-react"
+import { X } from "lucide-react"
 
 interface UserProfileData {
   name: string;
@@ -26,12 +28,12 @@ export default function UserProfileStep({ data, updateData, isMobile }: UserProf
   const [name, setName] = useState(data.name || "")
   const [location, setLocation] = useState(data.location || "")
   const [currentTravelLocation, setCurrentTravelLocation] = useState(data.currentTravelLocation || "")
-  const [language, setLanguage] = useState("")
-  const [languages, setLanguages] = useState(data.languages || [])
-  const [trait, setTrait] = useState("")
-  const [personalityTraits, setPersonalityTraits] = useState(data.personalityTraits || [])
-  const [goal, setGoal] = useState("")
-  const [goals, setGoals] = useState(data.goals || [])
+  const [languages, setLanguages] = useState<string[]>(data.languages || [])
+  const [personalityTraits, setPersonalityTraits] = useState<string[]>(data.personalityTraits || [])
+  const [goals, setGoals] = useState<string[]>(data.goals || [])
+  const [newLanguage, setNewLanguage] = useState("")
+  const [newTrait, setNewTrait] = useState("")
+  const [newGoal, setNewGoal] = useState("")
 
   // Suggested options
   const suggestedTraits = [
@@ -54,115 +56,60 @@ export default function UserProfileStep({ data, updateData, isMobile }: UserProf
   ]
 
   useEffect(() => {
-    // Only update when values actually change, not on every render
-    const newData = {
-      name,
-      location,
-      currentTravelLocation,
-      languages,
-      personalityTraits,
-      goals
-    }
-
-    // Check if data has actually changed before updating
-    const hasChanged =
-      name !== data.name ||
-      location !== data.location ||
-      currentTravelLocation !== data.currentTravelLocation ||
-      JSON.stringify(languages) !== JSON.stringify(data.languages) ||
-      JSON.stringify(personalityTraits) !== JSON.stringify(data.personalityTraits) ||
-      JSON.stringify(goals) !== JSON.stringify(data.goals)
+    // Only update if the data has actually changed
+    const hasChanged = 
+      JSON.stringify({
+        name,
+        location,
+        currentTravelLocation,
+        languages,
+        personalityTraits,
+        goals
+      }) !== JSON.stringify(data);
 
     if (hasChanged) {
-      updateData(newData)
+      updateData({
+        name,
+        location,
+        currentTravelLocation,
+        languages,
+        personalityTraits,
+        goals
+      });
     }
-  }, [name, location, currentTravelLocation, languages, personalityTraits, goals, data, updateData])
+  }, [name, location, currentTravelLocation, languages, personalityTraits, goals, data, updateData]);
 
   const addLanguage = () => {
-    if (language.trim() && !languages.includes(language.trim())) {
-      const newLanguages = [...languages, language.trim()]
-      setLanguages(newLanguages)
-      setLanguage("")
-      updateData({
-        name,
-        location,
-        currentTravelLocation,
-        languages: newLanguages,
-        personalityTraits,
-        goals
-      })
+    if (newLanguage.trim() && !languages.includes(newLanguage.trim())) {
+      setLanguages([...languages, newLanguage.trim()])
+      setNewLanguage("")
     }
   }
 
-  const removeLanguage = (lang: string) => {
-    const newLanguages = languages.filter(l => l !== lang)
-    setLanguages(newLanguages)
-    updateData({
-      name,
-      location,
-      currentTravelLocation,
-      languages: newLanguages,
-      personalityTraits,
-      goals
-    })
+  const removeLanguage = (language: string) => {
+    setLanguages(languages.filter((l) => l !== language))
   }
 
-  const addTrait = (t: string) => {
-    if (t.trim() && !personalityTraits.includes(t.trim())) {
-      const newTraits = [...personalityTraits, t.trim()]
-      setPersonalityTraits(newTraits)
-      setTrait("")
-      updateData({
-        name,
-        location,
-        currentTravelLocation,
-        languages,
-        personalityTraits: newTraits,
-        goals
-      })
+  const addTrait = () => {
+    if (newTrait.trim() && !personalityTraits.includes(newTrait.trim())) {
+      setPersonalityTraits([...personalityTraits, newTrait.trim()])
+      setNewTrait("")
     }
   }
 
-  const removeTrait = (t: string) => {
-    const newTraits = personalityTraits.filter(trait => trait !== t)
-    setPersonalityTraits(newTraits)
-    updateData({
-      name,
-      location,
-      currentTravelLocation,
-      languages,
-      personalityTraits: newTraits,
-      goals
-    })
+  const removeTrait = (trait: string) => {
+    setPersonalityTraits(personalityTraits.filter((t) => t !== trait))
   }
 
-  const addGoal = (g: string) => {
-    if (g.trim() && !goals.includes(g.trim())) {
-      const newGoals = [...goals, g.trim()]
-      setGoals(newGoals)
-      setGoal("")
-      updateData({
-        name,
-        location,
-        currentTravelLocation,
-        languages,
-        personalityTraits,
-        goals: newGoals
-      })
+  const addGoal = () => {
+    if (newGoal.trim() && !goals.includes(newGoal.trim())) {
+      setGoals([...goals, newGoal.trim()])
+      setNewGoal("")
     }
   }
 
-  const removeGoal = (g: string) => {
-    const newGoals = goals.filter(goal => goal !== g)
-    setGoals(newGoals)
-    updateData({
-      name,
-      location,
-      currentTravelLocation,
-      languages,
-      personalityTraits,
-      goals: newGoals
-    })
+  const removeGoal = (goal: string) => {
+    setGoals(goals.filter((g) => g !== goal))
   }
 
   const containerVariants = {
@@ -184,200 +131,157 @@ export default function UserProfileStep({ data, updateData, isMobile }: UserProf
   }
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label htmlFor="name" className="text-gray-700">
-          Name
-        </Label>
-        <Input
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-          placeholder="Your name"
-        />
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      <motion.div variants={itemVariants} className="mb-8">
+        <h2 className="text-2xl font-bold mb-2 text-white">Basic Information</h2>
+        <p className="text-gray-400">
+          Tell us about yourself to help us understand your preferences better.
+        </p>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label htmlFor="location" className="text-gray-700">
-          Home Location
-        </Label>
-        <Input
-          id="location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-          placeholder="e.g., Tijuana, B.C., Mexico"
-        />
-      </motion.div>
+      <Card className="p-6 bg-gray-800/80 border-gray-700">
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label htmlFor="name" className="text-white">Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+                placeholder="Your full name"
+              />
+            </div>
+          </motion.div>
 
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label htmlFor="currentTravelLocation" className="text-gray-700">
-          Current Travel Location
-        </Label>
-        <Input
-          id="currentTravelLocation"
-          value={currentTravelLocation}
-          onChange={(e) => setCurrentTravelLocation(e.target.value)}
-          className="bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-          placeholder="e.g., Tokyo, Japan"
-        />
-      </motion.div>
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label htmlFor="location" className="text-white">Home Location</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+                placeholder="e.g., Tijuana, B.C., Mexico"
+              />
+            </div>
+          </motion.div>
 
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label htmlFor="languages" className="text-gray-700">
-          Languages
-        </Label>
-        <div className="flex">
-          <Input
-            id="languages"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500 rounded-r-none"
-            placeholder="Add a language"
-            onKeyDown={(e) => e.key === "Enter" && addLanguage()}
-          />
-          <button
-            type="button"
-            onClick={addLanguage}
-            className="px-3 sm:px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-r-md flex items-center justify-center"
-          >
-            <Plus size={isMobile ? 16 : 18} />
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {languages.map((lang, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="bg-blue-100 hover:bg-blue-200 text-blue-800 border border-blue-200 px-2 py-1 text-xs sm:text-sm"
-            >
-              {lang}
-              <button
-                type="button"
-                onClick={() => removeLanguage(lang)}
-                className="ml-1 sm:ml-2 text-blue-600 hover:text-blue-800"
-              >
-                <X size={isMobile ? 12 : 14} />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      </motion.div>
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label htmlFor="currentTravelLocation" className="text-white">Current Travel Location</Label>
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="currentTravelLocation"
+                value={currentTravelLocation}
+                onChange={(e) => setCurrentTravelLocation(e.target.value)}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+                placeholder="e.g., Tokyo, Japan"
+              />
+            </div>
+          </motion.div>
 
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Personality Traits</Label>
-        <div className="flex">
-          <Input
-            value={trait}
-            onChange={(e) => setTrait(e.target.value)}
-            className="bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500 rounded-r-none"
-            placeholder="Add a trait"
-            onKeyDown={(e) => e.key === "Enter" && addTrait(trait)}
-          />
-          <button
-            type="button"
-            onClick={() => addTrait(trait)}
-            className="px-3 sm:px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-r-md flex items-center justify-center"
-          >
-            <Plus size={isMobile ? 16 : 18} />
-          </button>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mt-2">
-          {personalityTraits.map((t, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 border border-indigo-200 px-2 py-1 text-xs sm:text-sm"
-            >
-              {t}
-              <button
-                type="button"
-                onClick={() => removeTrait(t)}
-                className="ml-1 sm:ml-2 text-indigo-600 hover:text-indigo-800"
-              >
-                <X size={isMobile ? 12 : 14} />
-              </button>
-            </Badge>
-          ))}
-        </div>
-
-        <div className="mt-2">
-          <p className="text-sm text-gray-500 mb-1">Suggested traits:</p>
-          <div className="flex flex-wrap gap-1 sm:gap-2">
-            {suggestedTraits
-              .filter((t) => !personalityTraits.includes(t))
-              .map((t, index) => (
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Languages</Label>
+            <div className="relative">
+              <Languages className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                value={newLanguage}
+                onChange={(e) => setNewLanguage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addLanguage()}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+                placeholder="Add a language"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {languages.map((language) => (
                 <Badge
-                  key={index}
-                  variant="outline"
-                  className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 hover:text-gray-700 cursor-pointer text-xs"
-                  onClick={() => addTrait(t)}
+                  key={language}
+                  variant="secondary"
+                  className="bg-gray-700/70 text-white hover:bg-gray-600/70"
                 >
-                  + {t}
+                  {language}
+                  <button
+                    onClick={() => removeLanguage(language)}
+                    className="ml-1 hover:text-red-400"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
                 </Badge>
               ))}
-          </div>
-        </div>
-      </motion.div>
+            </div>
+          </motion.div>
 
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Goals</Label>
-        <div className="flex">
-          <Input
-            value={goal}
-            onChange={(e) => setGoal(e.target.value)}
-            className="bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500 rounded-r-none"
-            placeholder="Add a goal"
-            onKeyDown={(e) => e.key === "Enter" && addGoal(goal)}
-          />
-          <button
-            type="button"
-            onClick={() => addGoal(goal)}
-            className="px-3 sm:px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-r-md flex items-center justify-center"
-          >
-            <Plus size={isMobile ? 16 : 18} />
-          </button>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mt-2">
-          {goals.map((g, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="bg-blue-100 hover:bg-blue-200 text-blue-800 border border-blue-200 px-2 py-1 text-xs sm:text-sm"
-            >
-              {g}
-              <button
-                type="button"
-                onClick={() => removeGoal(g)}
-                className="ml-1 sm:ml-2 text-blue-600 hover:text-blue-800"
-              >
-                <X size={isMobile ? 12 : 14} />
-              </button>
-            </Badge>
-          ))}
-        </div>
-
-        <div className="mt-2">
-          <p className="text-sm text-gray-500 mb-1">Suggested goals:</p>
-          <div className="flex flex-wrap gap-1 sm:gap-2">
-            {suggestedGoals
-              .filter((g) => !goals.includes(g))
-              .map((g, index) => (
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Personality Traits</Label>
+            <div className="relative">
+              <Heart className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                value={newTrait}
+                onChange={(e) => setNewTrait(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addTrait()}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+                placeholder="Add a personality trait"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {personalityTraits.map((trait) => (
                 <Badge
-                  key={index}
-                  variant="outline"
-                  className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 hover:text-gray-700 cursor-pointer text-xs"
-                  onClick={() => addGoal(g)}
+                  key={trait}
+                  variant="secondary"
+                  className="bg-gray-700/70 text-white hover:bg-gray-600/70"
                 >
-                  + {g}
+                  {trait}
+                  <button
+                    onClick={() => removeTrait(trait)}
+                    className="ml-1 hover:text-red-400"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
                 </Badge>
               ))}
-          </div>
+            </div>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Goals</Label>
+            <div className="relative">
+              <Target className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                value={newGoal}
+                onChange={(e) => setNewGoal(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addGoal()}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+                placeholder="Add a goal"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {goals.map((goal) => (
+                <Badge
+                  key={goal}
+                  variant="secondary"
+                  className="bg-gray-700/70 text-white hover:bg-gray-600/70"
+                >
+                  {goal}
+                  <button
+                    onClick={() => removeGoal(goal)}
+                    className="ml-1 hover:text-red-400"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
+      </Card>
     </motion.div>
   )
 }

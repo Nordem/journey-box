@@ -4,11 +4,6 @@ import { useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import UserProfileStep from "./wizard-steps/user-profile-step"
 import EventPreferencesStep from "./wizard-steps/event-preferences-step"
-import RestrictionsStep from "./wizard-steps/restrictions-step"
-import HistoryStep from "./wizard-steps/history-step"
-import OutcomesStep from "./wizard-steps/outcomes-step"
-import CalendarStep from "./wizard-steps/calendar-step"
-import DeliverablesStep from "./wizard-steps/deliverables-step"
 import CompletionStep from "./wizard-steps/completion-step"
 import AuthStep from "./wizard-steps/auth-step"
 import WizardProgress from "./wizard-progress"
@@ -54,6 +49,11 @@ interface EventPreferencesData {
   preferredGroupType: string[];
   preferredEventSize: string[];
   maxDistanceKm: number;
+  restrictions: {
+    avoidFamilyKidsEvents: boolean;
+    avoidCrowdedDaytimeConferences: boolean;
+    avoidOverlyFormalNetworking: boolean;
+  };
 }
 
 interface RestrictionsData {
@@ -81,11 +81,6 @@ interface FormData {
   auth: AuthData;
   userProfile: UserProfileData;
   eventPreferences: EventPreferencesData;
-  restrictions: RestrictionsData;
-  history: HistoryData;
-  idealOutcomes: IdealOutcome[];
-  calendarEvents: Record<string, string>;
-  deliverables: Deliverable[];
 }
 
 interface StepProps {
@@ -125,23 +120,16 @@ export default function RegistrationWizard() {
       preferredGroupType: [],
       preferredEventSize: [],
       maxDistanceKm: 1000,
+      restrictions: {
+        avoidFamilyKidsEvents: false,
+        avoidCrowdedDaytimeConferences: false,
+        avoidOverlyFormalNetworking: false
+      },
     },
-    restrictions: {
-      avoidFamilyKidsEvents: false,
-      avoidCrowdedDaytimeConferences: false,
-      avoidOverlyFormalNetworking: false
-    },
-    history: {
-      recentEventsAttended: [],
-      eventFeedback: [],
-    },
-    idealOutcomes: [],
-    calendarEvents: {},
-    deliverables: [],
   })
 
   const isTablet = useMediaQuery("(min-width: 641px) and (max-width: 1024px)")
-  const totalSteps = 9
+  const totalSteps = 4
 
   const updateFormData = useCallback((section: keyof FormData, data: Partial<FormData[keyof FormData]>) => {
     setFormData((prev) => ({
@@ -156,7 +144,6 @@ export default function RegistrationWizard() {
   const handleNext = () => {
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1)
-      // Scroll to top on mobile when changing steps
       if (isMobile) {
         window.scrollTo({ top: 0, behavior: "smooth" })
       }
@@ -166,7 +153,6 @@ export default function RegistrationWizard() {
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
-      // Scroll to top on mobile when changing steps
       if (isMobile) {
         window.scrollTo({ top: 0, behavior: "smooth" })
       }
@@ -198,7 +184,7 @@ export default function RegistrationWizard() {
         email: formData.auth.email,
         password: formData.auth.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/login`,
         }
       })
 
@@ -212,34 +198,12 @@ export default function RegistrationWizard() {
 
       console.log("User created successfully:", authData.user.id)
 
-      // Format calendar events properly for the API
-      const formattedCalendarEvents = Object.entries(formData.calendarEvents || {}).map(([date, event]) => {
-        const [status = "", description = ""] = (event || "").split(" – ")
-        return { date, status, description }
-      })
-
       // 2. Send user registration data to API
       const requestBody = {
-        userId: authData.user.id, // Use the Supabase user ID
+        userId: authData.user.id,
         email: formData.auth.email,
         userProfile: formData.userProfile,
         eventPreferences: formData.eventPreferences,
-        restrictions: {
-          avoidFamilyKidsEvents: formData.restrictions.avoidFamilyKidsEvents,
-          avoidCrowdedDaytimeConferences: formData.restrictions.avoidCrowdedDaytimeConferences,
-          avoidOverlyFormalNetworking: formData.restrictions.avoidOverlyFormalNetworking
-        },
-        history: {
-          recentEventsAttended: formData.history.recentEventsAttended || [],
-          eventFeedback: formData.history.eventFeedback || []
-        },
-        idealOutcomes: formData.idealOutcomes,
-        calendarEvents: formattedCalendarEvents,
-        deliverables: formData.deliverables.map(deliverable => ({
-          ...deliverable,
-          // Ensure date is in ISO format
-          date: deliverable.date
-        }))
       }
 
       console.log("Sending request to /api/register:", requestBody)
@@ -292,8 +256,11 @@ export default function RegistrationWizard() {
       
       setIsSaving(false)
       setSaveCompleted(true)
-      // Move to the completion step
-      setCurrentStep(totalSteps - 1)
+      
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        router.push('/login')
+      }, 2000)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create profile"
       setError(errorMessage)
@@ -315,7 +282,7 @@ export default function RegistrationWizard() {
   const steps: Step[] = [
     {
       title: "Create Account",
-      description: "Set up your login",
+      description: "Set up your login credentials",
       component: (
         <AuthStep
           data={formData.auth}
@@ -325,7 +292,7 @@ export default function RegistrationWizard() {
       ),
     },
     {
-      title: "Basic Info",
+      title: "Profile",
       description: "Tell us about yourself",
       component: (
         <UserProfileStep
@@ -336,8 +303,8 @@ export default function RegistrationWizard() {
       ),
     },
     {
-      title: "Event Preferences",
-      description: "What kind of events do you like?",
+      title: "Preferences",
+      description: "Set your event preferences",
       component: (
         <EventPreferencesStep
           data={formData.eventPreferences}
@@ -347,90 +314,21 @@ export default function RegistrationWizard() {
       ),
     },
     {
-      title: "Restrictions",
-      description: "What would you prefer to avoid?",
-      component: (
-        <RestrictionsStep
-          data={formData.restrictions}
-          updateData={(data: RestrictionsData) => setFormData({ ...formData, restrictions: data })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
-      title: "Event History",
-      description: "Tell us about your past experiences",
-      component: (
-        <HistoryStep
-          data={formData.history}
-          updateData={(data: HistoryData) => setFormData({ ...formData, history: data })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
-      title: "Ideal Outcomes",
-      description: "What do you want to achieve?",
-      component: (
-        <OutcomesStep
-          data={formData.idealOutcomes.map(o => o.description)}
-          updateData={(data: string[]) => setFormData({ ...formData, idealOutcomes: data.map(d => ({ description: d })) })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
-      title: "Calendar",
-      description: "When are you available?",
-      component: (
-        <CalendarStep
-          data={formData.calendarEvents}
-          updateData={(data: Record<string, string>) => setFormData({ ...formData, calendarEvents: data })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
-      title: "Deliverables",
-      description: "What are your goals?",
-      component: (
-        <DeliverablesStep
-          data={formData.deliverables}
-          updateData={(data: Deliverable[]) => setFormData({ ...formData, deliverables: data })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
       title: "Complete",
       description: "Review your profile",
       component: (
         <CompletionStep
-          data={{
-            ...formData,
-            email: formData.auth.email,
-            userProfile: {
-              ...formData.userProfile,
-              currentTravelLocation: formData.userProfile.currentTravelLocation || "",
-            },
-            calendarEvents: Object.entries(formData.calendarEvents).map(([date, event]) => {
-              const [status = "", description = ""] = (event || "").split(" – ")
-              return { date, status, description }
-            }),
-          }}
           isMobile={isMobile}
-          isSaving={isSaving}
-          saveCompleted={saveCompleted}
         />
       ),
     },
   ]
 
   return (
-    <div className="w-full max-w-4xl flex flex-col gap-4">
+    <div className="w-full max-w-4xl mx-auto flex flex-col gap-4">
       {/* Main content card */}
       <motion.div
-        className="bg-white/95 backdrop-blur-xl rounded-3xl overflow-hidden border border-gray-200 shadow-xl"
+        className="bg-gray-900/95 backdrop-blur-xl rounded-3xl overflow-hidden border border-gray-800 shadow-xl"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -450,9 +348,9 @@ export default function RegistrationWizard() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+              className="mb-6 p-4 bg-red-900/50 border border-red-800 rounded-lg"
             >
-              <p className="text-red-600 text-sm">{error}</p>
+              <p className="text-red-400 text-sm">{error}</p>
             </motion.div>
           )}
 
@@ -475,7 +373,7 @@ export default function RegistrationWizard() {
 
       {/* Navigation buttons in separate card */}
       <motion.div
-        className="bg-white/95 backdrop-blur-xl rounded-2xl border border-gray-200 shadow-lg p-4 sm:p-6"
+        className="bg-gray-900/95 backdrop-blur-xl rounded-2xl border border-gray-800 shadow-lg p-4 sm:p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -485,7 +383,7 @@ export default function RegistrationWizard() {
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0 || isSubmitting}
-            className="group relative overflow-hidden bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700"
+            className="group relative overflow-hidden bg-gray-800/80 border-gray-700 hover:bg-gray-700/80 text-gray-200"
             size={isMobile ? "sm" : "default"}
           >
             <span className="relative z-10 flex items-center">
@@ -498,7 +396,7 @@ export default function RegistrationWizard() {
             <Button
               onClick={handleNext}
               disabled={isSubmitting}
-              className="group relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white"
+              className="group relative overflow-hidden bg-blue-600 hover:bg-blue-700 text-white"
               size={isMobile ? "sm" : "default"}
             >
               <span className="relative z-10 flex items-center">
@@ -510,7 +408,7 @@ export default function RegistrationWizard() {
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || isSaving}
-              className="group relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white"
+              className="group relative overflow-hidden bg-blue-600 hover:bg-blue-700 text-white"
               size={isMobile ? "sm" : "default"}
             >
               <span className="relative z-10 flex items-center">

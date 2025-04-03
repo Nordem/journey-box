@@ -6,54 +6,41 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
-import { CalendarDays, CalendarIcon, X, Plus } from "lucide-react"
+import { CalendarDays, CalendarIcon, X, Plus, Clock } from "lucide-react"
 import type { DayPickerSingleProps } from "react-day-picker"
+import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
-interface CalendarStepProps {
-  data: Record<string, string>;
-  updateData: (data: Record<string, string>) => void;
-  isMobile: boolean;
+interface CalendarData {
+  availableDays: Date[]
+  preferredTimeSlots: string[]
 }
 
+interface CalendarStepProps {
+  data: CalendarData
+  updateData: (data: CalendarData) => void
+  isMobile: boolean
+}
+
+const timeSlots = [
+  "Morning (6am-12pm)",
+  "Afternoon (12pm-5pm)",
+  "Evening (5pm-9pm)",
+  "Night (9pm-12am)",
+]
+
 export default function CalendarStep({ data, updateData, isMobile }: CalendarStepProps) {
-  const [calendarData, setCalendarData] = useState<Record<string, string>>(data || {})
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [eventType, setEventType] = useState<string>("") // "Deliverable" or "Booked"
-  const [eventDescription, setEventDescription] = useState<string>("")
+  const [availableDays, setAvailableDays] = useState<Date[]>(data.availableDays || [])
+  const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>(
+    data.preferredTimeSlots || [],
+  )
 
   useEffect(() => {
-    // Only update when values actually change, not on every render
-    if (JSON.stringify(calendarData) !== JSON.stringify(data)) {
-      updateData(calendarData)
-    }
-  }, [calendarData, data, updateData])
-
-  const addCalendarEvent = () => {
-    if (selectedDate && eventType && eventDescription) {
-      const dateStr = selectedDate.toISOString().split("T")[0]
-      setCalendarData({
-        ...calendarData,
-        [dateStr]: `${eventType} – ${eventDescription}`,
-      })
-      setEventDescription("")
-      setEventType("")
-    }
-  }
-
-  const removeCalendarEvent = (dateStr: string) => {
-    const newCalendarData = { ...calendarData }
-    delete newCalendarData[dateStr]
-    setCalendarData(newCalendarData)
-  }
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    updateData({
+      availableDays,
+      preferredTimeSlots,
     })
-  }
+  }, [availableDays, preferredTimeSlots, updateData])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -73,169 +60,90 @@ export default function CalendarStep({ data, updateData, isMobile }: CalendarSte
     },
   }
 
-  // Function to determine if a date has an event
-  const dateHasEvent = (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0]
-    return dateStr in calendarData
+  const toggleTimeSlot = (slot: string) => {
+    setPreferredTimeSlots((prev) =>
+      prev.includes(slot) ? prev.filter((s) => s !== slot) : [...prev, slot],
+    )
   }
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-      <motion.div variants={itemVariants}>
-        <div className="text-center mb-4 sm:mb-6">
-          <h2 className={`${isMobile ? "text-lg" : "text-xl"} font-semibold text-white`}>Calendar Availability</h2>
-          <p className="text-gray-400 text-sm">Let us know your schedule to find events that fit your calendar</p>
-        </div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      <motion.div variants={itemVariants} className="mb-8">
+        <h2 className="text-2xl font-bold mb-2 text-white">Availability</h2>
+        <p className="text-gray-400">
+          Select your available days and preferred time slots for events.
+        </p>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <div className="space-y-4">
-          <div className="bg-gray-800/80 border border-gray-700 rounded-xl p-3 sm:p-4">
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="p-6 bg-gray-800/80 border-gray-700">
+          <motion.div variants={itemVariants} className="space-y-4">
+            <div className="flex items-center space-x-2 mb-4">
+              <CalendarIcon className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg font-semibold text-white">Available Days</h3>
+            </div>
             <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="text-white text-sm"
-              modifiers={{
-                booked: (date: Date) => {
-                  const dateStr = date.toISOString().split("T")[0]
-                  return dateStr in calendarData && calendarData[dateStr].startsWith("Booked")
-                },
-                deliverable: (date: Date) => {
-                  const dateStr = date.toISOString().split("T")[0]
-                  return dateStr in calendarData && calendarData[dateStr].startsWith("Deliverable")
-                },
-              }}
-              modifiersClassNames={{
-                booked: "bg-indigo-900/80 text-white border border-indigo-500/50",
-                deliverable: "bg-pink-900/80 text-white border border-pink-500/50",
+              mode="multiple"
+              selected={availableDays}
+              onSelect={(days) => setAvailableDays(days || [])}
+              className="rounded-md border border-gray-700"
+              classNames={{
+                day_selected: "bg-blue-500 text-white hover:bg-blue-600",
+                day_today: "bg-gray-700 text-white",
+                day_disabled: "text-gray-500",
+                day_range_middle: "bg-gray-700 text-white",
+                day_hidden: "invisible",
+                head_cell: "text-gray-400",
+                cell: "text-white",
+                button: "hover:bg-gray-700",
               }}
             />
-          </div>
+          </motion.div>
+        </Card>
 
-          <div className="flex items-center space-x-2 text-xs sm:text-sm">
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-indigo-500 mr-1"></div>
-              <span className="text-gray-200">Booked</span>
+        <Card className="p-6 bg-gray-800/80 border-gray-700">
+          <motion.div variants={itemVariants} className="space-y-4">
+            <div className="flex items-center space-x-2 mb-4">
+              <Clock className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg font-semibold text-white">Preferred Time Slots</h3>
             </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-pink-500 mr-1"></div>
-              <span className="text-gray-200">Deliverable</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {selectedDate && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gray-800/80 border border-gray-700 rounded-xl p-3 sm:p-4 space-y-3 sm:space-y-4"
-            >
-              <h3 className="text-white font-medium text-sm flex items-center">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate.toLocaleDateString("en-US", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </h3>
-
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-white text-xs sm:text-sm">Event Type</Label>
-                  <div className="flex space-x-2 mt-1">
-                    <Button
-                      type="button"
-                      variant={eventType === "Deliverable" ? "default" : "outline"}
-                      className={
-                        eventType === "Deliverable"
-                          ? "bg-pink-600 hover:bg-pink-700 text-white"
-                          : "bg-gray-800/80 border-gray-700 text-white hover:bg-gray-700/80"
-                      }
-                      onClick={() => setEventType("Deliverable")}
-                      size={isMobile ? "sm" : "default"}
-                    >
-                      Deliverable
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={eventType === "Booked" ? "default" : "outline"}
-                      className={
-                        eventType === "Booked"
-                          ? "bg-indigo-600 hover:bg-indigo-700 text-white"
-                          : "bg-gray-800/80 border-gray-700 text-white hover:bg-gray-700/80"
-                      }
-                      onClick={() => setEventType("Booked")}
-                      size={isMobile ? "sm" : "default"}
-                    >
-                      Booked
-                    </Button>
+            <div className="space-y-2">
+              {timeSlots.map((slot) => (
+                <motion.div
+                  key={slot}
+                  variants={itemVariants}
+                  className={cn(
+                    "flex items-center space-x-2 p-3 rounded-lg cursor-pointer transition-colors",
+                    preferredTimeSlots.includes(slot)
+                      ? "bg-blue-500/20 border border-blue-500"
+                      : "bg-gray-700/50 border border-gray-600 hover:bg-gray-700",
+                  )}
+                  onClick={() => toggleTimeSlot(slot)}
+                >
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                      preferredTimeSlots.includes(slot)
+                        ? "border-blue-500 bg-blue-500"
+                        : "border-gray-500",
+                    )}
+                  >
+                    {preferredTimeSlots.includes(slot) && (
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    )}
                   </div>
-                </div>
-
-                <div>
-                  <Label className="text-white text-xs sm:text-sm">Description</Label>
-                  <div className="flex mt-1">
-                    <Input
-                      value={eventDescription}
-                      onChange={(e) => setEventDescription(e.target.value)}
-                      className="bg-gray-800/80 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 rounded-r-none text-sm"
-                      placeholder="Event description"
-                      onKeyDown={(e) => e.key === "Enter" && addCalendarEvent()}
-                    />
-                    <button
-                      type="button"
-                      onClick={addCalendarEvent}
-                      disabled={!eventType || !eventDescription}
-                      className="px-3 sm:px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-r-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Plus size={isMobile ? 16 : 18} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          <div className="space-y-2">
-            <Label className="text-white text-sm">Your Calendar Events</Label>
-            <div className="space-y-2 max-h-[250px] sm:max-h-[300px] overflow-y-auto pr-2">
-              {Object.entries(calendarData).length > 0 ? (
-                Object.entries(calendarData)
-                  .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
-                  .map(([dateStr, event], index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex justify-between items-center p-2 sm:p-3 rounded-lg ${
-                        event.startsWith("Deliverable")
-                          ? "bg-pink-900/40 border border-pink-500/50"
-                          : "bg-indigo-900/40 border border-indigo-500/50"
-                      }`}
-                    >
-                      <div>
-                        <p className="text-white text-xs sm:text-sm font-medium">{formatDate(dateStr)}</p>
-                        <p className="text-gray-200 text-xs">{event}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeCalendarEvent(dateStr)}
-                        className="text-gray-400 hover:text-white"
-                      >
-                        <X size={isMobile ? 14 : 16} />
-                      </button>
-                    </motion.div>
-                  ))
-              ) : (
-                <p className="text-gray-400 text-xs sm:text-sm">No events added yet. Select a date to add an event.</p>
-              )}
+                  <Label className="text-white cursor-pointer">{slot}</Label>
+                </motion.div>
+              ))}
             </div>
-          </div>
-        </div>
-      </motion.div>
+          </motion.div>
+        </Card>
+      </div>
     </motion.div>
   )
 }

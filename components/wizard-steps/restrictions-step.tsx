@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+import { Card } from "@/components/ui/card"
+import { motion } from "framer-motion"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Family, Users, Briefcase } from "lucide-react"
 
 interface RestrictionsData {
   avoidFamilyKidsEvents: boolean
@@ -18,32 +20,23 @@ interface RestrictionsStepProps {
 }
 
 export default function RestrictionsStep({ data, updateData, isMobile }: RestrictionsStepProps) {
+  const [avoidFamilyKidsEvents, setAvoidFamilyKidsEvents] = useState(
+    data.avoidFamilyKidsEvents || false,
+  )
   const [avoidCrowdedDaytimeConferences, setAvoidCrowdedDaytimeConferences] = useState(
     data.avoidCrowdedDaytimeConferences || false,
   )
   const [avoidOverlyFormalNetworking, setAvoidOverlyFormalNetworking] = useState(
     data.avoidOverlyFormalNetworking || false,
   )
-  const [avoidFamilyKidsEvents, setAvoidFamilyKidsEvents] = useState(data.avoidFamilyKidsEvents || false)
 
   useEffect(() => {
-    // Only update when values actually change, not on every render
-    const newData = {
+    updateData({
+      avoidFamilyKidsEvents,
       avoidCrowdedDaytimeConferences,
       avoidOverlyFormalNetworking,
-      avoidFamilyKidsEvents,
-    }
-
-    // Check if data has actually changed before updating
-    const hasChanged =
-      avoidCrowdedDaytimeConferences !== data.avoidCrowdedDaytimeConferences ||
-      avoidOverlyFormalNetworking !== data.avoidOverlyFormalNetworking ||
-      avoidFamilyKidsEvents !== data.avoidFamilyKidsEvents
-
-    if (hasChanged) {
-      updateData(newData)
-    }
-  }, [avoidCrowdedDaytimeConferences, avoidOverlyFormalNetworking, avoidFamilyKidsEvents, data, updateData])
+    })
+  }, [avoidFamilyKidsEvents, avoidCrowdedDaytimeConferences, avoidOverlyFormalNetworking, updateData])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -64,62 +57,82 @@ export default function RestrictionsStep({ data, updateData, isMobile }: Restric
   }
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-      <motion.div variants={itemVariants}>
-        <div className="text-center mb-4 sm:mb-6">
-          <h2 className={`${isMobile ? "text-lg" : "text-xl"} font-semibold text-white`}>Event Restrictions</h2>
-          <p className="text-gray-400 text-sm">Let us know what types of events you'd like to avoid</p>
-        </div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      <motion.div variants={itemVariants} className="mb-8">
+        <h2 className="text-2xl font-bold mb-2 text-white">Event Restrictions</h2>
+        <p className="text-gray-400">
+          Let us know what types of events you'd prefer to avoid.
+        </p>
       </motion.div>
 
-      <motion.div
-        variants={itemVariants}
-        className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6 space-y-5 sm:space-y-6"
-      >
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <Label className="text-white text-sm sm:text-base">Avoid Crowded Daytime Conferences</Label>
-            <p className="text-xs sm:text-sm text-gray-400">Skip large, busy conferences that happen during the day</p>
-          </div>
-          <Switch
-            checked={avoidCrowdedDaytimeConferences}
-            onCheckedChange={setAvoidCrowdedDaytimeConferences}
-            className="data-[state=checked]:bg-purple-600"
-          />
-        </div>
-
-        <div className="border-t border-white/5 pt-5 sm:pt-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-white text-sm sm:text-base">Avoid Overly Formal Networking</Label>
-              <p className="text-xs sm:text-sm text-gray-400">Skip stiff, corporate-style networking events</p>
+      <Card className="p-6 bg-gray-800/80 border-gray-700">
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="avoidFamilyKidsEvents"
+                checked={avoidFamilyKidsEvents}
+                onCheckedChange={(checked) => setAvoidFamilyKidsEvents(checked as boolean)}
+                className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+              />
+              <div className="flex items-center space-x-2">
+                <Family className="h-4 w-4 text-gray-400" />
+                <Label htmlFor="avoidFamilyKidsEvents" className="text-white">
+                  Avoid family and kids events
+                </Label>
+              </div>
             </div>
-            <Switch
-              checked={avoidOverlyFormalNetworking}
-              onCheckedChange={setAvoidOverlyFormalNetworking}
-              className="data-[state=checked]:bg-purple-600"
-            />
-          </div>
-        </div>
+            <p className="text-gray-400 text-sm ml-6">
+              Skip events that are primarily focused on family activities or children.
+            </p>
+          </motion.div>
 
-        <div className="border-t border-white/5 pt-5 sm:pt-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-white text-sm sm:text-base">Avoid Family/Kids Events</Label>
-              <p className="text-xs sm:text-sm text-gray-400">Exclude events designed for families or children</p>
+          <motion.div variants={itemVariants} className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="avoidCrowdedDaytimeConferences"
+                checked={avoidCrowdedDaytimeConferences}
+                onCheckedChange={(checked) => setAvoidCrowdedDaytimeConferences(checked as boolean)}
+                className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+              />
+              <div className="flex items-center space-x-2">
+                <Users className="h-4 w-4 text-gray-400" />
+                <Label htmlFor="avoidCrowdedDaytimeConferences" className="text-white">
+                  Avoid crowded daytime conferences
+                </Label>
+              </div>
             </div>
-            <Switch
-              checked={avoidFamilyKidsEvents}
-              onCheckedChange={setAvoidFamilyKidsEvents}
-              className="data-[state=checked]:bg-purple-600"
-            />
-          </div>
-        </div>
-      </motion.div>
+            <p className="text-gray-400 text-sm ml-6">
+              Skip large conferences and events during daytime hours.
+            </p>
+          </motion.div>
 
-      <motion.div variants={itemVariants} className="text-center text-gray-400 text-xs sm:text-sm mt-4">
-        <p>These preferences help us filter out events that don't match your interests</p>
-      </motion.div>
+          <motion.div variants={itemVariants} className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="avoidOverlyFormalNetworking"
+                checked={avoidOverlyFormalNetworking}
+                onCheckedChange={(checked) => setAvoidOverlyFormalNetworking(checked as boolean)}
+                className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+              />
+              <div className="flex items-center space-x-2">
+                <Briefcase className="h-4 w-4 text-gray-400" />
+                <Label htmlFor="avoidOverlyFormalNetworking" className="text-white">
+                  Avoid overly formal networking events
+                </Label>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm ml-6">
+              Skip events that are too formal or strictly business-focused.
+            </p>
+          </motion.div>
+        </div>
+      </Card>
     </motion.div>
   )
 }

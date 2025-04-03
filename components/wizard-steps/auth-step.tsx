@@ -2,6 +2,8 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
+import { motion } from "framer-motion"
+import { Mail, Lock, Eye, EyeOff } from "lucide-react"
 
 interface AuthStepData {
   email: string
@@ -17,6 +19,8 @@ interface AuthStepProps {
 
 export default function AuthStep({ data, updateData, isMobile }: AuthStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -70,55 +74,101 @@ export default function AuthStep({ data, updateData, isMobile }: AuthStepProps) 
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+    },
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-2">Create Your Account</h2>
-        <p className="text-gray-600">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      <motion.div variants={itemVariants} className="mb-8">
+        <h2 className="text-2xl font-bold mb-2 text-white">Create Your Account</h2>
+        <p className="text-gray-400">
           Set up your login credentials to access your profile in the future.
         </p>
-      </div>
+      </motion.div>
 
-      <Card className="p-6 bg-gray-800/80 border-gray-700 text-white">
+      <Card className="p-6 bg-gray-800/80 border-gray-700">
         <div className="space-y-4">
-          <div className="space-y-2">
+          <motion.div variants={itemVariants} className="space-y-2">
             <Label htmlFor="email" className="text-white">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your.email@example.com"
-              value={data.email}
-              onChange={handleEmailChange}
-              className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400"
-            />
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="your.email@example.com"
+                value={data.email}
+                onChange={handleEmailChange}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+              />
+            </div>
             {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <motion.div variants={itemVariants} className="space-y-2">
             <Label htmlFor="password" className="text-white">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a secure password"
-              value={data.password}
-              onChange={handlePasswordChange}
-              className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Create a secure password"
+                value={data.password}
+                onChange={handlePasswordChange}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password}</p>}
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <motion.div variants={itemVariants} className="space-y-2">
             <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              value={data.confirmPassword || ''}
-              onChange={handleConfirmPasswordChange}
-              className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm your password"
+                value={data.confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {errors.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>}
-          </div>
+          </motion.div>
         </div>
       </Card>
 
@@ -126,6 +176,6 @@ export default function AuthStep({ data, updateData, isMobile }: AuthStepProps) 
         <p>Your password must be at least 6 characters long.</p>
         <p className="mt-2">By creating an account, you agree to our Terms of Service and Privacy Policy.</p>
       </div>
-    </div>
+    </motion.div>
   )
 } 
