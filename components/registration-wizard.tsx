@@ -281,17 +281,6 @@ export default function RegistrationWizard() {
 
   const steps: Step[] = [
     {
-      title: "Create Account",
-      description: "Set up your login credentials",
-      component: (
-        <AuthStep
-          data={formData.auth}
-          updateData={(data: AuthData) => setFormData({ ...formData, auth: data })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
       title: "Profile",
       description: "Tell us about yourself",
       component: (
@@ -314,11 +303,27 @@ export default function RegistrationWizard() {
       ),
     },
     {
+      title: "Create Account",
+      description: "Set up your login credentials",
+      component: (
+        <AuthStep
+          data={formData.auth}
+          updateData={(data: AuthData) => setFormData({ ...formData, auth: data })}
+          isMobile={isMobile}
+        />
+      ),
+    },
+    {
       title: "Complete",
       description: "Review your profile",
       component: (
         <CompletionStep
           isMobile={isMobile}
+          isSubmitting={isSubmitting}
+          isSaving={isSaving}
+          saveCompleted={saveCompleted}
+          error={error}
+          email={formData.auth.email}
         />
       ),
     },
