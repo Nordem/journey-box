@@ -1,79 +1,61 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
-
-interface Category {
-  id: string;
-  name: string;
-}
 
 export async function GET() {
   try {
-    // Try to fetch events from Prisma first
-    const dbEvents = await prisma.event.findMany({
+    // Fetch events from Prisma
+    const events = await prisma.event.findMany({
       select: {
         id: true,
         name: true,
+        activities: true,
+        category: true,
+        city: true,
+        country: true,
+        description: true,
+        endDate: true,
+        highlights: true,
+        isHighlight: true,
+        maxParticipants: true,
+        price: true,
+        startDate: true,
+        state: true,
         date: true,
         location: true,
-        music: true,
-        activities: true,
-        category: true
+        music: true
       }
     });
-
-    if (dbEvents.length > 0) {
-      const events = dbEvents.map(event => ({
-        id: event.id,
-        name: event.name,
-        date: event.date,
-        location: event.location,
-        music: event.music,
-        activities: event.activities,
-        category_name: event.category
-      }));
-
-      return NextResponse.json({ events });
-    }
-
-    // If no events in Prisma, try Supabase
-    const { data: events, error } = await supabase
-      .from('events')
-      .select('*');
-
-    if (error) {
-      return NextResponse.json(
-        { success: false, message: 'Failed to fetch events' },
-        { status: 500 }
-      );
-    }
 
     if (!events || events.length === 0) {
       return NextResponse.json({ events: [] });
     }
 
-    // Fetch categories for the events
-    const { data: categories, error: categoryError } = await supabase
-      .from('categories')
-      .select('*');
-
-    if (categoryError) {
-      return NextResponse.json(
-        { success: false, message: 'Failed to fetch categories' },
-        { status: 500 }
-      );
-    }
-
-    // Map events with their categories
-    const eventsWithCategories = events.map(event => ({
-      ...event,
-      category_name: categories?.find(cat => cat.id === event.category_id)?.name
+    // Format the events to match the expected interface
+    const formattedEvents = events.map(event => ({
+      id: event.id,
+      name: event.name,
+      location: event.location || `${event.city}, ${event.state || event.country}`,
+      date: event.date?.toISOString() || event.startDate.toISOString(),
+      music: event.music || [],
+      activities: event.activities || [],
+      category_name: event.category,
+      description: event.description,
+      startDate: event.startDate.toISOString(),
+      endDate: event.endDate.toISOString(),
+      price: event.price,
+      maxParticipants: event.maxParticipants,
+      isHighlight: event.isHighlight,
+      highlights: event.highlights || [],
+      city: event.city,
+      state: event.state,
+      country: event.country
     }));
 
-    return NextResponse.json({ events: eventsWithCategories });
+    return NextResponse.json({ events: formattedEvents });
   } catch (error) {
+    console.error('Error fetching events:', error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: 'Failed to fetch events' },
       { status: 500 }
     );
   }

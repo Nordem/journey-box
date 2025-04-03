@@ -47,11 +47,12 @@ export interface UserProfile {
     preferredEventSize: string[];
     maxDistanceKm: number;
   };
-  restrictions: {
+  restrictions?: {
     avoidCrowdedDaytimeConferences: boolean;
     avoidOverlyFormalNetworking: boolean;
+    avoidFamilyKidsEvents: boolean;
   };
-  calendarAvailability: Record<string, string>;
+  calendarAvailability?: Record<string, string>;
 }
 
 export interface RecommendedEvent extends Event {
@@ -122,8 +123,8 @@ User Profile:
 - Vibe Keywords: ${userProfile.eventPreferences.vibeKeywords.join(", ")}
 - Budget: ${userProfile.eventPreferences.budget}
 - Max Distance: ${userProfile.eventPreferences.maxDistanceKm} km
-- Restrictions: ${Object.entries(userProfile.restrictions).map(([key, val]) => `${key}: ${val}`).join(", ")}
-- Calendar Availability: ${Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ")}
+- Restrictions: ${userProfile.restrictions ? Object.entries(userProfile.restrictions).map(([key, val]) => `${key}: ${val}`).join(", ") : "None"}
+- Calendar Availability: ${userProfile.calendarAvailability ? Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ") : "None"}
 
 For each event, provide a match score (0-100) and specific reasons why it matches or doesn't match.
 Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }`

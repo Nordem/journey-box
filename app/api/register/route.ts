@@ -111,19 +111,17 @@ export async function POST(request: Request) {
           },
           eventPreferences: eventPreferences ? {
             create: {
-              ...eventPreferences,
-              budget: eventPreferences.budget || "medium",
-              maxDistanceKm: eventPreferences.maxDistanceKm || 1000,
               categories: eventPreferences.categories || [],
               vibeKeywords: eventPreferences.vibeKeywords || [],
               idealTimeSlots: eventPreferences.idealTimeSlots || [],
+              budget: eventPreferences.budget || "medium",
               preferredGroupType: eventPreferences.preferredGroupType || [],
-              preferredEventSize: eventPreferences.preferredEventSize || []
+              preferredEventSize: eventPreferences.preferredEventSize || [],
+              maxDistanceKm: eventPreferences.maxDistanceKm || 1000
             }
           } : undefined,
           restrictions: restrictions ? {
             create: {
-              ...restrictions,
               avoidFamilyKidsEvents: restrictions.avoidFamilyKidsEvents || false,
               avoidCrowdedDaytimeConferences: restrictions.avoidCrowdedDaytimeConferences || false,
               avoidOverlyFormalNetworking: restrictions.avoidOverlyFormalNetworking || false

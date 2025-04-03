@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { X, Plus } from "lucide-react"
+import { X, Plus, Briefcase, Users } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Calendar, DollarSign, MapPin, Clock, Tag } from "lucide-react"
 
 interface EventPreferencesData {
   categories: string[];
@@ -18,6 +20,11 @@ interface EventPreferencesData {
   preferredGroupType: string[];
   preferredEventSize: string[];
   maxDistanceKm: number;
+  restrictions: {
+    avoidFamilyKidsEvents: boolean;
+    avoidCrowdedDaytimeConferences: boolean;
+    avoidOverlyFormalNetworking: boolean;
+  };
 }
 
 interface EventPreferencesStepProps {
@@ -27,15 +34,20 @@ interface EventPreferencesStepProps {
 }
 
 export default function EventPreferencesStep({ data, updateData, isMobile }: EventPreferencesStepProps) {
-  const [categories, setCategories] = useState(data.categories || [])
-  const [category, setCategory] = useState("")
-  const [vibeKeywords, setVibeKeywords] = useState(data.vibeKeywords || [])
-  const [vibe, setVibe] = useState("")
-  const [idealTimeSlots, setIdealTimeSlots] = useState(data.idealTimeSlots || [])
+  const [categories, setCategories] = useState<string[]>(data.categories || [])
+  const [vibeKeywords, setVibeKeywords] = useState<string[]>(data.vibeKeywords || [])
+  const [idealTimeSlots, setIdealTimeSlots] = useState<string[]>(data.idealTimeSlots || [])
   const [budget, setBudget] = useState(data.budget || "medium")
-  const [preferredGroupType, setPreferredGroupType] = useState(data.preferredGroupType || [])
-  const [preferredEventSize, setPreferredEventSize] = useState(data.preferredEventSize || [])
-  const [maxDistanceKm, setMaxDistanceKm] = useState(data.maxDistanceKm || 20)
+  const [preferredGroupType, setPreferredGroupType] = useState<string[]>(data.preferredGroupType || [])
+  const [preferredEventSize, setPreferredEventSize] = useState<string[]>(data.preferredEventSize || [])
+  const [maxDistanceKm, setMaxDistanceKm] = useState(data.maxDistanceKm || 1000)
+  const [restrictions, setRestrictions] = useState(data.restrictions || {
+    avoidFamilyKidsEvents: false,
+    avoidCrowdedDaytimeConferences: false,
+    avoidOverlyFormalNetworking: false
+  })
+  const [newCategory, setNewCategory] = useState("")
+  const [newVibeKeyword, setNewVibeKeyword] = useState("")
 
   // Suggested options
   const suggestedCategories = [
@@ -61,34 +73,35 @@ export default function EventPreferencesStep({ data, updateData, isMobile }: Eve
     "casual networking",
   ]
 
-  const timeSlotOptions = ["mornings", "afternoons", "evenings", "nights", "weekends", "weekdays"]
-  const groupTypeOptions = ["solo", "small group", "large group", "creative circles", "professional network"]
-  const eventSizeOptions = ["intimate", "small", "medium", "large", "exclusive"]
+  const timeSlotOptions = ["morning", "afternoon", "evening", "night"]
+  const groupTypeOptions = ["solo", "small group", "large group", "networking"]
+  const eventSizeOptions = ["intimate", "medium", "large", "massive"]
 
   useEffect(() => {
-    // Only update when values actually change, not on every render
-    const newData = {
-      categories,
-      vibeKeywords,
-      idealTimeSlots,
-      budget,
-      preferredGroupType,
-      preferredEventSize,
-      maxDistanceKm,
-    }
-
-    // Check if data has actually changed before updating
-    const hasChanged =
-      JSON.stringify(categories) !== JSON.stringify(data.categories) ||
-      JSON.stringify(vibeKeywords) !== JSON.stringify(data.vibeKeywords) ||
-      JSON.stringify(idealTimeSlots) !== JSON.stringify(data.idealTimeSlots) ||
-      budget !== data.budget ||
-      JSON.stringify(preferredGroupType) !== JSON.stringify(data.preferredGroupType) ||
-      JSON.stringify(preferredEventSize) !== JSON.stringify(data.preferredEventSize) ||
-      maxDistanceKm !== data.maxDistanceKm
+    // Only update if the data has actually changed
+    const hasChanged = 
+      JSON.stringify({
+        categories,
+        vibeKeywords,
+        idealTimeSlots,
+        budget,
+        preferredGroupType,
+        preferredEventSize,
+        maxDistanceKm,
+        restrictions
+      }) !== JSON.stringify(data);
 
     if (hasChanged) {
-      updateData(newData)
+      updateData({
+        categories,
+        vibeKeywords,
+        idealTimeSlots,
+        budget,
+        preferredGroupType,
+        preferredEventSize,
+        maxDistanceKm,
+        restrictions
+      });
     }
   }, [
     categories,
@@ -98,36 +111,31 @@ export default function EventPreferencesStep({ data, updateData, isMobile }: Eve
     preferredGroupType,
     preferredEventSize,
     maxDistanceKm,
+    restrictions,
     data,
-    updateData,
-  ])
+    updateData
+  ]);
 
-  const addCategory = (cat: string) => {
-    if (cat && !categories.includes(cat)) {
-      const newCategories = [...categories, cat]
-      setCategories(newCategories)
-      updateData({ ...data, categories: newCategories })
-      setCategory("")
+  const addCategory = () => {
+    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+      setCategories([...categories, newCategory.trim()])
+      setNewCategory("")
     }
   }
 
-  const removeCategory = (cat: string) => {
-    setCategories(categories.filter((c) => c !== cat))
-    updateData({ ...data, categories: categories.filter((c) => c !== cat) })
+  const removeCategory = (category: string) => {
+    setCategories(categories.filter((c) => c !== category))
   }
 
-  const addVibe = (v: string) => {
-    if (v && !vibeKeywords.includes(v)) {
-      const newVibes = [...vibeKeywords, v]
-      setVibeKeywords(newVibes)
-      updateData({ ...data, vibeKeywords: newVibes })
-      setVibe("")
+  const addVibeKeyword = () => {
+    if (newVibeKeyword.trim() && !vibeKeywords.includes(newVibeKeyword.trim())) {
+      setVibeKeywords([...vibeKeywords, newVibeKeyword.trim()])
+      setNewVibeKeyword("")
     }
   }
 
-  const removeVibe = (v: string) => {
-    setVibeKeywords(vibeKeywords.filter((vk) => vk !== v))
-    updateData({ ...data, vibeKeywords: vibeKeywords.filter((vk) => vk !== v) })
+  const removeVibeKeyword = (keyword: string) => {
+    setVibeKeywords(vibeKeywords.filter((k) => k !== keyword))
   }
 
   const toggleTimeSlot = (slot: string) => {
@@ -135,7 +143,6 @@ export default function EventPreferencesStep({ data, updateData, isMobile }: Eve
       ? idealTimeSlots.filter((s) => s !== slot)
       : [...idealTimeSlots, slot]
     setIdealTimeSlots(newSlots)
-    updateData({ ...data, idealTimeSlots: newSlots })
   }
 
   const toggleGroupType = (type: string) => {
@@ -143,7 +150,6 @@ export default function EventPreferencesStep({ data, updateData, isMobile }: Eve
       ? preferredGroupType.filter((t) => t !== type)
       : [...preferredGroupType, type]
     setPreferredGroupType(newTypes)
-    updateData({ ...data, preferredGroupType: newTypes })
   }
 
   const toggleEventSize = (size: string) => {
@@ -151,7 +157,6 @@ export default function EventPreferencesStep({ data, updateData, isMobile }: Eve
       ? preferredEventSize.filter((s) => s !== size)
       : [...preferredEventSize, size]
     setPreferredEventSize(newSizes)
-    updateData({ ...data, preferredEventSize: newSizes })
   }
 
   const containerVariants = {
@@ -173,224 +178,247 @@ export default function EventPreferencesStep({ data, updateData, isMobile }: Eve
   }
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Event Categories</Label>
-        <div className="flex">
-          <Input
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500 rounded-r-none"
-            placeholder="Add a category"
-            onKeyDown={(e) => e.key === "Enter" && addCategory(category)}
-          />
-          <button
-            type="button"
-            onClick={() => addCategory(category)}
-            className="px-3 sm:px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-r-md flex items-center justify-center"
-          >
-            <Plus size={isMobile ? 16 : 18} />
-          </button>
-        </div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      <motion.div variants={itemVariants} className="mb-8">
+        <h2 className="text-2xl font-bold mb-2 text-white">Event Preferences</h2>
+        <p className="text-gray-400">
+          Tell us about your preferences for events and activities.
+        </p>
+      </motion.div>
 
-        <div className="flex flex-wrap gap-2 mt-2">
-          {categories.map((cat, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="bg-blue-100 hover:bg-blue-200 text-blue-800 border border-blue-200 px-2 py-1 text-xs sm:text-sm"
-            >
-              {cat}
-              <button
-                type="button"
-                onClick={() => removeCategory(cat)}
-                className="ml-1 sm:ml-2 text-blue-600 hover:text-blue-800"
-              >
-                <X size={isMobile ? 12 : 14} />
-              </button>
-            </Badge>
-          ))}
-        </div>
-
-        <div className="mt-2">
-          <p className="text-sm text-gray-500 mb-1">Suggested categories:</p>
-          <div className="flex flex-wrap gap-1 sm:gap-2">
-            {suggestedCategories
-              .filter((c) => !categories.includes(c))
-              .map((c, index) => (
+      <Card className="p-6 bg-gray-800/80 border-gray-700">
+        <div className="space-y-4">
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Categories</Label>
+            <div className="relative">
+              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addCategory()}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+                placeholder="Add a category"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {categories.map((category) => (
                 <Badge
-                  key={index}
-                  variant="outline"
-                  className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 hover:text-gray-700 cursor-pointer text-xs"
-                  onClick={() => addCategory(c)}
+                  key={category}
+                  variant="secondary"
+                  className="bg-gray-700/70 text-white hover:bg-gray-600/70"
                 >
-                  + {c}
+                  {category}
+                  <button
+                    onClick={() => removeCategory(category)}
+                    className="ml-1 hover:text-red-400"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
                 </Badge>
               ))}
-          </div>
-        </div>
-      </motion.div>
+            </div>
+          </motion.div>
 
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Vibe Keywords</Label>
-        <div className="flex">
-          <Input
-            value={vibe}
-            onChange={(e) => setVibe(e.target.value)}
-            className="bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500 rounded-r-none"
-            placeholder="Add a vibe"
-            onKeyDown={(e) => e.key === "Enter" && addVibe(vibe)}
-          />
-          <button
-            type="button"
-            onClick={() => addVibe(vibe)}
-            className="px-3 sm:px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-r-md flex items-center justify-center"
-          >
-            <Plus size={isMobile ? 16 : 18} />
-          </button>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mt-2">
-          {vibeKeywords.map((v, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 border border-indigo-200 px-2 py-1 text-xs sm:text-sm"
-            >
-              {v}
-              <button
-                type="button"
-                onClick={() => removeVibe(v)}
-                className="ml-1 sm:ml-2 text-indigo-600 hover:text-indigo-800"
-              >
-                <X size={isMobile ? 12 : 14} />
-              </button>
-            </Badge>
-          ))}
-        </div>
-
-        <div className="mt-2">
-          <p className="text-sm text-gray-500 mb-1">Suggested vibes:</p>
-          <div className="flex flex-wrap gap-1 sm:gap-2">
-            {suggestedVibes
-              .filter((v) => !vibeKeywords.includes(v))
-              .map((v, index) => (
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Vibe Keywords</Label>
+            <div className="relative">
+              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                value={newVibeKeyword}
+                onChange={(e) => setNewVibeKeyword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addVibeKeyword()}
+                className="bg-gray-700/70 border-gray-600 text-white placeholder:text-gray-400 pl-10"
+                placeholder="Add a vibe keyword"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {vibeKeywords.map((keyword) => (
                 <Badge
-                  key={index}
-                  variant="outline"
-                  className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 hover:text-gray-700 cursor-pointer text-xs"
-                  onClick={() => addVibe(v)}
+                  key={keyword}
+                  variant="secondary"
+                  className="bg-gray-700/70 text-white hover:bg-gray-600/70"
                 >
-                  + {v}
+                  {keyword}
+                  <button
+                    onClick={() => removeVibeKeyword(keyword)}
+                    className="ml-1 hover:text-red-400"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
                 </Badge>
               ))}
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Ideal Time Slots</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {timeSlotOptions.map((slot) => (
-            <div key={slot} className="flex items-center space-x-2">
-              <Checkbox
-                id={`time-${slot}`}
-                checked={idealTimeSlots.includes(slot)}
-                onCheckedChange={() => toggleTimeSlot(slot)}
-                className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-              />
-              <label
-                htmlFor={`time-${slot}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700"
-              >
-                {slot.charAt(0).toUpperCase() + slot.slice(1)}
-              </label>
             </div>
-          ))}
-        </div>
-      </motion.div>
+          </motion.div>
 
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Maximum Distance (km): {maxDistanceKm}</Label>
-        <Slider
-          value={[maxDistanceKm]}
-          onValueChange={([value]) => setMaxDistanceKm(value)}
-          max={100}
-          step={1}
-          className="[&_[role=slider]]:bg-blue-500"
-        />
-      </motion.div>
-
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Budget</Label>
-        <RadioGroup value={budget} onValueChange={setBudget} className="flex space-x-4">
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="low" id="budget-low" className="border-gray-300 text-blue-500" />
-            <label htmlFor="budget-low" className="text-gray-700 text-sm">
-              Low
-            </label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="medium" id="budget-medium" className="border-gray-300 text-blue-500" />
-            <label htmlFor="budget-medium" className="text-gray-700 text-sm">
-              Medium
-            </label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="high" id="budget-high" className="border-gray-300 text-blue-500" />
-            <label htmlFor="budget-high" className="text-gray-700 text-sm">
-              High
-            </label>
-          </div>
-        </RadioGroup>
-      </motion.div>
-
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Preferred Group Type</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {groupTypeOptions.map((type) => (
-            <div key={type} className="flex items-center space-x-2">
-              <Checkbox
-                id={`group-${type}`}
-                checked={preferredGroupType.includes(type)}
-                onCheckedChange={() => toggleGroupType(type)}
-                className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-              />
-              <label
-                htmlFor={`group-${type}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700"
-              >
-                {type
-                  .split(" ")
-                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(" ")}
-              </label>
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Ideal Time Slots</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {timeSlotOptions.map((slot) => (
+                <div key={slot} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`time-${slot}`}
+                    checked={idealTimeSlots.includes(slot)}
+                    onCheckedChange={() => toggleTimeSlot(slot)}
+                    className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                  />
+                  <label
+                    htmlFor={`time-${slot}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white"
+                  >
+                    {slot.charAt(0).toUpperCase() + slot.slice(1)}
+                  </label>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </motion.div>
+          </motion.div>
 
-      <motion.div variants={itemVariants} className="space-y-2">
-        <Label className="text-gray-700">Preferred Event Size</Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {eventSizeOptions.map((size) => (
-            <div key={size} className="flex items-center space-x-2">
-              <Checkbox
-                id={`size-${size}`}
-                checked={preferredEventSize.includes(size)}
-                onCheckedChange={() => toggleEventSize(size)}
-                className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-              />
-              <label
-                htmlFor={`size-${size}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700"
-              >
-                {size.charAt(0).toUpperCase() + size.slice(1)}
-              </label>
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Maximum Distance (km): {maxDistanceKm}</Label>
+            <Slider
+              value={[maxDistanceKm]}
+              onValueChange={([value]) => setMaxDistanceKm(value)}
+              max={100}
+              step={1}
+              className="[&_[role=slider]]:bg-blue-500"
+            />
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Budget</Label>
+            <RadioGroup value={budget} onValueChange={setBudget} className="flex space-x-4">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="low" id="budget-low" className="border-gray-300 text-blue-500" />
+                <label htmlFor="budget-low" className="text-white text-sm">
+                  Low
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="medium" id="budget-medium" className="border-gray-300 text-blue-500" />
+                <label htmlFor="budget-medium" className="text-white text-sm">
+                  Medium
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="high" id="budget-high" className="border-gray-300 text-blue-500" />
+                <label htmlFor="budget-high" className="text-white text-sm">
+                  High
+                </label>
+              </div>
+            </RadioGroup>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Preferred Group Type</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {groupTypeOptions.map((type) => (
+                <div key={type} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`group-${type}`}
+                    checked={preferredGroupType.includes(type)}
+                    onCheckedChange={() => toggleGroupType(type)}
+                    className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                  />
+                  <label
+                    htmlFor={`group-${type}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white"
+                  >
+                    {type
+                      .split(" ")
+                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                      .join(" ")}
+                  </label>
+                </div>
+              ))}
             </div>
-          ))}
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label className="text-white">Preferred Event Size</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {eventSizeOptions.map((size) => (
+                <div key={size} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`size-${size}`}
+                    checked={preferredEventSize.includes(size)}
+                    onCheckedChange={() => toggleEventSize(size)}
+                    className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                  />
+                  <label
+                    htmlFor={`size-${size}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white"
+                  >
+                    {size.charAt(0).toUpperCase() + size.slice(1)}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="space-y-4">
+            <h3 className="text-lg font-semibold text-white mb-4">Restrictions</h3>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="avoidFamilyKidsEvents"
+                  checked={restrictions.avoidFamilyKidsEvents}
+                  onCheckedChange={(checked) => setRestrictions({ ...restrictions, avoidFamilyKidsEvents: checked as boolean })}
+                  className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                />
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <Label htmlFor="avoidFamilyKidsEvents" className="text-white">
+                    Avoid family and kids events
+                  </Label>
+                </div>
+              </div>
+              <p className="text-gray-400 text-sm ml-6">
+                Skip events that are primarily focused on family activities or children.
+              </p>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="avoidCrowdedDaytimeConferences"
+                  checked={restrictions.avoidCrowdedDaytimeConferences}
+                  onCheckedChange={(checked) => setRestrictions({ ...restrictions, avoidCrowdedDaytimeConferences: checked as boolean })}
+                  className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                />
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <Label htmlFor="avoidCrowdedDaytimeConferences" className="text-white">
+                    Avoid crowded daytime conferences
+                  </Label>
+                </div>
+              </div>
+              <p className="text-gray-400 text-sm ml-6">
+                Skip large conferences and events during daytime hours.
+              </p>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="avoidOverlyFormalNetworking"
+                  checked={restrictions.avoidOverlyFormalNetworking}
+                  onCheckedChange={(checked) => setRestrictions({ ...restrictions, avoidOverlyFormalNetworking: checked as boolean })}
+                  className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                />
+                <div className="flex items-center space-x-2">
+                  <Briefcase className="h-4 w-4 text-gray-400" />
+                  <Label htmlFor="avoidOverlyFormalNetworking" className="text-white">
+                    Avoid overly formal networking events
+                  </Label>
+                </div>
+              </div>
+              <p className="text-gray-400 text-sm ml-6">
+                Skip events that are too formal or strictly business-focused.
+              </p>
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
+      </Card>
     </motion.div>
   )
 }
