@@ -99,11 +99,29 @@ export default function AuthStep({ data, updateData, isMobile }: AuthStepProps) 
       animate="visible"
       className="space-y-6"
     >
-      <motion.div variants={itemVariants} className="mb-8">
-        <h2 className="text-2xl font-bold mb-2 text-white">Create Your Account</h2>
-        <p className="text-gray-400">
-          Set up your login credentials to access your profile in the future.
+      <motion.div
+        variants={itemVariants}
+        className="text-center mb-8"
+      >
+        <h1 className="text-2xl font-bold text-white mb-4">¡Bienvenido a Journey Box!</h1>
+        <p className="text-gray-300 mb-6">
+          Personaliza tu experiencia compartiendo tus preferencias y descubre viajes hechos para ti. Cuéntanos sobre tus gustos para ofrecerte experiencias únicas y conectarte con personas afines.
         </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-gray-800/50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-white mb-2">Experiencias personalizadas</h3>
+            <p className="text-gray-300">Viajes y actividades adaptados a tus gustos</p>
+          </div>
+          <div className="bg-gray-800/50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-white mb-2">Encuentra afinidades</h3>
+            <p className="text-gray-300">Conecta con compañeros que comparten tus intereses</p>
+          </div>
+          <div className="bg-gray-800/50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-white mb-2">Mejora el team building</h3>
+            <p className="text-gray-300">Actividades grupales que realmente disfrutarás</p>
+          </div>
+        </div>
       </motion.div>
 
       <Card className="p-6 bg-gray-800/80 border-gray-700">
