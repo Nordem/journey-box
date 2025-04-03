@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 // Import types and service
 import { Event } from "@/types"
 import { getRecommendedEvents } from "@/services/userMatchingEvents"
+import Sidebar2 from "@/components/ui/sidebar2"
 
 interface UserData {
   id: string
@@ -219,16 +220,21 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="container max-w-6xl py-10">
-        <div className="flex flex-col gap-8">
-          <div className="flex justify-between items-center">
-            <Skeleton className="h-10 w-[250px]" />
-            <Skeleton className="h-10 w-[100px]" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Skeleton className="h-[300px] w-full" />
-            <Skeleton className="h-[300px] w-full" />
-            <Skeleton className="h-[300px] w-full" />
+      <div className="flex">
+        <Sidebar2/>
+        <div className="flex-1 ml-[250px]"> {/* Adjust margin to match sidebar width */}
+          <div className="container max-w-6xl py-10">
+            <div className="flex flex-col gap-8">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-10 w-[250px]" />
+                <Skeleton className="h-10 w-[100px]" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Skeleton className="h-[300px] w-full" />
+                <Skeleton className="h-[300px] w-full" />
+                <Skeleton className="h-[300px] w-full" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -236,440 +242,452 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container max-w-6xl py-10">
-      <div className="flex flex-col gap-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {userData?.userProfile?.name || user?.email}</p>
-          </div>
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              onClick={handleRefresh} 
-              disabled={refreshing}
-              className="flex items-center"
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? "Refreshing..." : "Refresh Data"}
-            </Button>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+    <div className="flex">
+      <Sidebar2
+        userName={userData?.userProfile?.name || user?.email}
+        userEmail={user?.email}
+        onSignOut={handleSignOut}
+        onRefresh={handleRefresh}
+        isRefreshing={refreshing}
+        isAdmin={true}
+      />
+      <div className="flex-1 ml-[250px]"> {/* Adjust margin to match sidebar width */}
+        <div className="container max-w-6xl py-10">
+          <div className="flex flex-col gap-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold">Dashboard</h1>
+                <p className="text-muted-foreground">Welcome back, {userData?.userProfile?.name || user?.email}</p>
+              </div>
+              <div className="flex space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleRefresh} 
+                  disabled={refreshing}
+                  className="flex items-center"
+                >
+                  <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  {refreshing ? "Refreshing..." : "Refresh Data"}
+                </Button>
+                <Button variant="outline" onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            </div>
+
+            {!userData ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Profile Not Found</CardTitle>
+                  <CardDescription>We couldn't find your profile in our database</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="mb-4">
+                    You're authenticated with Supabase, but it seems you don't have a profile in our database.
+                    This can happen if:
+                  </p>
+                  <ul className="list-disc pl-6 mb-6 space-y-2">
+                    <li>You signed up but never completed the registration wizard</li>
+                    <li>You created your account through Supabase directly</li>
+                    <li>There was an error during the profile creation process</li>
+                  </ul>
+                  <p className="mb-4">
+                    You need to complete the registration process to access your dashboard.
+                  </p>
+                  <Button 
+                    onClick={goToRegistration}
+                    className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Go to Registration
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Tabs defaultValue="profile" className="w-full">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="profile">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </TabsTrigger>
+                  <TabsTrigger value="recommendations">
+                    <Star className="mr-2 h-4 w-4" />
+                    Recommended Events
+                  </TabsTrigger>
+                  <TabsTrigger value="preferences">
+                    <Target className="mr-2 h-4 w-4" />
+                    Preferences
+                  </TabsTrigger>
+                  <TabsTrigger value="calendar">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Calendar
+                  </TabsTrigger>
+                  <TabsTrigger value="deliverables">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Deliverables
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="profile" className="space-y-6">
+                  {userData?.userProfile ? (
+                    <>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Personal Information</CardTitle>
+                          <CardDescription>Your basic profile information</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Name</h3>
+                              <p className="text-lg">{userData.userProfile.name}</p>
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Location</h3>
+                              <p className="text-lg">{userData.userProfile.location}</p>
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Current Travel Location</h3>
+                              <p className="text-lg">{userData.userProfile.currentTravelLocation || "None specified"}</p>
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Languages</h3>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {userData.userProfile.languages?.length > 0 ? 
+                                  userData.userProfile.languages.map((lang: string, i: number) => (
+                                    <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
+                                      {lang}
+                                    </span>
+                                  )) : 
+                                  <p>None specified</p>
+                                }
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Personality & Goals</CardTitle>
+                          <CardDescription>Your traits and objectives</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Personality Traits</h3>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {userData.userProfile.personalityTraits?.length > 0 ? 
+                                  userData.userProfile.personalityTraits.map((trait: string, i: number) => (
+                                    <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
+                                      {trait}
+                                    </span>
+                                  )) : 
+                                  <p>None specified</p>
+                                }
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Goals</h3>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {userData.userProfile.goals?.length > 0 ? 
+                                  userData.userProfile.goals.map((goal: string, i: number) => (
+                                    <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
+                                      {goal}
+                                    </span>
+                                  )) : 
+                                  <p>None specified</p>
+                                }
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </>
+                  ) : (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Profile Incomplete</CardTitle>
+                        <CardDescription>Your profile information is not available</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p>You may need to complete the registration process or reload the page.</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="recommendations" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Recommended Events</CardTitle>
+                      <CardDescription>Events matched to your preferences and profile</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingRecommendedEvents ? (
+                        <div className="space-y-4">
+                          <Skeleton className="h-20 w-full" />
+                          <Skeleton className="h-20 w-full" />
+                          <Skeleton className="h-20 w-full" />
+                        </div>
+                      ) : recommendedEvents.length > 0 ? (
+                        <div className="space-y-4">
+                          {recommendedEvents.map((event, index) => (
+                            <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="font-medium text-lg">{event.name}</h3>
+                                  <p className="text-sm text-muted-foreground">{event.location} • {event.date}</p>
+                                </div>
+                              </div>
+                              <div className="mt-2">
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    Music: {event.music.join(', ')}
+                                  </span>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  {event.activities.map((activity, i) => (
+                                    <span key={i} className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                                      {activity}
+                                    </span>
+                                  ))}
+                                </div>
+                                {event.matchReasons && event.matchReasons.length > 0 && (
+                                  <div className="mt-3">
+                                    <h4 className="text-sm font-medium text-gray-700 mb-1">Why this event matches your profile:</h4>
+                                    <ul className="space-y-1">
+                                      {event.matchReasons.map((reason, i) => (
+                                        <li key={i} className="text-sm text-gray-600 flex items-start">
+                                          <span className="text-blue-500 mr-1">•</span>
+                                          {reason}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          <p className="text-muted-foreground">No recommended events found at this time.</p>
+                          <p className="text-sm mt-2">Try updating your preferences or check back later.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>All Events</CardTitle>
+                      <CardDescription>Browse all available events</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingAllEvents ? (
+                        <div className="space-y-4">
+                          <Skeleton className="h-20 w-full" />
+                          <Skeleton className="h-20 w-full" />
+                          <Skeleton className="h-20 w-full" />
+                        </div>
+                      ) : allEvents.length > 0 ? (
+                        <div className="space-y-4">
+                          {allEvents.map((event, index) => (
+                            <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="font-medium text-lg">{event.name}</h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {event.location} • {event.date}
+                                    {event.category_name && <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">{event.category_name}</span>}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="mt-2">
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    Music: {event.music.join(', ')}
+                                  </span>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  {event.activities.map((activity, i) => (
+                                    <span key={i} className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                                      {activity}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          <p className="text-muted-foreground">No events available at this time.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="preferences" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Event Preferences</CardTitle>
+                      <CardDescription>Your preferred event types and settings</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {userData?.eventPreferences ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h3 className="font-medium text-sm text-muted-foreground mb-1">Categories</h3>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {userData.eventPreferences.categories?.length > 0 ? 
+                                userData.eventPreferences.categories.map((cat: string, i: number) => (
+                                  <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm">
+                                    {cat}
+                                  </span>
+                                )) : 
+                                <p>None specified</p>
+                              }
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-sm text-muted-foreground mb-1">Vibe Keywords</h3>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {userData.eventPreferences.vibeKeywords?.length > 0 ? 
+                                userData.eventPreferences.vibeKeywords.map((vibe: string, i: number) => (
+                                  <span key={i} className="bg-amber-100 text-amber-800 px-2 py-1 rounded-md text-sm">
+                                    {vibe}
+                                  </span>
+                                )) : 
+                                <p>None specified</p>
+                              }
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-sm text-muted-foreground mb-1">Budget</h3>
+                            <p className="text-lg">{userData.eventPreferences.budget || "Not specified"}</p>
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-sm text-muted-foreground mb-1">Max Distance</h3>
+                            <p className="text-lg">{userData.eventPreferences.maxDistanceKm} km</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">No event preferences available</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Restrictions</CardTitle>
+                      <CardDescription>Your event restrictions</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {userData?.restrictions ? (
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="flex items-start">
+                            <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidCrowdedDaytimeConferences ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                            <div>
+                              <h3 className="font-medium">Avoid Crowded Daytime Conferences</h3>
+                              <p className="text-sm text-muted-foreground">{userData.restrictions.avoidCrowdedDaytimeConferences ? 'Yes' : 'No'}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidOverlyFormalNetworking ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                            <div>
+                              <h3 className="font-medium">Avoid Overly Formal Networking</h3>
+                              <p className="text-sm text-muted-foreground">{userData.restrictions.avoidOverlyFormalNetworking ? 'Yes' : 'No'}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidFamilyKidsEvents ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                            <div>
+                              <h3 className="font-medium">Avoid Family/Kids Events</h3>
+                              <p className="text-sm text-muted-foreground">{userData.restrictions.avoidFamilyKidsEvents ? 'Yes' : 'No'}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">No restrictions available</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="calendar" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Calendar Events</CardTitle>
+                      <CardDescription>Your scheduled events</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {userData?.calendarEvents && userData.calendarEvents.length > 0 ? (
+                        <div className="space-y-4">
+                          {userData.calendarEvents.map((event: any, i: number) => (
+                            <div key={i} className="border rounded-lg p-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="font-medium">{new Date(event.date).toLocaleDateString()}</h3>
+                                  <p className="text-sm text-muted-foreground">Status: {event.status}</p>
+                                </div>
+                                <span className={`text-xs px-2 py-1 rounded ${
+                                  event.status === 'Free' ? 'bg-green-100 text-green-800' : 
+                                  event.status === 'Booked' ? 'bg-blue-100 text-blue-800' : 
+                                  'bg-amber-100 text-amber-800'
+                                }`}>
+                                  {event.status}
+                                </span>
+                              </div>
+                              {event.description && (
+                                <p className="mt-2">{event.description}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">No calendar events available</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="deliverables" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Deliverables</CardTitle>
+                      <CardDescription>Your goals and commitments</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {userData?.deliverables && userData.deliverables.length > 0 ? (
+                        <div className="space-y-4">
+                          {userData.deliverables.map((deliverable: any, i: number) => (
+                            <div key={i} className="border rounded-lg p-4">
+                              <div className="flex justify-between items-start">
+                                <h3 className="font-medium">{deliverable.title}</h3>
+                                <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                                  {new Date(deliverable.date).toLocaleDateString()}
+                                </span>
+                              </div>
+                              {deliverable.note && (
+                                <p className="mt-2 text-sm">{deliverable.note}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">No deliverables available</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            )}
           </div>
         </div>
-
-        {!userData ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Not Found</CardTitle>
-              <CardDescription>We couldn't find your profile in our database</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-4">
-                You're authenticated with Supabase, but it seems you don't have a profile in our database.
-                This can happen if:
-              </p>
-              <ul className="list-disc pl-6 mb-6 space-y-2">
-                <li>You signed up but never completed the registration wizard</li>
-                <li>You created your account through Supabase directly</li>
-                <li>There was an error during the profile creation process</li>
-              </ul>
-              <p className="mb-4">
-                You need to complete the registration process to access your dashboard.
-              </p>
-              <Button 
-                onClick={goToRegistration}
-                className="w-full bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Go to Registration
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="mb-6">
-              <TabsTrigger value="profile">
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger value="recommendations">
-                <Star className="mr-2 h-4 w-4" />
-                Recommended Events
-              </TabsTrigger>
-              <TabsTrigger value="preferences">
-                <Target className="mr-2 h-4 w-4" />
-                Preferences
-              </TabsTrigger>
-              <TabsTrigger value="calendar">
-                <Calendar className="mr-2 h-4 w-4" />
-                Calendar
-              </TabsTrigger>
-              <TabsTrigger value="deliverables">
-                <FileText className="mr-2 h-4 w-4" />
-                Deliverables
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="profile" className="space-y-6">
-              {userData?.userProfile ? (
-                <>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Personal Information</CardTitle>
-                      <CardDescription>Your basic profile information</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Name</h3>
-                          <p className="text-lg">{userData.userProfile.name}</p>
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Location</h3>
-                          <p className="text-lg">{userData.userProfile.location}</p>
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Current Travel Location</h3>
-                          <p className="text-lg">{userData.userProfile.currentTravelLocation || "None specified"}</p>
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Languages</h3>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.userProfile.languages?.length > 0 ? 
-                              userData.userProfile.languages.map((lang: string, i: number) => (
-                                <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
-                                  {lang}
-                                </span>
-                              )) : 
-                              <p>None specified</p>
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Personality & Goals</CardTitle>
-                      <CardDescription>Your traits and objectives</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Personality Traits</h3>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.userProfile.personalityTraits?.length > 0 ? 
-                              userData.userProfile.personalityTraits.map((trait: string, i: number) => (
-                                <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
-                                  {trait}
-                                </span>
-                              )) : 
-                              <p>None specified</p>
-                            }
-                          </div>
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-sm text-muted-foreground mb-1">Goals</h3>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.userProfile.goals?.length > 0 ? 
-                              userData.userProfile.goals.map((goal: string, i: number) => (
-                                <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
-                                  {goal}
-                                </span>
-                              )) : 
-                              <p>None specified</p>
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </>
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Profile Incomplete</CardTitle>
-                    <CardDescription>Your profile information is not available</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>You may need to complete the registration process or reload the page.</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="recommendations" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recommended Events</CardTitle>
-                  <CardDescription>Events matched to your preferences and profile</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {loadingRecommendedEvents ? (
-                    <div className="space-y-4">
-                      <Skeleton className="h-20 w-full" />
-                      <Skeleton className="h-20 w-full" />
-                      <Skeleton className="h-20 w-full" />
-                    </div>
-                  ) : recommendedEvents.length > 0 ? (
-                    <div className="space-y-4">
-                      {recommendedEvents.map((event, index) => (
-                        <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-medium text-lg">{event.name}</h3>
-                              <p className="text-sm text-muted-foreground">{event.location} • {event.date}</p>
-                            </div>
-                          </div>
-                          <div className="mt-2">
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                Music: {event.music.join(', ')}
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {event.activities.map((activity, i) => (
-                                <span key={i} className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                                  {activity}
-                                </span>
-                              ))}
-                            </div>
-                            {event.matchReasons && event.matchReasons.length > 0 && (
-                              <div className="mt-3">
-                                <h4 className="text-sm font-medium text-gray-700 mb-1">Why this event matches your profile:</h4>
-                                <ul className="space-y-1">
-                                  {event.matchReasons.map((reason, i) => (
-                                    <li key={i} className="text-sm text-gray-600 flex items-start">
-                                      <span className="text-blue-500 mr-1">•</span>
-                                      {reason}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-muted-foreground">No recommended events found at this time.</p>
-                      <p className="text-sm mt-2">Try updating your preferences or check back later.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>All Events</CardTitle>
-                  <CardDescription>Browse all available events</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {loadingAllEvents ? (
-                    <div className="space-y-4">
-                      <Skeleton className="h-20 w-full" />
-                      <Skeleton className="h-20 w-full" />
-                      <Skeleton className="h-20 w-full" />
-                    </div>
-                  ) : allEvents.length > 0 ? (
-                    <div className="space-y-4">
-                      {allEvents.map((event, index) => (
-                        <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-medium text-lg">{event.name}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {event.location} • {event.date}
-                                {event.category_name && <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">{event.category_name}</span>}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="mt-2">
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                Music: {event.music.join(', ')}
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {event.activities.map((activity, i) => (
-                                <span key={i} className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                                  {activity}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-muted-foreground">No events available at this time.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="preferences" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Event Preferences</CardTitle>
-                  <CardDescription>Your preferred event types and settings</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {userData?.eventPreferences ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Categories</h3>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {userData.eventPreferences.categories?.length > 0 ? 
-                            userData.eventPreferences.categories.map((cat: string, i: number) => (
-                              <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm">
-                                {cat}
-                              </span>
-                            )) : 
-                            <p>None specified</p>
-                          }
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Vibe Keywords</h3>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {userData.eventPreferences.vibeKeywords?.length > 0 ? 
-                            userData.eventPreferences.vibeKeywords.map((vibe: string, i: number) => (
-                              <span key={i} className="bg-amber-100 text-amber-800 px-2 py-1 rounded-md text-sm">
-                                {vibe}
-                              </span>
-                            )) : 
-                            <p>None specified</p>
-                          }
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Budget</h3>
-                        <p className="text-lg">{userData.eventPreferences.budget || "Not specified"}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm text-muted-foreground mb-1">Max Distance</h3>
-                        <p className="text-lg">{userData.eventPreferences.maxDistanceKm} km</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No event preferences available</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Restrictions</CardTitle>
-                  <CardDescription>Your event restrictions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {userData?.restrictions ? (
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="flex items-start">
-                        <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidCrowdedDaytimeConferences ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                        <div>
-                          <h3 className="font-medium">Avoid Crowded Daytime Conferences</h3>
-                          <p className="text-sm text-muted-foreground">{userData.restrictions.avoidCrowdedDaytimeConferences ? 'Yes' : 'No'}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidOverlyFormalNetworking ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                        <div>
-                          <h3 className="font-medium">Avoid Overly Formal Networking</h3>
-                          <p className="text-sm text-muted-foreground">{userData.restrictions.avoidOverlyFormalNetworking ? 'Yes' : 'No'}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidFamilyKidsEvents ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                        <div>
-                          <h3 className="font-medium">Avoid Family/Kids Events</h3>
-                          <p className="text-sm text-muted-foreground">{userData.restrictions.avoidFamilyKidsEvents ? 'Yes' : 'No'}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No restrictions available</p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="calendar" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Calendar Events</CardTitle>
-                  <CardDescription>Your scheduled events</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {userData?.calendarEvents && userData.calendarEvents.length > 0 ? (
-                    <div className="space-y-4">
-                      {userData.calendarEvents.map((event: any, i: number) => (
-                        <div key={i} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-medium">{new Date(event.date).toLocaleDateString()}</h3>
-                              <p className="text-sm text-muted-foreground">Status: {event.status}</p>
-                            </div>
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              event.status === 'Free' ? 'bg-green-100 text-green-800' : 
-                              event.status === 'Booked' ? 'bg-blue-100 text-blue-800' : 
-                              'bg-amber-100 text-amber-800'
-                            }`}>
-                              {event.status}
-                            </span>
-                          </div>
-                          {event.description && (
-                            <p className="mt-2">{event.description}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No calendar events available</p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="deliverables" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Deliverables</CardTitle>
-                  <CardDescription>Your goals and commitments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {userData?.deliverables && userData.deliverables.length > 0 ? (
-                    <div className="space-y-4">
-                      {userData.deliverables.map((deliverable: any, i: number) => (
-                        <div key={i} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-medium">{deliverable.title}</h3>
-                            <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
-                              {new Date(deliverable.date).toLocaleDateString()}
-                            </span>
-                          </div>
-                          {deliverable.note && (
-                            <p className="mt-2 text-sm">{deliverable.note}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No deliverables available</p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        )}
       </div>
     </div>
-  )
+    )
 } 
