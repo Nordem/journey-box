@@ -4,11 +4,6 @@ import { useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import UserProfileStep from "./wizard-steps/user-profile-step"
 import EventPreferencesStep from "./wizard-steps/event-preferences-step"
-import RestrictionsStep from "./wizard-steps/restrictions-step"
-import HistoryStep from "./wizard-steps/history-step"
-import OutcomesStep from "./wizard-steps/outcomes-step"
-import CalendarStep from "./wizard-steps/calendar-step"
-import DeliverablesStep from "./wizard-steps/deliverables-step"
 import CompletionStep from "./wizard-steps/completion-step"
 import AuthStep from "./wizard-steps/auth-step"
 import WizardProgress from "./wizard-progress"
@@ -189,7 +184,7 @@ export default function RegistrationWizard() {
         email: formData.auth.email,
         password: formData.auth.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/login`,
         }
       })
 
@@ -261,8 +256,11 @@ export default function RegistrationWizard() {
       
       setIsSaving(false)
       setSaveCompleted(true)
-      // Move to the completion step
-      setCurrentStep(totalSteps - 1)
+      
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        router.push('/login')
+      }, 2000)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create profile"
       setError(errorMessage)
