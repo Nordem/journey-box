@@ -74,17 +74,30 @@ export default function Dashboard() {
   // Function to fetch recommended events using the service directly
   const fetchRecommendedEvents = async (userProfile: any) => {
     try {
-      setLoadingRecommendedEvents(true);
-      
-      if (!userProfile) {
+      if (!userProfile?.userProfile) {
         setRecommendedEvents([]);
         return;
       }
       
       const recommendedEvents = await getRecommendedEvents({
-        userProfile: userProfile.userProfile,
-        eventPreferences: userProfile.eventPreferences,
-        restrictions: userProfile.restrictions,
+        userProfile: {
+          name: userProfile.userProfile.name,
+          location: userProfile.userProfile.location,
+          currentTravelLocation: userProfile.userProfile.currentTravelLocation || "",
+          languages: userProfile.userProfile.languages || [],
+          personalityTraits: userProfile.userProfile.personalityTraits || [],
+          goals: userProfile.userProfile.goals || []
+        },
+        eventPreferences: {
+          categories: userProfile.eventPreferences?.categories || [],
+          vibeKeywords: userProfile.eventPreferences?.vibeKeywords || [],
+          idealTimeSlots: userProfile.eventPreferences?.seasonalPreferences || [],
+          budget: userProfile.eventPreferences?.budget || "",
+          preferredGroupType: userProfile.eventPreferences?.groupSizePreference || [],
+          preferredEventSize: [],
+          maxDistanceKm: 100 // Default value
+        },
+        restrictions: userProfile.restrictions || {},
         calendarAvailability: userProfile.calendarEvents?.reduce((acc: any, event: any) => {
           acc[event.date] = event.status;
           return acc;

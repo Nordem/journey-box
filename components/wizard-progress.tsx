@@ -1,105 +1,80 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { CheckCircle2, Circle } from "lucide-react"
+import { Check } from "lucide-react"
 
 interface Step {
-  title: string;
-  component: React.ReactNode;
-  description: string;
+  title: string
+  description: string
 }
 
 interface WizardProgressProps {
-  currentStep: number;
-  totalSteps: number;
-  steps: Step[];
-  isMobile: boolean;
-  isTablet: boolean;
+  steps: Step[]
+  currentStep: number
 }
 
-export default function WizardProgress({ currentStep, totalSteps, steps, isMobile, isTablet }: WizardProgressProps) {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-    },
-  }
-
+export default function WizardProgress({ steps, currentStep }: WizardProgressProps) {
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-4"
-    >
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">
-          {steps[currentStep].title}
-        </h2>
-        <span className="text-sm text-gray-400">
-          Step {currentStep + 1} of {totalSteps}
-        </span>
-      </div>
-
-      <p className="text-gray-400 text-sm">
-        {steps[currentStep].description}
-      </p>
-
+    <div className="w-full max-w-4xl mx-auto px-4">
       <div className="relative">
-        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-800 -translate-y-1/2" />
-        <div
-          className="absolute top-1/2 left-0 h-0.5 bg-blue-600 -translate-y-1/2 transition-all duration-300"
-          style={{
-            width: `${((currentStep + 1) / totalSteps) * 100}%`,
-          }}
-        />
+        {/* Progress bar */}
+        <div className="absolute top-5 left-0 w-full h-1 bg-gray-200">
+          <motion.div
+            className="absolute top-0 left-0 h-full bg-primary"
+            initial={{ width: "0%" }}
+            animate={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
+
+        {/* Steps */}
         <div className="relative flex justify-between">
-          {steps.map((_, index) => (
-            <motion.div
-              key={index}
-              variants={itemVariants}
-              className="relative"
-            >
+          {steps.map((step, index) => {
+            const isCompleted = index < currentStep
+            const isCurrent = index === currentStep
+
+            return (
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  index <= currentStep
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-400"
-                }`}
+                key={step.title}
+                className="flex flex-col items-center"
+                style={{ width: `${100 / steps.length}%` }}
               >
-                {index < currentStep ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : (
-                  <Circle className="w-5 h-5" />
-                )}
-              </div>
-              {!isMobile && (
-                <div
-                  className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 text-xs whitespace-nowrap ${
-                    index === currentStep
-                      ? "text-white font-medium"
-                      : "text-gray-400"
+                <motion.div
+                  className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                    isCompleted || isCurrent
+                      ? "border-primary bg-primary text-white"
+                      : "border-gray-300 bg-white"
                   }`}
+                  initial={false}
+                  animate={{
+                    scale: isCurrent ? 1.2 : 1,
+                    backgroundColor: isCompleted || isCurrent ? "var(--primary)" : "#fff",
+                    borderColor: isCompleted || isCurrent ? "var(--primary)" : "#d1d5db",
+                  }}
+                  transition={{ duration: 0.2 }}
                 >
-                  {steps[index].title}
+                  {isCompleted ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <span className={isCurrent ? "text-white" : "text-gray-500"}>
+                      {index + 1}
+                    </span>
+                  )}
+                </motion.div>
+                <div className="mt-2 text-center">
+                  <p className={`text-sm font-medium ${isCurrent ? "text-primary" : "text-gray-500"}`}>
+                    {step.title}
+                  </p>
+                  <p className="text-xs text-gray-400 hidden md:block">
+                    {step.description}
+                  </p>
                 </div>
-              )}
-            </motion.div>
-          ))}
+              </div>
+            )
+          })}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 

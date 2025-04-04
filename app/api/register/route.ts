@@ -106,18 +106,26 @@ export async function POST(request: Request) {
               ...userProfile,
               languages: userProfile.languages || [],
               personalityTraits: userProfile.personalityTraits || [],
-              goals: userProfile.goals || []
+              hobbiesAndInterests: userProfile.hobbiesAndInterests || [],
+              additionalInfo: userProfile.additionalInfo,
+              nearestAirport: userProfile.nearestAirport
             }
           },
           eventPreferences: eventPreferences ? {
             create: {
-              categories: eventPreferences.categories || [],
-              vibeKeywords: eventPreferences.vibeKeywords || [],
-              idealTimeSlots: eventPreferences.idealTimeSlots || [],
-              budget: eventPreferences.budget || "medium",
-              preferredGroupType: eventPreferences.preferredGroupType || [],
-              preferredEventSize: eventPreferences.preferredEventSize || [],
-              maxDistanceKm: eventPreferences.maxDistanceKm || 1000
+              preferredExperiences: eventPreferences.preferredExperiences || [],
+              preferredDestinations: eventPreferences.preferredDestinations || [],
+              seasonalPreferences: eventPreferences.seasonalPreferences || [],
+              groupSizePreference: eventPreferences.groupSizePreference || [],
+              blockedDates: eventPreferences.blockedDates || [],
+              teamBuildingPrefs: eventPreferences.teamBuildingPrefs ? {
+                create: {
+                  preferredActivities: eventPreferences.teamBuildingPrefs.preferredActivities || [],
+                  location: eventPreferences.teamBuildingPrefs.location || 'both',
+                  duration: eventPreferences.teamBuildingPrefs.duration || 'half_day',
+                  suggestions: eventPreferences.teamBuildingPrefs.suggestions
+                }
+              } : undefined
             }
           } : undefined,
           restrictions: restrictions ? {
