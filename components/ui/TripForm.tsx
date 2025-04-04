@@ -256,12 +256,12 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         <Card>
             <CardHeader>
                 <CardTitle>
-                    {editingTrip ? `Edit: ${editingTrip.title}` : "Add New Event"}
+                    {editingTrip ? `Editar: ${editingTrip.title}` : "Agregar Evento"}
                 </CardTitle>
                 <CardDescription>
                     {editingTrip
-                        ? "Modify the existing event information."
-                        : "Complete all fields to create a new event in the catalog."}
+                        ? "Modifica la información del evento existente."
+                        : "Completa todos los campos para crear un nuevo evento en el catálogo."}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -269,16 +269,16 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                     <Tabs defaultValue="basic" className="w-full">
                         <TabsList className="grid w-full grid-cols-4 mb-6">
                             <TabsTrigger value="basic">
-                                Basic Information
+                                Información Básica
                             </TabsTrigger>
                             <TabsTrigger value="media">
-                                Media
+                                Imágenes y Videos
                             </TabsTrigger>
                             <TabsTrigger value="details">
-                                Details
+                                Detalles
                             </TabsTrigger>
                             <TabsTrigger value="itinerary">
-                                Itinerary
+                                Itinerario
                             </TabsTrigger>
                         </TabsList>
 
@@ -286,7 +286,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                             <TabsContent value="basic" className="mt-0 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Event Title</Label>
+                                        <Label>Título del Evento</Label>
                                         <Input
                                             id="title"
                                             placeholder="e.g., Summer Conference 2024"
@@ -296,7 +296,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Location</Label>
+                                        <Label>Ubicación</Label>
                                         <div className="relative">
                                             <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -313,7 +313,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Dates</Label>
+                                        <Label>Fechas</Label>
                                         <div className="relative">
                                             <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -327,7 +327,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Availability (%)</Label>
+                                        <Label>Disponibilidad (%)</Label>
                                         <div className="relative">
                                             <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -347,7 +347,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Regular Price (USD)</Label>
+                                        <Label>Precio Regular (USD)</Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -363,7 +363,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Employee Price (USD)</Label>
+                                        <Label>Precio Empleado (USD)</Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -381,10 +381,10 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Description</Label>
+                                    <Label>Descripción</Label>
                                     <Textarea
                                         id="description"
-                                        placeholder="Describe the event, its attractions and experience..."
+                                        placeholder="Describe el evento, sus atractivos y experiencias..."
                                         className="min-h-[120px]"
                                         value={formData.description}
                                         onChange={handleInputChange}
@@ -393,12 +393,12 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Event Manager</Label>
+                                    <Label>Gerente del Evento</Label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             id="tripManager"
-                                            placeholder="e.g., John Smith - Human Resources"
+                                            placeholder="e.g., John Smith - Recursos Humanos"
                                             className="pl-10"
                                             value={formData.tripManager}
                                             onChange={handleInputChange}
@@ -435,7 +435,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 <>
                                                     <Upload className="h-8 w-8 text-muted-foreground" />
                                                     <p className="text-sm text-muted-foreground">
-                                                        Drag and drop the main image or click to select
+                                                        Arrastra y suelta la imagen principal o haz click para seleccionar
                                                     </p>
                                                     <Input
                                                         id="imageUpload"
@@ -450,7 +450,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                         className="mt-2"
                                                         onClick={() => document.getElementById("imageUpload")?.click()}
                                                     >
-                                                        Select Image
+                                                        Seleccionar Imagen
                                                     </Button>
                                                 </>
                                             )}
@@ -459,7 +459,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <Label htmlFor="videoUrl">Video URL (optional)</Label>
+                                            <Label htmlFor="videoUrl">URL del Video (opcional)</Label>
                                             <div className="flex items-center">
                                                 <input
                                                     type="checkbox"
@@ -469,7 +469,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                     onChange={handleInputChange}
                                                 />
                                                 <Label htmlFor="hasVideo" className="text-sm">
-                                                    Has video
+                                                    Tiene video
                                                 </Label>
                                             </div>
                                         </div>
@@ -484,9 +484,9 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <Separator />
 
                                     <div>
-                                        <h3 className="font-medium mb-2">Media Gallery</h3>
+                                        <h3 className="font-medium mb-2">Galería de Imágenes</h3>
                                         <p className="text-sm text-muted-foreground mb-4">
-                                            Add additional images to show in the event gallery.
+                                            Agrega más imágenes para mostrar en la galería del evento.
                                         </p>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
@@ -514,7 +514,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                             <div className="flex flex-col items-center justify-center gap-2">
                                                 <Upload className="h-6 w-6 text-muted-foreground" />
                                                 <p className="text-sm text-muted-foreground">
-                                                    Click to add more images to the gallery
+                                                    Haz click para agregar más imágenes a la galería
                                                 </p>
                                                 <Input
                                                     id="galleryUpload"
@@ -529,7 +529,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                     size="sm"
                                                     onClick={() => document.getElementById("galleryUpload")?.click()}
                                                 >
-                                                    Add Image
+                                                    Agregar Imagen
                                                 </Button>
                                             </div>
                                         </div>
@@ -726,10 +726,10 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                             variant="outline"
                             onClick={onCancel}
                         >
-                            Cancel
+                            Cancelar
                         </Button>
                         <Button type="submit">
-                            <Check size={16} className="mr-2" /> {editingTrip ? "Update Event" : "Save Event"}
+                            <Check size={16} className="mr-2" /> {editingTrip ? "Actualizar Evento" : "Guardar Evento"}
                         </Button>
                     </div>
                 </form>

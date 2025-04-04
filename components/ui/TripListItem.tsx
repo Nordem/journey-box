@@ -50,7 +50,7 @@ export default function TripListItem({ trip, onEdit, onDelete, onViewParticipant
                   onClick={onViewParticipants}
                 >
                   <Users className="h-4 w-4 mr-2" />
-                  View Participants
+                  Ver Participantes
                 </Button>
                 <Button
                   variant="outline"
@@ -58,7 +58,7 @@ export default function TripListItem({ trip, onEdit, onDelete, onViewParticipant
                   onClick={onEdit}
                 >
                   <Edit3 className="h-4 w-4 mr-2" />
-                  Edit
+                  Editar
                 </Button>
                 <Button
                   variant="destructive"
@@ -66,25 +66,25 @@ export default function TripListItem({ trip, onEdit, onDelete, onViewParticipant
                   onClick={onDelete}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+                  Eliminar
                 </Button>
               </div>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Dates</p>
+                <p className="text-sm text-muted-foreground">Fechas</p>
                 <p className="font-medium">{trip.dates}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Availability</p>
+                <p className="text-sm text-muted-foreground">Disponibilidad</p>
                 <p className="font-medium">{trip.availability}%</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Employee Price</p>
+                <p className="text-sm text-muted-foreground">Precio Empleado</p>
                 <p className="font-medium">${trip.employeePrice}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Regular Price</p>
+                <p className="text-sm text-muted-foreground">Precio Regular</p>
                 <p className="font-medium">${trip.regularPrice}</p>
               </div>
             </div>
