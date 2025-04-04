@@ -65,18 +65,6 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
     }
   }
 
-  const toggleGroupSize = (size: string) => {
-    setSelectedGroupSizes(prev => 
-      prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
-    )
-    updateData({
-      ...data,
-      groupSizePreference: selectedGroupSizes.includes(size)
-        ? selectedGroupSizes.filter(s => s !== size)
-        : [...selectedGroupSizes, size]
-    })
-  }
-
   const handleDateSelect = (dates: Date[] | undefined) => {
     if (!dates) return
     setSelectedDates(dates)
@@ -126,8 +114,14 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Tipo de evento y tamaño de grupo que prefieres</h2>
         <RadioGroup
-          value={selectedGroupSizes[0]}
-          onValueChange={(value) => toggleGroupSize(value)}
+          value={selectedGroupSizes[0] || ""}
+          onValueChange={(value) => {
+            setSelectedGroupSizes([value]);
+            updateData({
+              ...data,
+              groupSizePreference: [value]
+            });
+          }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
           {groupSizes.map(({ value, label, description }) => (
