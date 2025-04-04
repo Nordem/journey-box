@@ -188,14 +188,14 @@ export default function AdminTripsPage() {
     if (editingTrip) {
       setTrips(trips.map(trip => trip.id === editingTrip.id ? newTrip : trip));
       toast({
-        title: "Event updated successfully",
-        description: "The changes have been saved.",
+        title: "Evento creado exitosamente",
+        description: "Los cambios se han guardado.",
       });
     } else {
       setTrips([...trips, newTrip]);
       toast({
-        title: "Event created successfully",
-        description: "The new event has been added to the catalog.",
+        title: "Evento creado exitosamente",
+        description: "El nuevo evento ha sido agregado al catálogo.",
       });
     }
 
@@ -231,8 +231,8 @@ export default function AdminTripsPage() {
     }
 
     toast({
-      title: "Event deleted",
-      description: `The event ${tripToDelete.title} has been deleted successfully.`,
+      title: "Evento eliminado",
+      description: `El evento ${tripToDelete.title} ha sido eliminado exitosamente.`,
     })
 
     setShowDeleteConfirm(false)
@@ -257,7 +257,7 @@ export default function AdminTripsPage() {
         <main className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold">Manage Events</h1>
+              <h1 className="text-2xl font-bold">Gestionar Eventos</h1>
               <Button
                 onClick={() => {
                   setEditingTrip(null)
@@ -266,11 +266,11 @@ export default function AdminTripsPage() {
               >
                 {showForm ? (
                   <>
-                    <X size={16} className="mr-2" /> Cancel
+                    <X size={16} className="mr-2" /> Cancelar
                   </>
                 ) : (
                   <>
-                    <Plus size={16} className="mr-2" /> Add New Event
+                    <Plus size={16} className="mr-2" /> Agregar Evento
                   </>
                 )}
               </Button>
@@ -288,8 +288,8 @@ export default function AdminTripsPage() {
             ) : (
               <Tabs defaultValue="list" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="list">Event List</TabsTrigger>
-                  <TabsTrigger value="stats">Statistics</TabsTrigger>
+                  <TabsTrigger value="list">Lista de Eventos</TabsTrigger>
+                  <TabsTrigger value="stats">Estadísticas</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="list" className="mt-0">
@@ -297,7 +297,7 @@ export default function AdminTripsPage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4" />
                       <Input
-                        placeholder="Search by destination or location..."
+                        placeholder="Buscar por destino o ubicación..."
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -319,7 +319,7 @@ export default function AdminTripsPage() {
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <p className="text-muted-foreground">No events found matching your search.</p>
+                      <p className="text-muted-foreground">No se encontraron eventos que coincidan con tu búsqueda.</p>
                     </div>
                   )}
                 </TabsContent>
@@ -329,12 +329,12 @@ export default function AdminTripsPage() {
                     <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
                       <Filter className="text-accent-foreground" size={24} />
                     </div>
-                    <h3 className="text-xl font-bold mb-2">Event Statistics</h3>
+                    <h3 className="text-xl font-bold mb-2">Estadísticas de Eventos</h3>
                     <p className="text-muted-foreground mb-6 max-w-md">
-                      View data about bookings, popular destinations, and platform usage trends.
+                      Ver datos sobre reservas, destinos populares y tendencias de uso de la plataforma.
                     </p>
                     <Button>
-                      Generate Report
+                      Generar Reporte
                     </Button>
                   </div>
                 </TabsContent>
@@ -346,9 +346,9 @@ export default function AdminTripsPage() {
           <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Confirm deletion</DialogTitle>
+                <DialogTitle>Confirmar eliminación</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to delete this event? This action cannot be undone.
+                  ¿Estás seguro de querer eliminar este evento? Esta acción no se puede deshacer.
                 </DialogDescription>
               </DialogHeader>
 
@@ -374,10 +374,10 @@ export default function AdminTripsPage() {
                   variant="outline"
                   onClick={() => setShowDeleteConfirm(false)}
                 >
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button variant="destructive" onClick={handleDeleteTrip}>
-                  Delete
+                  Eliminar
                 </Button>
               </DialogFooter>
             </DialogContent>
