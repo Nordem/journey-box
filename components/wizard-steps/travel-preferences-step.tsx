@@ -40,6 +40,8 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>(data.preferredDestinations || [])
   const [newExperience, setNewExperience] = useState("")
   const [newDestination, setNewDestination] = useState("")
+  const [customExperiences, setCustomExperiences] = useState<Array<{icon: string, label: string}>>([])
+  const [customDestinations, setCustomDestinations] = useState<Array<{icon: string, label: string}>>([])
 
   const toggleExperience = (experience: string) => {
     setSelectedExperiences(prev => 
@@ -55,7 +57,9 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
 
   const addCustomExperience = () => {
     if (newExperience.trim() && !selectedExperiences.includes(newExperience.trim())) {
-      const updatedExperiences = [...selectedExperiences, newExperience.trim()];
+      const experience = newExperience.trim();
+      setCustomExperiences(prev => [...prev, { icon: "✨", label: experience }]);
+      const updatedExperiences = [...selectedExperiences, experience];
       setSelectedExperiences(updatedExperiences);
       updateData({
         ...data,
@@ -79,7 +83,9 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
 
   const addCustomDestination = () => {
     if (newDestination.trim() && !selectedDestinations.includes(newDestination.trim())) {
-      const updatedDestinations = [...selectedDestinations, newDestination.trim()];
+      const destination = newDestination.trim();
+      setCustomDestinations(prev => [...prev, { icon: "✨", label: destination }]);
+      const updatedDestinations = [...selectedDestinations, destination];
       setSelectedDestinations(updatedDestinations);
       updateData({
         ...data,
@@ -102,7 +108,7 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
         <h2 className="text-xl font-semibold mb-4">Experiencias que prefieres</h2>
         <p className="text-gray-600 mb-4">Selecciona los tipos de experiencias que más disfrutas</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {experiences.map(({ icon, label }) => (
+          {[...experiences, ...customExperiences].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedExperiences.includes(label) ? "default" : "outline"}
@@ -131,7 +137,7 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
         <h2 className="text-xl font-semibold mb-4">Destinos que te atraen</h2>
         <p className="text-gray-600 mb-4">Selecciona los tipos de destinos que prefieres visitar</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {destinations.map(({ icon, label }) => (
+          {[...destinations, ...customDestinations].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedDestinations.includes(label) ? "default" : "outline"}

@@ -37,6 +37,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
     data.blockedDates.map(date => new Date(date))
   )
   const [newSeason, setNewSeason] = useState("")
+  const [customSeasons, setCustomSeasons] = useState<Array<{icon: string, label: string}>>([])
 
   const toggleSeason = (season: string) => {
     setSelectedSeasons(prev => 
@@ -52,7 +53,9 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
 
   const addCustomSeason = () => {
     if (newSeason.trim() && !selectedSeasons.includes(newSeason.trim())) {
-      const updatedSeasons = [...selectedSeasons, newSeason.trim()];
+      const season = newSeason.trim();
+      setCustomSeasons(prev => [...prev, { icon: "✨", label: season }]);
+      const updatedSeasons = [...selectedSeasons, season];
       setSelectedSeasons(updatedSeasons);
       updateData({
         ...data,
@@ -95,7 +98,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Temporadas preferidas</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {seasons.map(({ icon, label }) => (
+          {[...seasons, ...customSeasons].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedSeasons.includes(label) ? "default" : "outline"}
