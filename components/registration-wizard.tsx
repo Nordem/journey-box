@@ -323,50 +323,59 @@ export default function RegistrationWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8">
-        <WizardProgress
-          steps={steps}
-          currentStep={currentStep}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto py-8 px-4">
+        <WizardProgress 
+          steps={steps} 
+          currentStep={currentStep} 
+          formData={formData}
         />
+        
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {steps[currentStep].component}
+          </motion.div>
+        </AnimatePresence>
 
-        <div className="mt-8 max-w-4xl mx-auto">
-          {steps[currentStep].component}
+        <div className="mt-8 flex justify-between">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 0 || isSubmitting}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Anterior
+          </Button>
 
-          <div className="mt-8 flex justify-between">
+          {currentStep === steps.length - 1 ? (
             <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 0 || isSubmitting}
+              onClick={handleSubmit}
+              disabled={isSubmitting}
             >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Anterior
+              {isSubmitting ? (
+                <>
+                  <Save className="mr-2 h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Guardar y Continuar
+                </>
+              )}
             </Button>
-
-            {currentStep === steps.length - 1 ? (
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Save className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Guardar y Continuar
-                  </>
-                )}
-              </Button>
-            ) : (
-              <Button onClick={handleNext}>
-                Siguiente
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
-          </div>
+          ) : (
+            <Button onClick={handleNext}>
+              Siguiente
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
     </div>
