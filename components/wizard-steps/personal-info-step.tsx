@@ -24,6 +24,7 @@ const languages = [
 export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepProps) {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(data.languages || [])
   const [customLanguage, setCustomLanguage] = useState("")
+  const [customLanguages, setCustomLanguages] = useState<Array<{icon: string, label: string}>>([])
 
   const handleInputChange = (field: string, value: string) => {
     updateData({
@@ -47,6 +48,7 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
   const addCustomLanguage = () => {
     if (!customLanguage.trim()) return
     const newLanguage = customLanguage.trim()
+    setCustomLanguages(prev => [...prev, { icon: "✨", label: newLanguage }])
     setSelectedLanguages(prev => [...prev, newLanguage])
     updateData({
       ...data,
@@ -106,9 +108,21 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
                 <Button
                   key={value}
                   variant={selectedLanguages.includes(label) ? "default" : "outline"}
+                  className="flex items-center gap-2"
                   onClick={() => toggleLanguage(label)}
                 >
-                  {label}
+                  <span>{label}</span>
+                </Button>
+              ))}
+              {customLanguages.map(({ icon, label }) => (
+                <Button
+                  key={label}
+                  variant={selectedLanguages.includes(label) ? "default" : "outline"}
+                  className="flex items-center gap-2"
+                  onClick={() => toggleLanguage(label)}
+                >
+                  <span>{icon}</span>
+                  <span>{label}</span>
                 </Button>
               ))}
             </div>
