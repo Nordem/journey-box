@@ -42,18 +42,26 @@ export async function POST(request: Request) {
               currentTravelLocation: data.userProfile.currentTravelLocation,
               languages: data.userProfile.languages,
               personalityTraits: data.userProfile.personalityTraits,
-              goals: data.userProfile.goals,
+              hobbiesAndInterests: data.userProfile.hobbiesAndInterests,
+              additionalInfo: data.userProfile.additionalInfo,
+              nearestAirport: data.userProfile.nearestAirport
             },
           },
           eventPreferences: {
             create: {
-              categories: data.eventPreferences.categories,
-              vibeKeywords: data.eventPreferences.vibeKeywords,
-              idealTimeSlots: data.eventPreferences.idealTimeSlots,
-              budget: data.eventPreferences.budget,
-              preferredGroupType: data.eventPreferences.preferredGroupType,
-              preferredEventSize: data.eventPreferences.preferredEventSize,
-              maxDistanceKm: data.eventPreferences.maxDistanceKm,
+              preferredExperiences: data.eventPreferences.preferredExperiences,
+              preferredDestinations: data.eventPreferences.preferredDestinations,
+              seasonalPreferences: data.eventPreferences.seasonalPreferences,
+              groupSizePreference: data.eventPreferences.groupSizePreference,
+              blockedDates: data.eventPreferences.blockedDates,
+              teamBuildingPrefs: data.eventPreferences.teamBuildingPrefs ? {
+                create: {
+                  preferredActivities: data.eventPreferences.teamBuildingPrefs.preferredActivities,
+                  location: data.eventPreferences.teamBuildingPrefs.location,
+                  duration: data.eventPreferences.teamBuildingPrefs.duration,
+                  suggestions: data.eventPreferences.teamBuildingPrefs.suggestions
+                }
+              } : undefined
             },
           },
           restrictions: {

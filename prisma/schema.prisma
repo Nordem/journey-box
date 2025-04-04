@@ -29,23 +29,38 @@ model UserProfile {
   location              String
   currentTravelLocation String?
   languages             String[]
-  personalityTraits     String[]
-  goals                 String[]
+  personalityTraits     String[]   // For traits like Sociable, Introvertido, etc.
+  hobbiesAndInterests   String[]   // For interests like Deportes por TV, Actividades deportivas, etc.
+  additionalInfo        String?    // For "Algo que quieras agregar"
+  nearestAirport        String?
+  goals                 String[]   // User's goals and objectives
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                String   @unique
 }
 
 model EventPreferences {
-  id                 String   @id @default(uuid())
-  categories         String[]
-  vibeKeywords       String[]
-  idealTimeSlots     String[]
-  budget             String
-  preferredGroupType String[]
-  preferredEventSize String[]
-  maxDistanceKm      Int
-  userId             String   @unique
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String   @id @default(uuid())
+  preferredExperiences  String[] // Relajación, Aventura, etc.
+  preferredDestinations String[] // Playa, Montaña, etc.
+  teamBuildingPrefs     TeamBuildingPreferences?
+  seasonalPreferences   String[] // Primavera, Verano, etc.
+  groupSizePreference   String[] // Individual, Grupo pequeño, etc.
+  blockedDates         DateTime[]
+  categories           String[] // Event categories preferences
+  vibeKeywords        String[] // Keywords describing preferred event vibes
+  budget              String?  // Budget preference
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TeamBuildingPreferences {
+  id                    String   @id @default(uuid())
+  preferredActivities   String[] // Dinámicas de grupo, Talleres colaborativos, etc.
+  location             String   // "office", "outside", "both"
+  duration             String   // "less_than_2h", "half_day", "full_day", "multiple_days"
+  suggestions          String?
+  eventPreferences     EventPreferences @relation(fields: [eventPreferencesId], references: [id], onDelete: Cascade)
+  eventPreferencesId   String   @unique
 }
 
 model Restrictions {

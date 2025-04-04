@@ -13,6 +13,11 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
+import PersonalityInterestsStep from "./wizard-steps/personality-interests-step"
+import TravelPreferencesStep from "./wizard-steps/travel-preferences-step"
+import TeamBuildingStep from "./wizard-steps/team-building-step"
+import AvailabilityStep from "./wizard-steps/availability-step"
+import PersonalInfoStep from "./wizard-steps/personal-info-step"
 
 interface Step {
   title: string;
@@ -38,22 +43,29 @@ interface UserProfileData {
   currentTravelLocation?: string;
   languages: string[];
   personalityTraits: string[];
+  hobbiesAndInterests: string[];
+  additionalInfo?: string;
+  nearestAirport?: string;
   goals: string[];
 }
 
 interface EventPreferencesData {
+  preferredExperiences: string[];
+  preferredDestinations: string[];
+  teamBuildingPrefs?: TeamBuildingPreferencesData;
+  seasonalPreferences: string[];
+  groupSizePreference: string[];
+  blockedDates: string[];
   categories: string[];
   vibeKeywords: string[];
-  idealTimeSlots: string[];
-  budget: string;
-  preferredGroupType: string[];
-  preferredEventSize: string[];
-  maxDistanceKm: number;
-  restrictions: {
-    avoidFamilyKidsEvents: boolean;
-    avoidCrowdedDaytimeConferences: boolean;
-    avoidOverlyFormalNetworking: boolean;
-  };
+  budget?: string;
+}
+
+interface TeamBuildingPreferencesData {
+  preferredActivities: string[];
+  location: 'office' | 'outside' | 'both';
+  duration: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days';
+  suggestions?: string;
 }
 
 interface RestrictionsData {
@@ -96,8 +108,8 @@ export default function RegistrationWizard() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveCompleted, setSaveCompleted] = useState(false)
   const { toast } = useToast()
-  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+
   const [formData, setFormData] = useState<FormData>({
     auth: {
       email: "",
@@ -110,26 +122,61 @@ export default function RegistrationWizard() {
       currentTravelLocation: "",
       languages: [],
       personalityTraits: [],
+      hobbiesAndInterests: [],
+      additionalInfo: "",
+      nearestAirport: "",
       goals: [],
     },
     eventPreferences: {
+      preferredExperiences: [],
+      preferredDestinations: [],
+      teamBuildingPrefs: {
+        preferredActivities: [],
+        location: 'both',
+        duration: 'half_day',
+        suggestions: "",
+      },
+      seasonalPreferences: [],
+      groupSizePreference: [],
+      blockedDates: [],
       categories: [],
       vibeKeywords: [],
-      idealTimeSlots: [],
-      budget: "medium",
-      preferredGroupType: [],
-      preferredEventSize: [],
-      maxDistanceKm: 1000,
-      restrictions: {
-        avoidFamilyKidsEvents: false,
-        avoidCrowdedDaytimeConferences: false,
-        avoidOverlyFormalNetworking: false
-      },
+      budget: "",
     },
   })
 
-  const isTablet = useMediaQuery("(min-width: 641px) and (max-width: 1024px)")
-  const totalSteps = 4
+  const steps = [
+    {
+      title: "Personalidad e Intereses",
+      description: "Cuéntanos sobre ti y tus intereses",
+      component: <PersonalityInterestsStep data={formData.userProfile} updateData={(data) => updateFormData("userProfile", data)} />
+    },
+    {
+      title: "Preferencias de Viaje",
+      description: "Selecciona tus experiencias y destinos preferidos",
+      component: <TravelPreferencesStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
+    },
+    {
+      title: "Team Building",
+      description: "Configura tus preferencias para actividades grupales",
+      component: <TeamBuildingStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
+    },
+    {
+      title: "Disponibilidad",
+      description: "Indica tus preferencias de tiempo y fechas",
+      component: <AvailabilityStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
+    },
+    {
+      title: "Información Personal",
+      description: "Completa tus datos personales",
+      component: <PersonalInfoStep data={formData.userProfile} updateData={(data) => updateFormData("userProfile", data)} />
+    },
+    {
+      title: "Crear Cuenta",
+      description: "Configura tu cuenta para comenzar",
+      component: <AuthStep data={formData.auth} updateData={(data) => updateFormData("auth", data)} />
+    }
+  ]
 
   const updateFormData = useCallback((section: keyof FormData, data: Partial<FormData[keyof FormData]>) => {
     setFormData((prev) => ({
@@ -142,20 +189,16 @@ export default function RegistrationWizard() {
   }, [])
 
   const handleNext = () => {
-    if (currentStep < totalSteps - 1) {
+    if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
-      if (isMobile) {
-        window.scrollTo({ top: 0, behavior: "smooth" })
-      }
+      window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
-      if (isMobile) {
-        window.scrollTo({ top: 0, behavior: "smooth" })
-      }
+      window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
@@ -279,151 +322,53 @@ export default function RegistrationWizard() {
     }
   }
 
-  const steps: Step[] = [
-    {
-      title: "Profile",
-      description: "Tell us about yourself",
-      component: (
-        <UserProfileStep
-          data={formData.userProfile}
-          updateData={(data: UserProfileData) => setFormData({ ...formData, userProfile: data })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
-      title: "Preferences",
-      description: "Set your event preferences",
-      component: (
-        <EventPreferencesStep
-          data={formData.eventPreferences}
-          updateData={(data: EventPreferencesData) => setFormData({ ...formData, eventPreferences: data })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
-      title: "Create Account",
-      description: "Set up your login credentials",
-      component: (
-        <AuthStep
-          data={formData.auth}
-          updateData={(data: AuthData) => setFormData({ ...formData, auth: data })}
-          isMobile={isMobile}
-        />
-      ),
-    },
-    {
-      title: "Complete",
-      description: "Review your profile",
-      component: (
-        <CompletionStep
-          isMobile={isMobile}
-          isSubmitting={isSubmitting}
-          isSaving={isSaving}
-          saveCompleted={saveCompleted}
-          error={error}
-          email={formData.auth.email}
-        />
-      ),
-    },
-  ]
-
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col gap-4">
-      {/* Main content card */}
-      <motion.div
-        className="bg-gray-900/95 backdrop-blur-xl rounded-3xl overflow-hidden border border-gray-800 shadow-xl"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="p-4 sm:p-6 md:p-8">
-          <div className="mb-8">
-            <WizardProgress
-              currentStep={currentStep}
-              totalSteps={totalSteps}
-              steps={steps}
-              isMobile={isMobile}
-              isTablet={isTablet}
-            />
-          </div>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-8">
+        <WizardProgress
+          steps={steps}
+          currentStep={currentStep}
+        />
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-red-900/50 border border-red-800 rounded-lg"
+        <div className="mt-8 max-w-4xl mx-auto">
+          {steps[currentStep].component}
+
+          <div className="mt-8 flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 0 || isSubmitting}
             >
-              <p className="text-red-400 text-sm">{error}</p>
-            </motion.div>
-          )}
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Anterior
+            </Button>
 
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="w-full"
+            {currentStep === steps.length - 1 ? (
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
               >
-                {steps[currentStep].component}
-              </motion.div>
-            </AnimatePresence>
+                {isSubmitting ? (
+                  <>
+                    <Save className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Guardar y Continuar
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button onClick={handleNext}>
+                Siguiente
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
-      </motion.div>
-
-      {/* Navigation buttons in separate card */}
-      <motion.div
-        className="bg-gray-900/95 backdrop-blur-xl rounded-2xl border border-gray-800 shadow-lg p-4 sm:p-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <div className="flex justify-between max-w-4xl mx-auto">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0 || isSubmitting}
-            className="group relative overflow-hidden bg-gray-800/80 border-gray-700 hover:bg-gray-700/80 text-gray-200"
-            size={isMobile ? "sm" : "default"}
-          >
-            <span className="relative z-10 flex items-center">
-              <ChevronLeft className={`${isMobile ? "mr-1 h-3 w-3" : "mr-2 h-4 w-4"}`} />
-              {isMobile ? "Back" : "Previous"}
-            </span>
-          </Button>
-
-          {currentStep < totalSteps - 1 ? (
-            <Button
-              onClick={handleNext}
-              disabled={isSubmitting}
-              className="group relative overflow-hidden bg-blue-600 hover:bg-blue-700 text-white"
-              size={isMobile ? "sm" : "default"}
-            >
-              <span className="relative z-10 flex items-center">
-                {isMobile ? "Next" : "Continue"}
-                <ChevronRight className={`${isMobile ? "ml-1 h-3 w-3" : "ml-2 h-4 w-4"}`} />
-              </span>
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || isSaving}
-              className="group relative overflow-hidden bg-blue-600 hover:bg-blue-700 text-white"
-              size={isMobile ? "sm" : "default"}
-            >
-              <span className="relative z-10 flex items-center">
-                {isSubmitting || isSaving ? "Saving..." : "Save Profile"}
-                {!isSubmitting && !isSaving && <Save className={`${isMobile ? "ml-1 h-3 w-3" : "ml-2 h-4 w-4"}`} />}
-              </span>
-            </Button>
-          )}
-        </div>
-      </motion.div>
+      </div>
     </div>
-  );
+  )
 }
