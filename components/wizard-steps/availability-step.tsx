@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 
 interface AvailabilityStepProps {
   data: {
@@ -97,17 +96,6 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
               <span>{label}</span>
             </Button>
           ))}
-        </div>
-        <div className="flex gap-2 mt-4">
-          <Input
-            placeholder="Agregar otra temporada..."
-            value={newSeason}
-            onChange={(e) => setNewSeason(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addCustomSeason()}
-          />
-          <Button onClick={addCustomSeason} variant="outline">
-            Agregar
-          </Button>
         </div>
       </Card>
 
