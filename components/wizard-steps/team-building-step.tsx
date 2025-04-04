@@ -42,6 +42,7 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
     data.teamBuildingPrefs?.duration || 'half_day'
   )
   const [newActivity, setNewActivity] = useState("")
+  const [customActivities, setCustomActivities] = useState<Array<{icon: string, label: string}>>([])
 
   const toggleActivity = (activity: string) => {
     setSelectedActivities(prev => 
@@ -60,7 +61,9 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
 
   const addCustomActivity = () => {
     if (newActivity.trim() && !selectedActivities.includes(newActivity.trim())) {
-      const updatedActivities = [...selectedActivities, newActivity.trim()];
+      const activity = newActivity.trim();
+      setCustomActivities(prev => [...prev, { icon: "✨", label: activity }]);
+      const updatedActivities = [...selectedActivities, activity];
       setSelectedActivities(updatedActivities);
       updateData({
         ...data,
@@ -118,7 +121,7 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
         <h2 className="text-xl font-semibold mb-4">Actividades que te interesan</h2>
         <p className="text-gray-600 mb-4">Selecciona las actividades de team building que prefieres</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {activities.map(({ icon, label }) => (
+          {[...activities, ...customActivities].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedActivities.includes(label) ? "default" : "outline"}

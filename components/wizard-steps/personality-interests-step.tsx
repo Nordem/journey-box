@@ -61,6 +61,8 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
   const [selectedInterests, setSelectedInterests] = useState<string[]>(data.hobbiesAndInterests || [])
   const [newTrait, setNewTrait] = useState("")
   const [newInterest, setNewInterest] = useState("")
+  const [customTraits, setCustomTraits] = useState<Array<{icon: string, label: string}>>([])
+  const [customInterests, setCustomInterests] = useState<Array<{icon: string, label: string}>>([])
 
   const toggleTrait = (trait: string) => {
     setSelectedTraits(prev => 
@@ -76,7 +78,9 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
 
   const addCustomTrait = () => {
     if (newTrait.trim() && !selectedTraits.includes(newTrait.trim())) {
-      const updatedTraits = [...selectedTraits, newTrait.trim()];
+      const trait = newTrait.trim();
+      setCustomTraits(prev => [...prev, { icon: "✨", label: trait }]);
+      const updatedTraits = [...selectedTraits, trait];
       setSelectedTraits(updatedTraits);
       updateData({
         ...data,
@@ -100,7 +104,9 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
 
   const addCustomInterest = () => {
     if (newInterest.trim() && !selectedInterests.includes(newInterest.trim())) {
-      const updatedInterests = [...selectedInterests, newInterest.trim()];
+      const interest = newInterest.trim();
+      setCustomInterests(prev => [...prev, { icon: "✨", label: interest }]);
+      const updatedInterests = [...selectedInterests, interest];
       setSelectedInterests(updatedInterests);
       updateData({
         ...data,
@@ -145,7 +151,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
         <h2 className="text-xl font-semibold mb-4">😊 Rasgos de personalidad</h2>
         <p className="text-gray-600 mb-4">Selecciona los rasgos que mejor te describen</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {personalityTraits.map(({ icon, label }) => (
+          {[...personalityTraits, ...customTraits].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedTraits.includes(label) ? "default" : "outline"}
@@ -174,7 +180,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
         <h2 className="text-xl font-semibold mb-4">❤️ Intereses y hobbies</h2>
         <p className="text-gray-600 mb-4">Selecciona tus intereses principales</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {hobbiesAndInterests.map(({ icon, label }) => (
+          {[...hobbiesAndInterests, ...customInterests].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedInterests.includes(label) ? "default" : "outline"}
