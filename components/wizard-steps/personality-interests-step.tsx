@@ -126,7 +126,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold mb-2">¡Bienvenido a Journey Box, Carlos!</h1>
+        <h1 className="text-2xl font-bold mb-2">¡Bienvenido a Journey Box!</h1>
         <p className="text-gray-600">
           Personaliza tu experiencia compartiendo tus preferencias y descubre viajes hechos para ti.
           Cuéntanos sobre tus gustos para ofrecerte experiencias únicas y conectarte con personas afines.

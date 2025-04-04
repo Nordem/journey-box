@@ -146,7 +146,11 @@ export default function Sidebar2({
         )}
       </div>
 
-      <Separator className="mx-4 w-[200px]" />
+      {isCollapsed ?
+        <Separator className="mx-4 w-[40px]" />
+        :
+        <Separator className="mx-4 w-[200px]" />
+      }
 
       {/* Main Navigation */}
       <div className="flex-1 overflow-auto py-4">
@@ -172,7 +176,9 @@ export default function Sidebar2({
         {/* Admin Section */}
         {isAdmin && (
           <>
-            <Separator className="my-4 mx-4 w-[200px]" />
+            {isCollapsed ?
+              <Separator className="my-4 mx-4 w-[40px]" />
+              : <Separator className="my-4 mx-4 w-[200px]" />}
             <div className="px-4 py-2">
               <h2
                 className={cn(
@@ -180,7 +186,7 @@ export default function Sidebar2({
                   isCollapsed && "text-center",
                 )}
               >
-                {isCollapsed ? "Admin" : "Administration"}
+                {isCollapsed ? "Admin" : "Administración"}
               </h2>
             </div>
             <nav className="grid gap-1 px-2">
@@ -217,7 +223,7 @@ export default function Sidebar2({
           <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin", !isCollapsed && "mr-2")} />
           {!isCollapsed && (isRefreshing ? "Refreshing..." : "Refresh Data")}
         </Button>
-        
+
         <Button
           variant="outline"
           size={isCollapsed ? "icon" : "default"}
