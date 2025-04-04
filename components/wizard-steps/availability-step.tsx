@@ -7,7 +7,6 @@ import { Calendar } from "@/components/ui/calendar"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
 
 interface AvailabilityStepProps {
   data: {

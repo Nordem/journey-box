@@ -2,14 +2,10 @@
 
 import { useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import UserProfileStep from "./wizard-steps/user-profile-step"
-import EventPreferencesStep from "./wizard-steps/event-preferences-step"
-import CompletionStep from "./wizard-steps/completion-step"
 import AuthStep from "./wizard-steps/auth-step"
 import WizardProgress from "./wizard-progress"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Save } from "lucide-react"
-import { useMediaQuery } from "@/hooks/use-media-query"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
@@ -325,6 +321,16 @@ export default function RegistrationWizard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => window.location.href = '/login'}
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
+            ¿Ya tienes una cuenta? Iniciar sesión
+          </Button>
+        </div>
+        
         <WizardProgress 
           steps={steps} 
           currentStep={currentStep} 
