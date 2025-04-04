@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 
 interface TeamBuildingStepProps {
   data: {
@@ -40,6 +41,7 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
   const [duration, setDuration] = useState<'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days'>(
     data.teamBuildingPrefs?.duration || 'half_day'
   )
+  const [newActivity, setNewActivity] = useState("")
 
   const toggleActivity = (activity: string) => {
     setSelectedActivities(prev => 
@@ -54,6 +56,21 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
           : [...selectedActivities, activity]
       }
     })
+  }
+
+  const addCustomActivity = () => {
+    if (newActivity.trim() && !selectedActivities.includes(newActivity.trim())) {
+      const updatedActivities = [...selectedActivities, newActivity.trim()];
+      setSelectedActivities(updatedActivities);
+      updateData({
+        ...data,
+        teamBuildingPrefs: {
+          ...data.teamBuildingPrefs,
+          preferredActivities: updatedActivities
+        }
+      });
+      setNewActivity("");
+    }
   }
 
   const handleLocationChange = (value: 'office' | 'outside' | 'both') => {
@@ -112,6 +129,17 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
               <span>{label}</span>
             </Button>
           ))}
+        </div>
+        <div className="flex gap-2 mt-4">
+          <Input
+            placeholder="Agregar otra actividad..."
+            value={newActivity}
+            onChange={(e) => setNewActivity(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && addCustomActivity()}
+          />
+          <Button onClick={addCustomActivity} variant="outline">
+            Agregar
+          </Button>
         </div>
       </Card>
 

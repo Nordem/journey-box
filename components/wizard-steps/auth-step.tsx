@@ -15,11 +15,32 @@ interface AuthStepProps {
 }
 
 export default function AuthStep({ data, updateData }: AuthStepProps) {
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordMatch, setPasswordMatch] = useState<boolean>(false);
+
   const handleInputChange = (field: string, value: string) => {
     updateData({
       ...data,
       [field]: value
     })
+
+    // Check password match when either password or confirmPassword changes
+    if (field === 'password' || field === 'confirmPassword') {
+      if (field === 'password' && data.confirmPassword && value !== data.confirmPassword) {
+        setPasswordError('Las contraseñas no coinciden');
+        setPasswordMatch(false);
+      } else if (field === 'confirmPassword' && value !== data.password) {
+        setPasswordError('Las contraseñas no coinciden');
+        setPasswordMatch(false);
+      } else if ((field === 'password' && data.confirmPassword === value) || 
+                 (field === 'confirmPassword' && data.password === value)) {
+        setPasswordError(null);
+        setPasswordMatch(true);
+      } else {
+        setPasswordError(null);
+        setPasswordMatch(false);
+      }
+    }
   }
 
   return (
@@ -63,7 +84,14 @@ export default function AuthStep({ data, updateData }: AuthStepProps) {
               value={data.confirmPassword || ""}
               onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
               placeholder="••••••••"
+              className={`${passwordError ? "border-red-500" : ""} ${passwordMatch && data.confirmPassword ? "border-green-500" : ""}`}
             />
+            {passwordError && (
+              <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+            )}
+            {passwordMatch && data.confirmPassword && (
+              <p className="text-sm text-green-500 mt-1">Las contraseñas coinciden</p>
+            )}
           </div>
         </div>
       </Card>

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 interface AvailabilityStepProps {
   data: {
@@ -35,6 +36,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
   const [selectedDates, setSelectedDates] = useState<Date[]>(
     data.blockedDates.map(date => new Date(date))
   )
+  const [newSeason, setNewSeason] = useState("")
 
   const toggleSeason = (season: string) => {
     setSelectedSeasons(prev => 
@@ -46,6 +48,18 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
         ? selectedSeasons.filter(s => s !== season)
         : [...selectedSeasons, season]
     })
+  }
+
+  const addCustomSeason = () => {
+    if (newSeason.trim() && !selectedSeasons.includes(newSeason.trim())) {
+      const updatedSeasons = [...selectedSeasons, newSeason.trim()];
+      setSelectedSeasons(updatedSeasons);
+      updateData({
+        ...data,
+        seasonalPreferences: updatedSeasons
+      });
+      setNewSeason("");
+    }
   }
 
   const toggleGroupSize = (size: string) => {
@@ -92,6 +106,17 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
               <span>{label}</span>
             </Button>
           ))}
+        </div>
+        <div className="flex gap-2 mt-4">
+          <Input
+            placeholder="Agregar otra temporada..."
+            value={newSeason}
+            onChange={(e) => setNewSeason(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && addCustomSeason()}
+          />
+          <Button onClick={addCustomSeason} variant="outline">
+            Agregar
+          </Button>
         </div>
       </Card>
 

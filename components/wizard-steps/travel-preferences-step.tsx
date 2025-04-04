@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
 interface TravelPreferencesStepProps {
   data: {
@@ -37,6 +38,8 @@ const destinations = [
 export default function TravelPreferencesStep({ data, updateData }: TravelPreferencesStepProps) {
   const [selectedExperiences, setSelectedExperiences] = useState<string[]>(data.preferredExperiences || [])
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>(data.preferredDestinations || [])
+  const [newExperience, setNewExperience] = useState("")
+  const [newDestination, setNewDestination] = useState("")
 
   const toggleExperience = (experience: string) => {
     setSelectedExperiences(prev => 
@@ -50,6 +53,18 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
     })
   }
 
+  const addCustomExperience = () => {
+    if (newExperience.trim() && !selectedExperiences.includes(newExperience.trim())) {
+      const updatedExperiences = [...selectedExperiences, newExperience.trim()];
+      setSelectedExperiences(updatedExperiences);
+      updateData({
+        ...data,
+        preferredExperiences: updatedExperiences
+      });
+      setNewExperience("");
+    }
+  }
+
   const toggleDestination = (destination: string) => {
     setSelectedDestinations(prev => 
       prev.includes(destination) ? prev.filter(d => d !== destination) : [...prev, destination]
@@ -60,6 +75,18 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
         ? selectedDestinations.filter(d => d !== destination)
         : [...selectedDestinations, destination]
     })
+  }
+
+  const addCustomDestination = () => {
+    if (newDestination.trim() && !selectedDestinations.includes(newDestination.trim())) {
+      const updatedDestinations = [...selectedDestinations, newDestination.trim()];
+      setSelectedDestinations(updatedDestinations);
+      updateData({
+        ...data,
+        preferredDestinations: updatedDestinations
+      });
+      setNewDestination("");
+    }
   }
 
   return (
@@ -87,6 +114,17 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
             </Button>
           ))}
         </div>
+        <div className="flex gap-2 mt-4">
+          <Input
+            placeholder="Agregar otra experiencia..."
+            value={newExperience}
+            onChange={(e) => setNewExperience(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && addCustomExperience()}
+          />
+          <Button onClick={addCustomExperience} variant="outline">
+            Agregar
+          </Button>
+        </div>
       </Card>
 
       <Card className="p-6">
@@ -104,6 +142,17 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
               <span>{label}</span>
             </Button>
           ))}
+        </div>
+        <div className="flex gap-2 mt-4">
+          <Input
+            placeholder="Agregar otro destino..."
+            value={newDestination}
+            onChange={(e) => setNewDestination(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && addCustomDestination()}
+          />
+          <Button onClick={addCustomDestination} variant="outline">
+            Agregar
+          </Button>
         </div>
         <p className="text-sm text-gray-500 mt-4">
           Sugerencia: Seleccionar tus destinos favoritos nos ayuda a ofrecerte experiencias más personalizadas

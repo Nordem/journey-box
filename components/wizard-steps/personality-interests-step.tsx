@@ -3,8 +3,10 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { motion } from "framer-motion"
 
 interface PersonalityInterestsStepProps {
   data: {
@@ -57,6 +59,8 @@ const hobbiesAndInterests = [
 export default function PersonalityInterestsStep({ data, updateData }: PersonalityInterestsStepProps) {
   const [selectedTraits, setSelectedTraits] = useState<string[]>(data.personalityTraits || [])
   const [selectedInterests, setSelectedInterests] = useState<string[]>(data.hobbiesAndInterests || [])
+  const [newTrait, setNewTrait] = useState("")
+  const [newInterest, setNewInterest] = useState("")
 
   const toggleTrait = (trait: string) => {
     setSelectedTraits(prev => 
@@ -64,10 +68,22 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
     )
     updateData({
       ...data,
-      personalityTraits: selectedTraits.includes(trait) 
+      personalityTraits: selectedTraits.includes(trait)
         ? selectedTraits.filter(t => t !== trait)
         : [...selectedTraits, trait]
     })
+  }
+
+  const addCustomTrait = () => {
+    if (newTrait.trim() && !selectedTraits.includes(newTrait.trim())) {
+      const updatedTraits = [...selectedTraits, newTrait.trim()];
+      setSelectedTraits(updatedTraits);
+      updateData({
+        ...data,
+        personalityTraits: updatedTraits
+      });
+      setNewTrait("");
+    }
   }
 
   const toggleInterest = (interest: string) => {
@@ -80,6 +96,18 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
         ? selectedInterests.filter(i => i !== interest)
         : [...selectedInterests, interest]
     })
+  }
+
+  const addCustomInterest = () => {
+    if (newInterest.trim() && !selectedInterests.includes(newInterest.trim())) {
+      const updatedInterests = [...selectedInterests, newInterest.trim()];
+      setSelectedInterests(updatedInterests);
+      updateData({
+        ...data,
+        hobbiesAndInterests: updatedInterests
+      });
+      setNewInterest("");
+    }
   }
 
   const handleAdditionalInfo = (value: string) => {
@@ -129,6 +157,17 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             </Button>
           ))}
         </div>
+        <div className="flex gap-2 mt-4">
+          <Input
+            placeholder="Agregar otro rasgo..."
+            value={newTrait}
+            onChange={(e) => setNewTrait(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && addCustomTrait()}
+          />
+          <Button onClick={addCustomTrait} variant="outline">
+            Agregar
+          </Button>
+        </div>
       </div>
 
       <div>
@@ -146,6 +185,17 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
               <span>{label}</span>
             </Button>
           ))}
+        </div>
+        <div className="flex gap-2 mt-4">
+          <Input
+            placeholder="Agregar otro interés..."
+            value={newInterest}
+            onChange={(e) => setNewInterest(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && addCustomInterest()}
+          />
+          <Button onClick={addCustomInterest} variant="outline">
+            Agregar
+          </Button>
         </div>
       </div>
 
