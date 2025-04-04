@@ -1,13 +1,3 @@
-// This file is no longer used. 
-// All functionality has been moved to API routes:
-// - /api/recommendations/route.ts
-// - /api/events/route.ts
-//
-// Types have been moved to /types/index.ts
-
-// npx tsc matchCollaborators.ts
-// node matchCollaborators.js
-
 import axios from "axios";
 
 interface OpenAIResponse {
@@ -37,6 +27,9 @@ export interface UserProfile {
     languages: string[];
     personalityTraits: string[];
     goals: string[];
+    hobbiesAndInterests: string[];
+    additionalInfo: string;
+    nearestAirport: string;
   };
   eventPreferences: {
     categories: string[];
@@ -46,6 +39,17 @@ export interface UserProfile {
     preferredGroupType: string[];
     preferredEventSize: string[];
     maxDistanceKm: number;
+    preferredExperiences: string[];
+    preferredDestinations: string[];
+    seasonalPreferences: string[];
+    groupSizePreference: string[];
+    blockedDates: string[];
+    teamBuildingPrefs?: {
+      preferredActivities: string[];
+      location: string;
+      duration: string;
+      suggestions: string[];
+    };
   };
   restrictions?: {
     avoidCrowdedDaytimeConferences: boolean;
@@ -113,16 +117,33 @@ Available Events:
 ${eventsList}
 
 User Profile:
-- Name: ${userProfile.userProfile.name}
-- Location: ${userProfile.userProfile.location}
-- Current Travel Location: ${userProfile.userProfile.currentTravelLocation}
-- Languages: ${userProfile.userProfile.languages.join(", ")}
-- Personality Traits: ${userProfile.userProfile.personalityTraits.join(", ")}
-- Goals: ${userProfile.userProfile.goals.join(", ")}
-- Preferred Categories: ${userProfile.eventPreferences.categories.join(", ")}
-- Vibe Keywords: ${userProfile.eventPreferences.vibeKeywords.join(", ")}
-- Budget: ${userProfile.eventPreferences.budget}
-- Max Distance: ${userProfile.eventPreferences.maxDistanceKm} km
+- Name: ${userProfile.userProfile.name || "Not specified"}
+- Location: ${userProfile.userProfile.location || "Not specified"}
+- Current Travel Location: ${userProfile.userProfile.currentTravelLocation || "Not specified"}
+- Languages: ${userProfile.userProfile.languages?.join(", ") || "Not specified"}
+- Personality Traits: ${userProfile.userProfile.personalityTraits?.join(", ") || "Not specified"}
+- Hobbies and Interests: ${userProfile.userProfile.hobbiesAndInterests?.join(", ") || "Not specified"}
+- Goals: ${userProfile.userProfile.goals?.join(", ") || "Not specified"}
+- Additional Info: ${userProfile.userProfile.additionalInfo || "None"}
+- Nearest Airport: ${userProfile.userProfile.nearestAirport || "Not specified"}
+
+Event Preferences:
+- Preferred Experiences: ${userProfile.eventPreferences.preferredExperiences?.join(", ") || "Not specified"}
+- Preferred Destinations: ${userProfile.eventPreferences.preferredDestinations?.join(", ") || "Not specified"}
+- Seasonal Preferences: ${userProfile.eventPreferences.seasonalPreferences?.join(", ") || "Not specified"}
+- Group Size Preference: ${userProfile.eventPreferences.groupSizePreference?.join(", ") || "Not specified"}
+- Blocked Dates: ${userProfile.eventPreferences.blockedDates?.join(", ") || "None"}
+- Categories: ${userProfile.eventPreferences.categories?.join(", ") || "Not specified"}
+- Vibe Keywords: ${userProfile.eventPreferences.vibeKeywords?.join(", ") || "Not specified"}
+- Budget: ${userProfile.eventPreferences.budget || "Not specified"}
+
+Team Building Preferences:
+- Preferred Activities: ${userProfile.eventPreferences.teamBuildingPrefs?.preferredActivities?.join(", ") || "None"}
+- Location Preference: ${userProfile.eventPreferences.teamBuildingPrefs?.location || "Not specified"}
+- Duration Preference: ${userProfile.eventPreferences.teamBuildingPrefs?.duration || "Not specified"}
+- Additional Suggestions: ${userProfile.eventPreferences.teamBuildingPrefs?.suggestions?.join(", ") || "None"}
+
+Other Information:
 - Restrictions: ${userProfile.restrictions ? Object.entries(userProfile.restrictions).map(([key, val]) => `${key}: ${val}`).join(", ") : "None"}
 - Calendar Availability: ${userProfile.calendarAvailability ? Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ") : "None"}
 
@@ -130,8 +151,8 @@ For each event, provide a match score (0-100) and specific reasons why it matche
 Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }`
           }
         ],
-        max_tokens: 1000,
-        temperature: 0.7,
+        temperature: 0.5,
+        max_tokens: 4000
       },
       {
         headers: {

@@ -79,6 +79,8 @@ export default function Dashboard() {
         return;
       }
       
+      setLoadingRecommendedEvents(true);
+      
       const recommendedEvents = await getRecommendedEvents({
         userProfile: {
           name: userProfile.userProfile.name,
@@ -86,16 +88,30 @@ export default function Dashboard() {
           currentTravelLocation: userProfile.userProfile.currentTravelLocation || "",
           languages: userProfile.userProfile.languages || [],
           personalityTraits: userProfile.userProfile.personalityTraits || [],
-          goals: userProfile.userProfile.goals || []
+          goals: userProfile.userProfile.goals || [],
+          hobbiesAndInterests: userProfile.userProfile.hobbiesAndInterests || [],
+          additionalInfo: userProfile.userProfile.additionalInfo || "",
+          nearestAirport: userProfile.userProfile.nearestAirport || ""
         },
         eventPreferences: {
           categories: userProfile.eventPreferences?.categories || [],
           vibeKeywords: userProfile.eventPreferences?.vibeKeywords || [],
-          idealTimeSlots: userProfile.eventPreferences?.seasonalPreferences || [],
+          idealTimeSlots: userProfile.eventPreferences?.idealTimeSlots || [],
           budget: userProfile.eventPreferences?.budget || "",
-          preferredGroupType: userProfile.eventPreferences?.groupSizePreference || [],
-          preferredEventSize: [],
-          maxDistanceKm: 100 // Default value
+          preferredGroupType: userProfile.eventPreferences?.preferredGroupType || [],
+          preferredEventSize: userProfile.eventPreferences?.preferredEventSize || [],
+          maxDistanceKm: userProfile.eventPreferences?.maxDistanceKm || 100,
+          preferredExperiences: userProfile.eventPreferences?.preferredExperiences || [],
+          preferredDestinations: userProfile.eventPreferences?.preferredDestinations || [],
+          seasonalPreferences: userProfile.eventPreferences?.seasonalPreferences || [],
+          groupSizePreference: userProfile.eventPreferences?.groupSizePreference || [],
+          blockedDates: userProfile.eventPreferences?.blockedDates || [],
+          teamBuildingPrefs: userProfile.eventPreferences?.teamBuildingPrefs || {
+            preferredActivities: [],
+            location: "",
+            duration: "",
+            suggestions: []
+          }
         },
         restrictions: userProfile.restrictions || {},
         calendarAvailability: userProfile.calendarEvents?.reduce((acc: any, event: any) => {
@@ -364,6 +380,10 @@ export default function Dashboard() {
                               <p className="text-lg">{userData.userProfile.currentTravelLocation || "None specified"}</p>
                             </div>
                             <div>
+                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Nearest Airport</h3>
+                              <p className="text-lg">{userData.userProfile.nearestAirport || "None specified"}</p>
+                            </div>
+                            <div>
                               <h3 className="font-medium text-sm text-muted-foreground mb-1">Languages</h3>
                               <div className="flex flex-wrap gap-2 mt-1">
                                 {userData.userProfile.languages?.length > 0 ? 
@@ -376,46 +396,67 @@ export default function Dashboard() {
                                 }
                               </div>
                             </div>
+                            <div>
+                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Additional Information</h3>
+                              <p className="text-lg">{userData.userProfile.additionalInfo || "None provided"}</p>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Personality & Goals</CardTitle>
-                          <CardDescription>Your traits and objectives</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Personality Traits</h3>
-                              <div className="flex flex-wrap gap-2 mt-1">
-                                {userData.userProfile.personalityTraits?.length > 0 ? 
-                                  userData.userProfile.personalityTraits.map((trait: string, i: number) => (
-                                    <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
-                                      {trait}
-                                    </span>
-                                  )) : 
-                                  <p>None specified</p>
-                                }
-                              </div>
+                      {/* Only show Personality & Interests card if at least one of the fields has data */}
+                      {(userData.userProfile.personalityTraits?.length > 0 || 
+                        userData.userProfile.hobbiesAndInterests?.length > 0 || 
+                        userData.userProfile.goals?.length > 0) && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Personality & Interests</CardTitle>
+                            <CardDescription>Your traits, interests and objectives</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {userData.userProfile.personalityTraits?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Personality Traits</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.userProfile.personalityTraits.map((trait: string, i: number) => (
+                                      <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
+                                        {trait}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {userData.userProfile.hobbiesAndInterests?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Hobbies & Interests</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.userProfile.hobbiesAndInterests.map((interest: string, i: number) => (
+                                      <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm">
+                                        {interest}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {userData.userProfile.goals?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Goals</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.userProfile.goals.map((goal: string, i: number) => (
+                                      <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
+                                        {goal}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            <div>
-                              <h3 className="font-medium text-sm text-muted-foreground mb-1">Goals</h3>
-                              <div className="flex flex-wrap gap-2 mt-1">
-                                {userData.userProfile.goals?.length > 0 ? 
-                                  userData.userProfile.goals.map((goal: string, i: number) => (
-                                    <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
-                                      {goal}
-                                    </span>
-                                  )) : 
-                                  <p>None specified</p>
-                                }
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      )}
                     </>
                   ) : (
                     <Card>
@@ -544,90 +585,288 @@ export default function Dashboard() {
                 </TabsContent>
 
                 <TabsContent value="preferences" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Event Preferences</CardTitle>
-                      <CardDescription>Your preferred event types and settings</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {userData?.eventPreferences ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <h3 className="font-medium text-sm text-muted-foreground mb-1">Categories</h3>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {userData.eventPreferences.categories?.length > 0 ? 
-                                userData.eventPreferences.categories.map((cat: string, i: number) => (
-                                  <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm">
-                                    {cat}
-                                  </span>
-                                )) : 
-                                <p>None specified</p>
-                              }
+                  {userData?.eventPreferences ? (
+                    <>
+                      {/* Travel Preferences card - only show if data exists */}
+                      {(userData.eventPreferences.preferredExperiences?.length > 0 || 
+                        userData.eventPreferences.preferredDestinations?.length > 0) && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Travel Preferences</CardTitle>
+                            <CardDescription>Your experiences and destinations preferences</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {userData.eventPreferences.preferredExperiences?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Preferred Experiences</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.preferredExperiences.map((experience: string, i: number) => (
+                                      <span key={i} className="bg-teal-100 text-teal-800 px-2 py-1 rounded-md text-sm">
+                                        {experience}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {userData.eventPreferences.preferredDestinations?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Preferred Destinations</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.preferredDestinations.map((destination: string, i: number) => (
+                                      <span key={i} className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-sm">
+                                        {destination}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-sm text-muted-foreground mb-1">Vibe Keywords</h3>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {userData.eventPreferences.vibeKeywords?.length > 0 ? 
-                                userData.eventPreferences.vibeKeywords.map((vibe: string, i: number) => (
-                                  <span key={i} className="bg-amber-100 text-amber-800 px-2 py-1 rounded-md text-sm">
-                                    {vibe}
-                                  </span>
-                                )) : 
-                                <p>None specified</p>
-                              }
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-sm text-muted-foreground mb-1">Budget</h3>
-                            <p className="text-lg">{userData.eventPreferences.budget || "Not specified"}</p>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-sm text-muted-foreground mb-1">Max Distance</h3>
-                            <p className="text-lg">{userData.eventPreferences.maxDistanceKm} km</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">No event preferences available</p>
+                          </CardContent>
+                        </Card>
                       )}
-                    </CardContent>
-                  </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Restrictions</CardTitle>
-                      <CardDescription>Your event restrictions</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {userData?.restrictions ? (
-                        <div className="grid grid-cols-1 gap-4">
-                          <div className="flex items-start">
-                            <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidCrowdedDaytimeConferences ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                            <div>
-                              <h3 className="font-medium">Avoid Crowded Daytime Conferences</h3>
-                              <p className="text-sm text-muted-foreground">{userData.restrictions.avoidCrowdedDaytimeConferences ? 'Yes' : 'No'}</p>
+                      {/* Team Building Preferences card - only show if data exists */}
+                      {(userData.eventPreferences.teamBuildingPrefs?.preferredActivities?.length > 0 || 
+                        userData.eventPreferences.teamBuildingPrefs?.location || 
+                        userData.eventPreferences.teamBuildingPrefs?.duration || 
+                        userData.eventPreferences.teamBuildingPrefs?.suggestions?.length > 0) && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Team Building Preferences</CardTitle>
+                            <CardDescription>Your team building preferences</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {userData.eventPreferences.teamBuildingPrefs?.preferredActivities?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Preferred Activities</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.teamBuildingPrefs.preferredActivities.map((activity: string, i: number) => (
+                                      <span key={i} className="bg-amber-100 text-amber-800 px-2 py-1 rounded-md text-sm">
+                                        {activity}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {userData.eventPreferences.teamBuildingPrefs?.location && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Location Preference</h3>
+                                  <p className="text-lg">
+                                    <span className="capitalize">
+                                      {userData.eventPreferences.teamBuildingPrefs.location.replace('_', ' ')}
+                                    </span>
+                                  </p>
+                                </div>
+                              )}
+                              {userData.eventPreferences.teamBuildingPrefs?.duration && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Duration Preference</h3>
+                                  <p className="text-lg">
+                                    <span className="capitalize">
+                                      {userData.eventPreferences.teamBuildingPrefs.duration.replace(/_/g, ' ')}
+                                    </span>
+                                  </p>
+                                </div>
+                              )}
+                              {userData.eventPreferences.teamBuildingPrefs?.suggestions?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Additional Suggestions</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.teamBuildingPrefs.suggestions.map((suggestion: string, i: number) => (
+                                      <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm">
+                                        {suggestion}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          </div>
-                          <div className="flex items-start">
-                            <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidOverlyFormalNetworking ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                            <div>
-                              <h3 className="font-medium">Avoid Overly Formal Networking</h3>
-                              <p className="text-sm text-muted-foreground">{userData.restrictions.avoidOverlyFormalNetworking ? 'Yes' : 'No'}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start">
-                            <div className={`w-4 h-4 mt-1 mr-2 rounded-full ${userData.restrictions.avoidFamilyKidsEvents ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                            <div>
-                              <h3 className="font-medium">Avoid Family/Kids Events</h3>
-                              <p className="text-sm text-muted-foreground">{userData.restrictions.avoidFamilyKidsEvents ? 'Yes' : 'No'}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">No restrictions available</p>
+                          </CardContent>
+                        </Card>
                       )}
-                    </CardContent>
-                  </Card>
+
+                      {/* Seasonal & Availability Preferences card - only show if data exists */}
+                      {(userData.eventPreferences.seasonalPreferences?.length > 0 || 
+                        userData.eventPreferences.groupSizePreference?.length > 0 || 
+                        userData.eventPreferences.blockedDates?.length > 0) && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Seasonal & Availability Preferences</CardTitle>
+                            <CardDescription>Your time and seasonal preferences</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {userData.eventPreferences.seasonalPreferences?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Seasonal Preferences</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.seasonalPreferences.map((season: string, i: number) => (
+                                      <span key={i} className="bg-orange-100 text-orange-800 px-2 py-1 rounded-md text-sm">
+                                        {season}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {userData.eventPreferences.groupSizePreference?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Group Size Preference</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.groupSizePreference.map((size: string, i: number) => (
+                                      <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
+                                        {size}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {userData.eventPreferences.blockedDates?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Blocked Dates</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.blockedDates.map((date: string, i: number) => (
+                                      <span key={i} className="bg-red-100 text-red-800 px-2 py-1 rounded-md text-sm">
+                                        {date}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Event Category Preferences card - only show if data exists */}
+                      {(userData.eventPreferences.categories?.length > 0 || 
+                        userData.eventPreferences.vibeKeywords?.length > 0 || 
+                        userData.eventPreferences.budget) && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Event Category Preferences</CardTitle>
+                            <CardDescription>Your preferred categories and vibes</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {userData.eventPreferences.categories?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Preferred Categories</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.categories.map((category: string, i: number) => (
+                                      <span key={i} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
+                                        {category}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {userData.eventPreferences.vibeKeywords?.length > 0 && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Vibe Keywords</h3>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {userData.eventPreferences.vibeKeywords.map((keyword: string, i: number) => (
+                                      <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm">
+                                        {keyword}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {userData.eventPreferences.budget && (
+                                <div>
+                                  <h3 className="font-medium text-sm text-muted-foreground mb-1">Budget</h3>
+                                  <p className="text-lg capitalize">{userData.eventPreferences.budget}</p>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Restrictions card - only show if data exists and has at least one enabled restriction */}
+                      {userData?.restrictions && 
+                        (userData.restrictions.avoidCrowdedDaytimeConferences || 
+                         userData.restrictions.avoidOverlyFormalNetworking || 
+                         userData.restrictions.avoidFamilyKidsEvents) && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Restrictions</CardTitle>
+                            <CardDescription>Your event restrictions</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-1 gap-4">
+                              {userData.restrictions.avoidCrowdedDaytimeConferences && (
+                                <div className="flex items-start">
+                                  <div className="w-4 h-4 mt-1 mr-2 rounded-full bg-red-500"></div>
+                                  <div>
+                                    <h3 className="font-medium">Avoid Crowded Daytime Conferences</h3>
+                                    <p className="text-sm text-muted-foreground">Yes</p>
+                                  </div>
+                                </div>
+                              )}
+                              {userData.restrictions.avoidOverlyFormalNetworking && (
+                                <div className="flex items-start">
+                                  <div className="w-4 h-4 mt-1 mr-2 rounded-full bg-red-500"></div>
+                                  <div>
+                                    <h3 className="font-medium">Avoid Overly Formal Networking</h3>
+                                    <p className="text-sm text-muted-foreground">Yes</p>
+                                  </div>
+                                </div>
+                              )}
+                              {userData.restrictions.avoidFamilyKidsEvents && (
+                                <div className="flex items-start">
+                                  <div className="w-4 h-4 mt-1 mr-2 rounded-full bg-red-500"></div>
+                                  <div>
+                                    <h3 className="font-medium">Avoid Family/Kids Events</h3>
+                                    <p className="text-sm text-muted-foreground">Yes</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Show an empty state if no preferences are set */}
+                      {!(userData.eventPreferences.preferredExperiences?.length > 0 || 
+                         userData.eventPreferences.preferredDestinations?.length > 0 ||
+                         userData.eventPreferences.teamBuildingPrefs?.preferredActivities?.length > 0 || 
+                         userData.eventPreferences.teamBuildingPrefs?.location || 
+                         userData.eventPreferences.teamBuildingPrefs?.duration || 
+                         userData.eventPreferences.teamBuildingPrefs?.suggestions?.length > 0 ||
+                         userData.eventPreferences.seasonalPreferences?.length > 0 || 
+                         userData.eventPreferences.groupSizePreference?.length > 0 || 
+                         userData.eventPreferences.blockedDates?.length > 0 ||
+                         userData.eventPreferences.categories?.length > 0 || 
+                         userData.eventPreferences.vibeKeywords?.length > 0 || 
+                         userData.eventPreferences.budget ||
+                         userData.restrictions?.avoidCrowdedDaytimeConferences || 
+                         userData.restrictions?.avoidOverlyFormalNetworking || 
+                         userData.restrictions?.avoidFamilyKidsEvents) && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>No Preferences Set</CardTitle>
+                            <CardDescription>You haven't set any preferences yet</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <p>You can set your preferences by completing the registration process.</p>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </>
+                  ) : (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Preferences Not Available</CardTitle>
+                        <CardDescription>Your preference information is not available</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p>You may need to complete the registration process.</p>
+                      </CardContent>
+                    </Card>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="calendar" className="space-y-6">
