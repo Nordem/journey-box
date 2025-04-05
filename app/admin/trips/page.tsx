@@ -43,6 +43,7 @@ import {
 import Sidebar2 from "@/components/ui/sidebar2"
 import TripListItem from "@/components/ui/TripListItem"
 import TripForm from "@/components/ui/TripForm"
+import { cn } from "@/lib/utils"
 
 // Define Trip interface
 interface Trip {
@@ -101,6 +102,7 @@ export default function AdminTripsPage() {
   const [showParticipants, setShowParticipants] = useState(false)
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null)
   const { toast } = useToast()
+  const [isCollapsed, setIsCollapsed] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
 
   // Load trips on init
   useEffect(() => {
@@ -251,14 +253,24 @@ export default function AdminTripsPage() {
   )
 
   return (
-    <div className="flex">
-      <Sidebar2 isAdmin={true} />
-      <div className="flex-1 ml-[250px]">
-        <main className="min-h-screen">
+    <div className="flex bg-black">
+      <Sidebar2 
+        isAdmin={true} 
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+      />
+      <div className={cn(
+        "flex-1 transition-all duration-300",
+        isCollapsed ? "ml-[70px]" : "ml-[250px]",
+      )}>
+        <main className="min-h-screen bg-black text-white">
           <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold">Gestionar Eventos</h1>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                Gestionar Eventos
+              </h1>
               <Button
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg"
                 onClick={() => {
                   setEditingTrip(null)
                   setShowForm(!showForm)
@@ -287,18 +299,28 @@ export default function AdminTripsPage() {
               />
             ) : (
               <Tabs defaultValue="list" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="list">Lista de Eventos</TabsTrigger>
-                  <TabsTrigger value="stats">Estadísticas</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-6 bg-transparent border border-indigo-500/30 rounded-xl overflow-hidden">
+                  <TabsTrigger
+                    value="list"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/80 data-[state=active]:to-purple-600/80 data-[state=active]:text-white data-[state=active]:shadow-none text-indigo-300 h-full rounded-l-xl"
+                  >
+                    Lista de Eventos
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="stats"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/80 data-[state=active]:to-purple-600/80 data-[state=active]:text-white data-[state=active]:shadow-none text-indigo-300 h-full rounded-r-xl"
+                  >
+                    Estadísticas
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="list" className="mt-0">
                   <div className="mb-6">
                     <div className="relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4" />
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-indigo-400" />
                       <Input
                         placeholder="Buscar por destino o ubicación..."
-                        className="pl-10"
+                        className="bg-indigo-950/20 border-indigo-500/30 text-white pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
@@ -319,21 +341,21 @@ export default function AdminTripsPage() {
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <p className="text-muted-foreground">No se encontraron eventos que coincidan con tu búsqueda.</p>
+                      <p className="text-gray-400">No se encontraron eventos que coincidan con tu búsqueda.</p>
                     </div>
                   )}
                 </TabsContent>
 
                 <TabsContent value="stats" className="mt-0">
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
-                      <Filter className="text-accent-foreground" size={24} />
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center mb-4">
+                      <Filter className="text-white" size={24} />
                     </div>
                     <h3 className="text-xl font-bold mb-2">Estadísticas de Eventos</h3>
-                    <p className="text-muted-foreground mb-6 max-w-md">
+                    <p className="text-gray-400 mb-6 max-w-md">
                       Ver datos sobre reservas, destinos populares y tendencias de uso de la plataforma.
                     </p>
-                    <Button>
+                    <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg">
                       Generar Reporte
                     </Button>
                   </div>
@@ -344,16 +366,16 @@ export default function AdminTripsPage() {
 
           {/* Delete Confirmation Dialog */}
           <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-            <DialogContent>
+            <DialogContent className="bg-gradient-to-b from-indigo-950/90 to-black/90 border border-indigo-500/30 text-white">
               <DialogHeader>
                 <DialogTitle>Confirmar eliminación</DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-gray-400">
                   ¿Estás seguro de querer eliminar este evento? Esta acción no se puede deshacer.
                 </DialogDescription>
               </DialogHeader>
 
               {tripToDelete && (
-                <div className="flex items-center gap-4 p-4 rounded-lg border my-4">
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-indigo-950/30 border border-indigo-500/20 my-4">
                   <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
                     <Image
                       src={tripToDelete.imageUrl || "/placeholder.svg"}
@@ -364,7 +386,7 @@ export default function AdminTripsPage() {
                   </div>
                   <div>
                     <h4 className="font-medium">{tripToDelete.title}</h4>
-                    <p className="text-sm text-muted-foreground">{tripToDelete.location}</p>
+                    <p className="text-sm text-gray-400">{tripToDelete.location}</p>
                   </div>
                 </div>
               )}
@@ -372,6 +394,7 @@ export default function AdminTripsPage() {
               <DialogFooter>
                 <Button
                   variant="outline"
+                  className="border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
                   onClick={() => setShowDeleteConfirm(false)}
                 >
                   Cancelar

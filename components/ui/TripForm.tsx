@@ -60,9 +60,9 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
     // Add state for image preview
     const [imagePreview, setImagePreview] = useState<string>(editingTrip?.imageUrl || "");
-    
+
     // Add state for gallery images
-    const [galleryImages, setGalleryImages] = useState<Array<{id: string, url: string}>>(
+    const [galleryImages, setGalleryImages] = useState<Array<{ id: string, url: string }>>(
         editingTrip?.galleryImages?.map((url: string, index: number) => ({
             id: `gallery-${index}`,
             url
@@ -70,8 +70,8 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     );
 
     // Add state to track additional days
-    const [additionalDays, setAdditionalDays] = useState<Array<{day: number, title: string, activities: string}>>(
-        editingTrip?.itinerary && editingTrip.itinerary.length > 2 
+    const [additionalDays, setAdditionalDays] = useState<Array<{ day: number, title: string, activities: string }>>(
+        editingTrip?.itinerary && editingTrip.itinerary.length > 2
             ? editingTrip.itinerary.slice(2).map((day: any, index: number) => ({
                 day: index + 3,
                 title: day.title || `Día ${index + 3}`,
@@ -122,7 +122,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Handle input changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value, type } = e.target;
-        
+
         if (type === 'checkbox') {
             const checkbox = e.target as HTMLInputElement;
             setFormData(prev => ({ ...prev, [id]: checkbox.checked }));
@@ -143,11 +143,11 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Add a new day
     const addNewDay = () => {
         setAdditionalDays(prev => [
-            ...prev, 
-            { 
-                day: prev.length + 3, 
-                title: `Día ${prev.length + 3}`, 
-                activities: "" 
+            ...prev,
+            {
+                day: prev.length + 3,
+                title: `Día ${prev.length + 3}`,
+                activities: ""
             }
         ]);
     };
@@ -226,58 +226,70 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Handle form submission
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
         // Create a FormData object with the current state
         const formDataObj = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
             formDataObj.append(key, value.toString());
         });
-        
+
         // Add gallery images to FormData
         formDataObj.append('galleryImagesCount', galleryImages.length.toString());
         galleryImages.forEach((img, index) => {
             formDataObj.append(`galleryImage${index}`, img.url);
         });
-        
+
         // Add additional days to FormData
         additionalDays.forEach((day, index) => {
             formDataObj.append(`additionalDay${index}Title`, day.title);
             formDataObj.append(`additionalDay${index}Activities`, day.activities);
         });
-        
+
         // Add the count of additional days
         formDataObj.append('additionalDaysCount', additionalDays.length.toString());
-        
+
         // Call the original onSubmit with the FormData
         onSubmit(formDataObj);
     };
 
     return (
-        <Card>
+        <Card className="bg-indigo-950/30 border border-indigo-500/30 text-white">
             <CardHeader>
-                <CardTitle>
-                    {editingTrip ? `Editar: ${editingTrip.title}` : "Agregar Evento"}
+                <CardTitle className="text-xl bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                    {editingTrip ? `Editar: ${editingTrip.title}` : "Añadir Nuevo Viaje"}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-400">
                     {editingTrip
-                        ? "Modifica la información del evento existente."
-                        : "Completa todos los campos para crear un nuevo evento en el catálogo."}
+                        ? "Modifica la información del viaje existente."
+                        : "Complete todos los campos para crear un nuevo destino en el catálogo."}
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleFormSubmit} className="space-y-6">
                     <Tabs defaultValue="basic" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4 mb-6">
-                            <TabsTrigger value="basic">
+                        <TabsList className="grid w-full grid-cols-4 mb-6 bg-transparent border border-indigo-500/30 rounded-xl overflow-hidden">
+                            <TabsTrigger
+                                value="basic"
+                                className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/80 data-[state=active]:to-purple-600/80 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none text-indigo-300 h-full"
+                            >
                                 Información Básica
                             </TabsTrigger>
-                            <TabsTrigger value="media">
+                            <TabsTrigger
+                                value="media"
+                                className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/80 data-[state=active]:to-purple-600/80 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none text-indigo-300 h-full"
+                            >
                                 Imágenes y Videos
                             </TabsTrigger>
-                            <TabsTrigger value="details">
+                            <TabsTrigger
+                                value="details"
+                                className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/80 data-[state=active]:to-purple-600/80 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none text-indigo-300 h-full"
+                            >
                                 Detalles
                             </TabsTrigger>
-                            <TabsTrigger value="itinerary">
+                            <TabsTrigger
+                                value="itinerary"
+                                className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/80 data-[state=active]:to-purple-600/80 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none text-indigo-300 h-full"
+                            >
                                 Itinerario
                             </TabsTrigger>
                         </TabsList>
@@ -293,16 +305,17 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                             value={formData.title}
                                             onChange={handleInputChange}
                                             required
+                                            className="bg-indigo-950/20 border-indigo-500/30 text-white"
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Ubicación</Label>
                                         <div className="relative">
-                                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-indigo-400" />
                                             <Input
                                                 id="location"
                                                 placeholder="e.g., San Francisco, CA"
-                                                className="pl-10"
+                                                className="pl-10 bg-indigo-950/20 border-indigo-500/30 text-white"
                                                 value={formData.location}
                                                 onChange={handleInputChange}
                                                 required
@@ -315,11 +328,11 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label>Fechas</Label>
                                         <div className="relative">
-                                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-purple-400" />
                                             <Input
                                                 id="dates"
                                                 placeholder="e.g., June 15-18, 2024"
-                                                className="pl-10"
+                                                className="pl-10 bg-indigo-950/20 border-indigo-500/30 text-white"
                                                 value={formData.dates}
                                                 onChange={handleInputChange}
                                                 required
@@ -329,14 +342,14 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label>Disponibilidad (%)</Label>
                                         <div className="relative">
-                                            <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Users className="absolute left-3 top-3 h-4 w-4 text-pink-400" />
                                             <Input
                                                 id="availability"
                                                 type="number"
                                                 min="0"
                                                 max="100"
                                                 placeholder="e.g., 75"
-                                                className="pl-10"
+                                                className="pl-10 bg-indigo-950/20 border-indigo-500/30 text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 value={formData.availability}
                                                 onChange={handleInputChange}
                                                 required
@@ -349,13 +362,13 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label>Precio Regular (USD)</Label>
                                         <div className="relative">
-                                            <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <DollarSign className="absolute left-3 top-3 h-4 w-4 text-green-400" />
                                             <Input
                                                 id="regularPrice"
                                                 type="number"
                                                 min="0"
                                                 placeholder="e.g., 1200"
-                                                className="pl-10"
+                                                className="pl-10 bg-indigo-950/20 border-indigo-500/30 text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 value={formData.regularPrice}
                                                 onChange={handleInputChange}
                                                 required
@@ -365,13 +378,13 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label>Precio Empleado (USD)</Label>
                                         <div className="relative">
-                                            <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <DollarSign className="absolute left-3 top-3 h-4 w-4 text-green-400" />
                                             <Input
                                                 id="employeePrice"
                                                 type="number"
                                                 min="0"
                                                 placeholder="e.g., 300"
-                                                className="pl-10"
+                                                className="pl-10 bg-indigo-950/20 border-indigo-500/30 text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 value={formData.employeePrice}
                                                 onChange={handleInputChange}
                                                 required
@@ -385,7 +398,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <Textarea
                                         id="description"
                                         placeholder="Describe el evento, sus atractivos y experiencias..."
-                                        className="min-h-[120px]"
+                                        className="min-h-[120px] bg-indigo-950/20 border-indigo-500/30 text-white"
                                         value={formData.description}
                                         onChange={handleInputChange}
                                         required
@@ -395,11 +408,11 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 <div className="space-y-2">
                                     <Label>Gerente del Evento</Label>
                                     <div className="relative">
-                                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                        <User className="absolute left-3 top-3 h-4 w-4 text-pink-400" />
                                         <Input
                                             id="tripManager"
                                             placeholder="e.g., John Smith - Recursos Humanos"
-                                            className="pl-10"
+                                            className="pl-10 bg-indigo-950/20 border-indigo-500/30 text-white"
                                             value={formData.tripManager}
                                             onChange={handleInputChange}
                                             required
@@ -410,7 +423,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                             <TabsContent value="media" className="mt-0 space-y-4">
                                 <div className="space-y-4">
-                                    <div className="p-4 border border-dashed rounded-lg text-center">
+                                    <div className="p-4 border border-dashed border-indigo-500/30 rounded-lg text-center bg-indigo-950/20">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             {imagePreview ? (
                                                 <div className="relative w-full max-w-md h-48">
@@ -422,7 +435,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                     <Button
                                                         type="button"
                                                         variant="outline"
-                                                        className="absolute top-2 right-2"
+                                                        className="absolute top-2 right-2 border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
                                                         onClick={() => {
                                                             setImagePreview("");
                                                             setFormData(prev => ({ ...prev, imageUrl: "" }));
@@ -433,21 +446,21 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <Upload className="h-8 w-8 text-muted-foreground" />
-                                                    <p className="text-sm text-muted-foreground">
+                                                    <Upload className="h-8 w-8 text-indigo-400" />
+                                                    <p className="text-sm text-indigo-400">
                                                         Arrastra y suelta la imagen principal o haz click para seleccionar
                                                     </p>
                                                     <Input
                                                         id="imageUpload"
                                                         type="file"
                                                         accept="image/*"
-                                                        className="hidden"
+                                                        className="hidden bg-indigo-950/20 border-indigo-500/30 text-white"
                                                         onChange={handleImageUpload}
                                                     />
                                                     <Button
                                                         type="button"
                                                         variant="outline"
-                                                        className="mt-2"
+                                                        className="mt-2 border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
                                                         onClick={() => document.getElementById("imageUpload")?.click()}
                                                     >
                                                         Seleccionar Imagen
@@ -468,7 +481,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                     checked={formData.hasVideo}
                                                     onChange={handleInputChange}
                                                 />
-                                                <Label htmlFor="hasVideo" className="text-sm">
+                                                <Label htmlFor="hasVideo" className="text-sm text-indigo-400">
                                                     Tiene video
                                                 </Label>
                                             </div>
@@ -478,14 +491,15 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                             placeholder="e.g., https://example.com/video.mp4"
                                             value={formData.videoUrl}
                                             onChange={handleInputChange}
+                                            className="bg-indigo-950/20 border-indigo-500/30 text-white"
                                         />
                                     </div>
 
-                                    <Separator />
+                                    <Separator className="my-4 bg-indigo-500/20" />
 
                                     <div>
-                                        <h3 className="font-medium mb-2">Galería de Imágenes</h3>
-                                        <p className="text-sm text-muted-foreground mb-4">
+                                        <h3 className="font-medium mb-2 text-indigo-400">Galería de Imágenes</h3>
+                                        <p className="text-sm text-indigo-400 mb-4">
                                             Agrega más imágenes para mostrar en la galería del evento.
                                         </p>
 
@@ -499,10 +513,12 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                     />
                                                     <Button
                                                         type="button"
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        onClick={() => removeGalleryImage(img.id)}
+                                                        variant="outline"
+                                                        className="absolute top-2 right-2 border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                                                        onClick={() => {
+                                                            setImagePreview("");
+                                                            setFormData(prev => ({ ...prev, imageUrl: "" }));
+                                                        }}
                                                     >
                                                         <X size={16} />
                                                     </Button>
@@ -510,23 +526,24 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                             ))}
                                         </div>
 
-                                        <div className="p-4 border border-dashed rounded-lg text-center">
+                                        <div className="p-4 border border-dashed border-indigo-500/30 rounded-lg text-center bg-indigo-950/20">
                                             <div className="flex flex-col items-center justify-center gap-2">
-                                                <Upload className="h-6 w-6 text-muted-foreground" />
-                                                <p className="text-sm text-muted-foreground">
+                                                <Upload className="h-6 w-6 text-indigo-400" />
+                                                <p className="text-sm text-indigo-400">
                                                     Haz click para agregar más imágenes a la galería
                                                 </p>
                                                 <Input
                                                     id="galleryUpload"
                                                     type="file"
                                                     accept="image/*"
-                                                    className="hidden"
+                                                    className="hidden bg-indigo-950/20 border-indigo-500/30 text-white"
                                                     onChange={handleGalleryImageUpload}
                                                 />
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
+                                                    className="border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
                                                     onClick={() => document.getElementById("galleryUpload")?.click()}
                                                 >
                                                     Agregar Imagen
@@ -539,16 +556,16 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                             <TabsContent value="details" className="mt-0 space-y-4">
                                 <div className="space-y-4">
-                                    <h3 className="text-md font-medium">Información del Hotel</h3>
+                                    <h3 className="text-md font-medium mb-3 text-indigo-400">Información del Hotel</h3>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelName">Nombre del Hotel</Label>
                                         <div className="relative">
-                                            <Hotel className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Hotel className="absolute left-3 top-3 h-4 w-4 text-pink-400" />
                                             <Input
                                                 id="hotelName"
                                                 placeholder="Ej: Paradisus Playa del Carmen"
-                                                className="pl-10"
+                                                className="pl-10 bg-indigo-950/20 border-indigo-500/30 text-white"
                                                 value={formData.hotelName}
                                                 onChange={handleInputChange}
                                                 required
@@ -561,7 +578,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                         <Textarea
                                             id="hotelDescription"
                                             placeholder="Describe el hotel, sus instalaciones y servicios..."
-                                            className="min-h-[100px]"
+                                            className="min-h-[100px] bg-indigo-950/20 border-indigo-500/30 text-white"
                                             value={formData.hotelDescription}
                                             onChange={handleInputChange}
                                             required
@@ -575,22 +592,23 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                             placeholder="Ej: Todo incluido, Spa, Piscinas, WiFi gratis"
                                             value={formData.hotelAmenities}
                                             onChange={handleInputChange}
+                                            className="bg-indigo-950/20 border-indigo-500/30 text-white"
                                             required
                                         />
                                     </div>
                                 </div>
 
-                                <Separator className="my-4" />
+                                <Separator className="my-4 bg-indigo-500/20" />
 
                                 <div className="space-y-4">
-                                    <h3 className="text-md font-medium">Incluye y No Incluye</h3>
+                                    <h3 className="text-md font-medium mb-3 text-indigo-400">Incluye y No Incluye</h3>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="includes">Incluye (un elemento por línea)</Label>
                                         <Textarea
                                             id="includes"
                                             placeholder="Ej: Vuelos redondos Ciudad de México - Cancún&#10;Traslados aeropuerto - hotel - aeropuerto&#10;3 noches de alojamiento en hotel 5 estrellas"
-                                            className="min-h-[120px]"
+                                            className="min-h-[120px] bg-indigo-950/20 border-indigo-500/30 text-white"
                                             value={formData.includes}
                                             onChange={handleInputChange}
                                             required
@@ -602,7 +620,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                         <Textarea
                                             id="excludes"
                                             placeholder="Ej: Gastos personales y propinas&#10;Actividades no mencionadas en el itinerario&#10;Tratamientos de spa"
-                                            className="min-h-[120px]"
+                                            className="min-h-[120px] bg-indigo-950/20 border-indigo-500/30 text-white"
                                             value={formData.excludes}
                                             onChange={handleInputChange}
                                             required
@@ -613,9 +631,9 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                             <TabsContent value="itinerary" className="mt-0 space-y-4">
                                 <div className="space-y-6">
-                                    <div className="p-4 rounded-lg border">
-                                        <h4 className="text-md font-medium mb-3 flex items-center">
-                                            <Plane size={18} className="text-muted-foreground mr-2" />
+                                    <div className="p-4 rounded-lg border border-indigo-500/30">
+                                        <h4 className="text-md font-medium mb-3 flex items-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                                            <Plane size={18} className="text-indigo-400 mr-2" />
                                             Día 1: Llegada y bienvenida
                                         </h4>
                                         <div className="space-y-2">
@@ -625,6 +643,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 value={formData.day1Title}
                                                 onChange={handleInputChange}
                                                 required
+                                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
                                             />
                                         </div>
                                         <div className="space-y-2 mt-3">
@@ -632,7 +651,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                             <Textarea
                                                 id="day1Activities"
                                                 placeholder="Ej: Vuelo Ciudad de México - Cancún&#10;Traslado al hotel y check-in&#10;Cena de bienvenida en el restaurante principal"
-                                                className="min-h-[100px]"
+                                                className="min-h-[100px] bg-indigo-950/20 border-indigo-500/30 text-white"
                                                 value={formData.day1Activities}
                                                 onChange={handleInputChange}
                                                 required
@@ -640,9 +659,9 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                         </div>
                                     </div>
 
-                                    <div className="p-4 rounded-lg border">
-                                        <h4 className="text-md font-medium mb-3 flex items-center">
-                                            <Camera size={18} className="text-muted-foreground mr-2" />
+                                    <div className="p-4 rounded-lg border border-indigo-500/30">
+                                        <h4 className="text-md font-medium mb-3 flex items-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                                            <Camera size={18} className="text-indigo-400 mr-2" />
                                             Día 2: Exploración
                                         </h4>
                                         <div className="space-y-2">
@@ -652,6 +671,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 value={formData.day2Title}
                                                 onChange={handleInputChange}
                                                 required
+                                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
                                             />
                                         </div>
                                         <div className="space-y-2 mt-3">
@@ -659,7 +679,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                             <Textarea
                                                 id="day2Activities"
                                                 placeholder="Ej: Desayuno buffet en el hotel&#10;Excursión a las ruinas arqueológicas&#10;Almuerzo en restaurante local con vista al mar"
-                                                className="min-h-[100px]"
+                                                className="min-h-[100px] bg-indigo-950/20 border-indigo-500/30 text-white"
                                                 value={formData.day2Activities}
                                                 onChange={handleInputChange}
                                                 required
@@ -669,10 +689,10 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                     {/* Additional Days */}
                                     {additionalDays.map((day, index) => (
-                                        <div key={index} className="p-4 rounded-lg border">
+                                        <div key={index} className="p-4 rounded-lg border border-indigo-500/30">
                                             <div className="flex justify-between items-center mb-3">
-                                                <h4 className="text-md font-medium flex items-center">
-                                                    <Plane size={18} className="text-muted-foreground mr-2" />
+                                                <h4 className="text-md font-medium flex items-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                                                    <Plane size={18} className="text-indigo-400 mr-2" />
                                                     Día {day.day}: {day.title}
                                                 </h4>
                                                 <Button
@@ -691,6 +711,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                     value={day.title}
                                                     onChange={(e) => handleAdditionalDayChange(index, 'title', e.target.value)}
                                                     required
+                                                    className="bg-indigo-950/20 border-indigo-500/30 text-white"
                                                 />
                                             </div>
                                             <div className="space-y-2 mt-3">
@@ -698,7 +719,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 <Textarea
                                                     id={`additionalDay${index}Activities`}
                                                     placeholder="Ej: Desayuno buffet en el hotel&#10;Excursión a las ruinas arqueológicas&#10;Almuerzo en restaurante local con vista al mar"
-                                                    className="min-h-[100px]"
+                                                    className="min-h-[100px] bg-indigo-950/20 border-indigo-500/30 text-white"
                                                     value={day.activities}
                                                     onChange={(e) => handleAdditionalDayChange(index, 'activities', e.target.value)}
                                                     required
@@ -710,25 +731,29 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        className="w-full"
+                                        className="w-full border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
                                         onClick={addNewDay}
                                     >
-                                        <Plus size={16} className="mr-2" /> Añadir otro día
+                                        <Plus size={16} className="mr-2 text-indigo-400" /> Añadir otro día
                                     </Button>
                                 </div>
                             </TabsContent>
                         </ScrollArea>
                     </Tabs>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-indigo-500/20">
                         <Button
                             type="button"
                             variant="outline"
+                            className="border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20 text-white"
                             onClick={onCancel}
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit">
+                        <Button
+                            type="submit"
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                        >
                             <Check size={16} className="mr-2" /> {editingTrip ? "Actualizar Evento" : "Guardar Evento"}
                         </Button>
                     </div>
