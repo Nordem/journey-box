@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LogOut, User, Calendar, FileText, Target, RefreshCw, AlertTriangle, Star } from "lucide-react"
+import { LogOut, User, Calendar, RefreshCw, AlertTriangle, Star } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 // Import types and service
 import { Event } from "@/types"

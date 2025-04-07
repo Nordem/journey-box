@@ -2,36 +2,17 @@
 
 import { useState, useEffect } from "react"
 import {
-  Edit3,
   Plus,
-  X,
-  Upload,
-  Calendar,
-  MapPin,
-  DollarSign,
-  Users,
-  Hotel,
-  Plane,
-  Check,
-  Camera,
   User,
   Trash2,
-  Eye,
   Search,
-  Filter,
-  Play,
+  Filter
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
-import Image from "next/image"
 import {
   Dialog,
   DialogContent,
