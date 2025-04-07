@@ -116,12 +116,16 @@ export default function Sidebar({
         {!isCollapsed && (
           <div className="ml-3">
             <p className="text-sm font-medium text-white">{userName}</p>
-            <p className="text-xs text-indigo-300">Empleado</p>
+            <p className="text-xs text-indigo-300">Perfil</p>
           </div>
         )}
       </div>
 
-      <Separator className="mx-4 bg-indigo-500/20" />
+      {isCollapsed ? 
+      <Separator className="mx-4 bg-indigo-500/20 w-[40px]" />
+      :
+      <Separator className="mx-4 bg-indigo-500/20 w-[200px]" />
+      }
 
       {/* Main Navigation */}
       <div className="flex-1 overflow-auto py-4">
@@ -147,7 +151,11 @@ export default function Sidebar({
 
         {isAdmin && (
           <>
-            <Separator className="my-4 mx-4 bg-indigo-500/20" />
+          {isCollapsed ? 
+          <Separator className="my-4 mx-4 bg-indigo-500/20 w-[40px]" />
+          :
+          <Separator className="my-4 mx-4 bg-indigo-500/20 w-[200px]" />
+          }
             <div className="px-4 py-2">
               <h2
                 className={cn(

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LogOut, User, Calendar, RefreshCw, AlertTriangle, Star } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 // Import types and service
-import { Event as EventType, UserProfile, RecommendedEvent } from "@/services/userMatchingEvents"
+import { Event as EventType, UserProfile } from "@/services/userMatchingEvents"
 import { getRecommendedEvents } from "@/services/userMatchingEvents"
 import Sidebar from "@/components/sidebar"
 import { User as PrismaUser } from "@prisma/client"
