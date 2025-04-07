@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Compass,
   Edit3,
@@ -11,7 +11,13 @@ import {
   Sun,
   Moon,
   User,
-  Menu
+  Menu,
+  Briefcase,
+  Heart,
+  Bell,
+  LogOut,
+  Map,
+  Settings
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,12 +26,25 @@ import { Separator } from "@/components/ui/separator"
 import { useTheme } from "next-themes"
 import NotificationBadge from "@/components/ui/notification-badge"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Icons } from "@/components/icons"
+import { supabase } from "@/lib/supabase"
+import { useToast } from "@/hooks/use-toast"
 
 interface SidebarProps {
   isAdmin?: boolean
   userName?: string
   userAvatar?: string
   className?: string
+}
+
+interface NavItem {
+  title: string
+  href?: string
+  disabled?: boolean
+  external?: boolean
+  icon: React.ComponentType<{ className?: string }>
+  showBadge?: boolean
 }
 
 export default function Sidebar({
@@ -39,7 +58,9 @@ export default function Sidebar({
   const [isMobile, setIsMobile] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const { setTheme, resolvedTheme } = useTheme()
+  const { toast } = useToast()
 
   useEffect(() => {
     setMounted(true)
@@ -59,23 +80,65 @@ export default function Sidebar({
     setTheme(resolvedTheme === "dark" ? "light" : "dark")
   }
 
-  const mainNavItems = [
+  const mainNavItems: NavItem[] = [
     {
-      title: "Dashboard",
-      href: "/dashboard",
+      title: "Descubrir Viajes",
+      href: "/discover",
       icon: Compass,
-      isActive: pathname === "/dashboard",
+      showBadge: false
+    },
+    {
+      title: "Perfil",
+      href: "/profile",
+      icon: User,
+      showBadge: false
+    },
+    {
+      title: "Mis Aventuras",
+      href: "/adventures",
+      icon: Map,
+      showBadge: false
+    },
+    {
+      title: "Favoritos",
+      href: "/favorites",
+      icon: Heart,
+      showBadge: false
+    },
+    {
+      title: "Notificaciones",
+      href: "/notifications",
+      icon: Bell,
+      showBadge: true
     }
   ]
 
-  const adminNavItems = [
+  const adminNavItems: NavItem[] = [
     {
       title: "Gestionar Viajes",
       href: "/admin/trips",
-      icon: Edit3,
-      isActive: pathname === "/admin/trips",
+      icon: Settings,
+      showBadge: false
     }
   ]
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut()
+      router.push('/')
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión exitosamente.",
+      })
+    } catch (error) {
+      console.error('Error signing out:', error)
+      toast({
+        title: "Error",
+        description: "Hubo un problema al cerrar sesión. Por favor, intenta de nuevo.",
+        variant: "destructive",
+      })
+    }
+  }
 
   const SidebarContent = () => (
     <>
@@ -217,6 +280,17 @@ export default function Sidebar({
               {!isCollapsed && <span>Tema Oscuro</span>}
             </>
           )}
+        </Button>
+      </div>
+
+      <div className="px-3 py-2">
+        <Button
+          variant="ghost"
+          className="w-full justify-start"
+          onClick={handleLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Cerrar Sesión
         </Button>
       </div>
     </>
