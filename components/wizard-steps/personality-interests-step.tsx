@@ -128,7 +128,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold mb-2">¡Bienvenido a Journey Box!</h1>
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           Personaliza tu experiencia compartiendo tus preferencias y descubre viajes hechos para ti.
           Cuéntanos sobre tus gustos para ofrecerte experiencias únicas y conectarte con personas afines.
         </p>
@@ -141,7 +141,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
                 Experiencias<br />personalizadas
               </h3>
             </div>
-            <p className="text-white text-lg">
+            <p className="text-white text-md">
               Viajes y actividades<br />adaptados a tus gustos
             </p>
           </div>
@@ -153,7 +153,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
                 Encuentra<br />afinidades
               </h3>
             </div>
-            <p className="text-white text-lg">
+            <p className="text-white text-md">
               Conecta con compañeros<br />que comparten tus<br />intereses
             </p>
           </div>
@@ -165,7 +165,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
                 Mejora el team<br />building
               </h3>
             </div>
-            <p className="text-white text-lg">
+            <p className="text-white text-md">
               Actividades grupales que<br />realmente disfrutarás
             </p>
           </div>
