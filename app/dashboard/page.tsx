@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 // Import types and service
 import { Event } from "@/types"
 import { getRecommendedEvents } from "@/services/userMatchingEvents"
-import Sidebar2 from "@/components/ui/sidebar2"
+import Sidebar from "@/components/sidebar"
 
 interface UserData {
   id: string
@@ -250,7 +250,11 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex">
-        <Sidebar2/>
+        <Sidebar 
+          isAdmin={userData?.userProfile?.role === 'admin'}
+          userName={userData?.userProfile?.name || 'Usuario'}
+          userAvatar={userData?.userProfile?.avatar || '/placeholder.svg'}
+        />
         <div className="flex-1 ml-[250px]"> {/* Adjust margin to match sidebar width */}
           <div className="container max-w-6xl py-10">
             <div className="flex flex-col gap-8">
@@ -271,16 +275,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex">
-      <Sidebar2
-        userName={userData?.userProfile?.name || user?.email}
-        userEmail={user?.email}
-        onSignOut={handleSignOut}
-        onRefresh={handleRefresh}
-        isRefreshing={refreshing}
-        isAdmin={true}
+    <div className="flex h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-black">
+      <Sidebar 
+        isAdmin={userData?.userProfile?.role === 'admin'}
+        userName={userData?.userProfile?.name || 'Usuario'}
+        userAvatar={userData?.userProfile?.avatar || '/placeholder.svg'}
       />
-      <div className="flex-1 ml-[250px]"> {/* Adjust margin to match sidebar width */}
+      <main className="flex-1 overflow-auto p-8">
         <div className="container max-w-6xl py-10">
           <div className="flex flex-col gap-8">
             <div className="flex justify-between items-center">
@@ -939,7 +940,7 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
-    )
+  )
 } 
