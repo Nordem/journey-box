@@ -176,7 +176,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
 
       <div>
         <h2 className="text-xl font-semibold mb-4">😊 Rasgos de personalidad</h2>
-        <p className="text-gray-600 mb-4">Selecciona los rasgos que mejor te describen</p>
+        <p className="text-gray-400 mb-4">Selecciona los rasgos que mejor te describen</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...personalityTraits, ...customTraits].map(({ icon, label }) => (
             <Button
@@ -197,7 +197,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             onChange={(e) => setNewTrait(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomTrait()}
           />
-          <Button onClick={addCustomTrait} variant="outline">
+          <Button onClick={addCustomTrait} variant="default">
             Agregar
           </Button>
         </div>
@@ -205,7 +205,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
 
       <div>
         <h2 className="text-xl font-semibold mb-4">❤️ Intereses y hobbies</h2>
-        <p className="text-gray-600 mb-4">Selecciona tus intereses principales</p>
+        <p className="text-gray-400 mb-4">Selecciona tus intereses principales</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...hobbiesAndInterests, ...customInterests].map(({ icon, label }) => (
             <Button
@@ -226,7 +226,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             onChange={(e) => setNewInterest(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomInterest()}
           />
-          <Button onClick={addCustomInterest} variant="outline">
+          <Button onClick={addCustomInterest} variant="default">
             Agregar
           </Button>
         </div>
