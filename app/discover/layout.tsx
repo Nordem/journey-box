@@ -17,8 +17,8 @@ export default function DiscoverLayout({
     >
       <div className="flex min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-black">
         <Sidebar isAdmin={true} />
-        <main className="flex-1 ml-[250px] transition-all duration-300 overflow-auto">
-          <div className="container max-w-6xl py-10">
+        <main className="flex-1 transition-all duration-300 ease-in-out pt-16 md:pt-0 md:ml-[250px] md:data-[collapsed=true]:ml-[70px] overflow-auto">
+          <div className="container max-w-6xl py-4 md:py-10">
             {children}
           </div>
         </main>

@@ -187,15 +187,15 @@ export default function DiscoverPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col gap-4 md:gap-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Descubrir Viajes</h1>
-          <p className="text-indigo-200">Explora eventos recomendados y disponibles</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Descubrir Viajes</h1>
+          <p className="text-indigo-200 text-sm md:text-base">Explora eventos recomendados y disponibles</p>
         </div>
         <Button
           variant="outline"
-          className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
+          className="w-full md:w-auto border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
           onClick={handleRefresh}
           disabled={isRefreshing}
         >
@@ -206,22 +206,22 @@ export default function DiscoverPage() {
 
       <Tabs defaultValue="recommended" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="recommended" className="data-[state=active]:bg-indigo-600/40">
+          <TabsTrigger value="recommended" className="data-[state=active]:bg-indigo-600/40 text-xs md:text-sm">
             <Star className="mr-2 h-4 w-4" />
             Recomendados
           </TabsTrigger>
-          <TabsTrigger value="all" className="data-[state=active]:bg-indigo-600/40">
+          <TabsTrigger value="all" className="data-[state=active]:bg-indigo-600/40 text-xs md:text-sm">
             <Calendar className="mr-2 h-4 w-4" />
             Todos los Eventos
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="recommended" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <TabsContent value="recommended" className="mt-4 md:mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {recommendedEvents.map((event, index) => (
               <Card key={index} className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
                 <CardHeader>
-                  <CardTitle className="text-white">{event.name}</CardTitle>
-                  <CardDescription className="text-indigo-200">{event.description}</CardDescription>
+                  <CardTitle className="text-white text-lg md:text-xl">{event.name}</CardTitle>
+                  <CardDescription className="text-indigo-200 text-sm md:text-base">{event.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -248,13 +248,13 @@ export default function DiscoverPage() {
             ))}
           </div>
         </TabsContent>
-        <TabsContent value="all" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <TabsContent value="all" className="mt-4 md:mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {allEvents.map((event, index) => (
               <Card key={index} className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
                 <CardHeader>
-                  <CardTitle className="text-white">{event.name}</CardTitle>
-                  <CardDescription className="text-indigo-200">{event.description}</CardDescription>
+                  <CardTitle className="text-white text-lg md:text-xl">{event.name}</CardTitle>
+                  <CardDescription className="text-indigo-200 text-sm md:text-base">{event.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
