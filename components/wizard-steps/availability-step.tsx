@@ -77,7 +77,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold mb-4">Disponibilidad y preferencias de tiempo</h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-400 mb-6">
           Cuéntanos cuándo prefieres viajar y participar en actividades
         </p>
       </div>
@@ -117,7 +117,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
               <RadioGroupItem value={value} id={value} />
               <div>
                 <Label htmlFor={value} className="font-medium">{label}</Label>
-                <p className="text-sm text-gray-600">{description}</p>
+                <p className="text-sm text-gray-400">{description}</p>
               </div>
             </div>
           ))}
@@ -126,7 +126,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Fechas bloqueadas</h2>
-        <p className="text-gray-600 mb-4">Selecciona fechas en las que no estarás disponible</p>
+        <p className="text-gray-400 mb-4">Selecciona fechas en las que no estarás disponible</p>
         <Calendar
           mode="multiple"
           selected={selectedDates}

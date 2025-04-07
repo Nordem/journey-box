@@ -112,14 +112,14 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold mb-4">Actividades de Team Building</h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-400 mb-6">
           Ayúdanos a crear experiencias de equipo que realmente disfrutes
         </p>
       </div>
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Actividades que te interesan</h2>
-        <p className="text-gray-600 mb-4">Selecciona las actividades de team building que prefieres</p>
+        <p className="text-gray-400 mb-4">Selecciona las actividades de team building que prefieres</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...activities, ...customActivities].map(({ icon, label }) => (
             <Button

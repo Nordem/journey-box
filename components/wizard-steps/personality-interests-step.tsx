@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { motion } from "framer-motion"
+import { Check, Box, BarChart2, Users } from "lucide-react"
 
 interface PersonalityInterestsStepProps {
   data: {
@@ -127,29 +128,55 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold mb-2">¡Bienvenido a Journey Box!</h1>
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           Personaliza tu experiencia compartiendo tus preferencias y descubre viajes hechos para ti.
           Cuéntanos sobre tus gustos para ofrecerte experiencias únicas y conectarte con personas afines.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <Card className="p-4">
-            <h3 className="font-semibold mb-2">Experiencias personalizadas</h3>
-            <p className="text-sm text-gray-600">Viajes y actividades adaptados a tus gustos</p>
-          </Card>
-          <Card className="p-4">
-            <h3 className="font-semibold mb-2">Encuentra afinidades</h3>
-            <p className="text-sm text-gray-600">Conecta con compañeros que comparten tus intereses</p>
-          </Card>
-          <Card className="p-4">
-            <h3 className="font-semibold mb-2">Mejora el team building</h3>
-            <p className="text-sm text-gray-600">Actividades grupales que realmente disfrutarás</p>
-          </Card>
+        <div className="bg-[#1a1b3b] rounded-3xl p-8">
+        <div className="grid grid-cols-3 gap-8">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <Box className="w-6 h-6 text-[#8b8cc7]" />
+              <h3 className="text-xl text-[#8b8cc7]">
+                Experiencias<br />personalizadas
+              </h3>
+            </div>
+            <p className="text-white text-md">
+              Viajes y actividades<br />adaptados a tus gustos
+            </p>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <BarChart2 className="w-6 h-6 text-[#e991a9]" />
+              <h3 className="text-xl text-[#e991a9]">
+                Encuentra<br />afinidades
+              </h3>
+            </div>
+            <p className="text-white text-md">
+              Conecta con compañeros<br />que comparten tus<br />intereses
+            </p>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <Users className="w-6 h-6 text-[#b48cc7]" />
+              <h3 className="text-xl text-[#b48cc7]">
+                Mejora el team<br />building
+              </h3>
+            </div>
+            <p className="text-white text-md">
+              Actividades grupales que<br />realmente disfrutarás
+            </p>
+          </div>
         </div>
+      </div>
+
       </div>
 
       <div>
         <h2 className="text-xl font-semibold mb-4">😊 Rasgos de personalidad</h2>
-        <p className="text-gray-600 mb-4">Selecciona los rasgos que mejor te describen</p>
+        <p className="text-gray-400 mb-4">Selecciona los rasgos que mejor te describen</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...personalityTraits, ...customTraits].map(({ icon, label }) => (
             <Button
@@ -170,7 +197,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             onChange={(e) => setNewTrait(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomTrait()}
           />
-          <Button onClick={addCustomTrait} variant="outline">
+          <Button onClick={addCustomTrait} variant="default">
             Agregar
           </Button>
         </div>
@@ -178,7 +205,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
 
       <div>
         <h2 className="text-xl font-semibold mb-4">❤️ Intereses y hobbies</h2>
-        <p className="text-gray-600 mb-4">Selecciona tus intereses principales</p>
+        <p className="text-gray-400 mb-4">Selecciona tus intereses principales</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...hobbiesAndInterests, ...customInterests].map(({ icon, label }) => (
             <Button
@@ -199,7 +226,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             onChange={(e) => setNewInterest(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomInterest()}
           />
-          <Button onClick={addCustomInterest} variant="outline">
+          <Button onClick={addCustomInterest} variant="default">
             Agregar
           </Button>
         </div>

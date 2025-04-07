@@ -47,7 +47,7 @@ export default function AuthStep({ data, updateData }: AuthStepProps) {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold mb-4">Configura tu cuenta</h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-400 mb-6">
           Crea tu cuenta para comenzar a disfrutar de experiencias personalizadas
         </p>
       </div>
