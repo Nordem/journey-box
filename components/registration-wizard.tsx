@@ -319,13 +319,13 @@ export default function RegistrationWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-black">
       <div className="max-w-4xl mx-auto py-8 px-4">
         <div className="flex justify-end mb-4">
           <Button
             variant="ghost"
             onClick={() => window.location.href = '/login'}
-            className="text-sm text-gray-600 hover:text-gray-900"
+            className="text-sm text-indigo-200 hover:text-white"
           >
             ¿Ya tienes una cuenta? Iniciar sesión
           </Button>
@@ -344,6 +344,7 @@ export default function RegistrationWizard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
+            className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md rounded-lg border border-indigo-500/30 p-6"
           >
             {steps[currentStep].component}
           </motion.div>
@@ -354,6 +355,7 @@ export default function RegistrationWizard() {
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0 || isSubmitting}
+            className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Anterior
@@ -363,6 +365,7 @@ export default function RegistrationWizard() {
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
             >
               {isSubmitting ? (
                 <>
@@ -377,7 +380,10 @@ export default function RegistrationWizard() {
               )}
             </Button>
           ) : (
-            <Button onClick={handleNext}>
+            <Button 
+              onClick={handleNext}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+            >
               Siguiente
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
