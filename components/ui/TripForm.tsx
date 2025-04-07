@@ -266,22 +266,22 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
             <CardContent>
                 <form onSubmit={handleFormSubmit} className="space-y-6">
                     <Tabs defaultValue="basic" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4 mb-6">
-                            <TabsTrigger value="basic">
+                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6">
+                            <TabsTrigger value="basic" className="text-xs md:text-sm">
                                 Información Básica
                             </TabsTrigger>
-                            <TabsTrigger value="media">
+                            <TabsTrigger value="media" className="text-xs md:text-sm">
                                 Imágenes y Videos
                             </TabsTrigger>
-                            <TabsTrigger value="details">
+                            <TabsTrigger value="details" className="text-xs md:text-sm">
                                 Detalles
                             </TabsTrigger>
-                            <TabsTrigger value="itinerary">
+                            <TabsTrigger value="itinerary" className="text-xs md:text-sm">
                                 Itinerario
                             </TabsTrigger>
                         </TabsList>
 
-                        <ScrollArea className="h-[60vh] pr-4">
+                        <ScrollArea className="h-[calc(100vh-300px)] md:h-[calc(100vh-250px)] pr-4">
                             <TabsContent value="basic" className="mt-0 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
@@ -457,7 +457,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     </div>
 
                                     <div className="space-y-2">
-                                        <div className="flex justify-between items-center">
+                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                                             <Label htmlFor="videoUrl">URL del Video (opcional)</Label>
                                             <div className="flex items-center">
                                                 <input
@@ -669,7 +669,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     {/* Additional Days */}
                                     {additionalDays.map((day, index) => (
                                         <div key={index} className="p-4 rounded-lg border">
-                                            <div className="flex justify-between items-center mb-3">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3">
                                                 <h4 className="text-md font-medium flex items-center">
                                                     <Plane size={18} className="text-muted-foreground mr-2" />
                                                     Día {day.day}: {day.title}
@@ -719,15 +719,16 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                         </ScrollArea>
                     </Tabs>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t">
+                    <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 border-t">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={onCancel}
+                            className="w-full md:w-auto"
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit">
+                        <Button type="submit" className="w-full md:w-auto">
                             <Check size={16} className="mr-2" /> {editingTrip ? "Actualizar Evento" : "Guardar Evento"}
                         </Button>
                     </div>
