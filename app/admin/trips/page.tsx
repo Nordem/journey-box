@@ -40,7 +40,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
-import Sidebar2 from "@/components/ui/sidebar2"
 import TripListItem from "@/components/ui/TripListItem"
 import TripForm from "@/components/ui/TripForm"
 
@@ -251,141 +250,152 @@ export default function AdminTripsPage() {
   )
 
   return (
-    <div className="flex">
-      <Sidebar2 isAdmin={true} />
-      <div className="flex-1 ml-[250px]">
-        <main className="min-h-screen">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold">Gestionar Eventos</h1>
-              <Button
-                onClick={() => {
-                  setEditingTrip(null)
-                  setShowForm(!showForm)
-                }}
-              >
-                {showForm ? (
-                  <>
-                    <X size={16} className="mr-2" /> Cancelar
-                  </>
-                ) : (
-                  <>
-                    <Plus size={16} className="mr-2" /> Agregar Evento
-                  </>
-                )}
-              </Button>
-            </div>
+    <div className="flex flex-col gap-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Gestionar Viajes</h1>
+          <p className="text-indigo-200">Administra los viajes y eventos disponibles</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowForm(true)}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Viaje
+          </Button>
+        </div>
+      </div>
 
-            {showForm ? (
-              <TripForm
-                onSubmit={handleSubmit}
-                onCancel={() => {
-                  setShowForm(false)
-                  setEditingTrip(null)
-                }}
-                editingTrip={editingTrip}
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-300" />
+              <Input
+                placeholder="Buscar viajes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-indigo-950/50 border-indigo-500/30 text-white placeholder:text-indigo-300"
               />
-            ) : (
-              <Tabs defaultValue="list" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="list">Lista de Eventos</TabsTrigger>
-                  <TabsTrigger value="stats">Estadísticas</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="list" className="mt-0">
-                  <div className="mb-6">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4" />
-                      <Input
-                        placeholder="Buscar por destino o ubicación..."
-                        className="pl-10"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {filteredTrips.length > 0 ? (
-                    <div className="space-y-4">
-                      {filteredTrips.map((trip) => (
-                        <TripListItem
-                          key={trip.id}
-                          trip={trip}
-                          onEdit={() => handleEditTrip(trip)}
-                          onDelete={() => confirmDeleteTrip(trip)}
-                          onViewParticipants={() => handleViewParticipants(trip)}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground">No se encontraron eventos que coincidan con tu búsqueda.</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="stats" className="mt-0">
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
-                      <Filter className="text-accent-foreground" size={24} />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">Estadísticas de Eventos</h3>
-                    <p className="text-muted-foreground mb-6 max-w-md">
-                      Ver datos sobre reservas, destinos populares y tendencias de uso de la plataforma.
-                    </p>
-                    <Button>
-                      Generar Reporte
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            )}
+            </div>
+            <Button variant="outline" className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30">
+              <Filter className="mr-2 h-4 w-4" />
+              Filtros
+            </Button>
           </div>
 
-          {/* Delete Confirmation Dialog */}
-          <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Confirmar eliminación</DialogTitle>
-                <DialogDescription>
-                  ¿Estás seguro de querer eliminar este evento? Esta acción no se puede deshacer.
-                </DialogDescription>
-              </DialogHeader>
-
-              {tripToDelete && (
-                <div className="flex items-center gap-4 p-4 rounded-lg border my-4">
-                  <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
-                    <Image
-                      src={tripToDelete.imageUrl || "/placeholder.svg"}
-                      alt={tripToDelete.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-medium">{tripToDelete.title}</h4>
-                    <p className="text-sm text-muted-foreground">{tripToDelete.location}</p>
-                  </div>
-                </div>
-              )}
-
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button variant="destructive" onClick={handleDeleteTrip}>
-                  Eliminar
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Toaster />
-        </main>
+          <ScrollArea className="h-[calc(100vh-250px)]">
+            <div className="grid gap-4">
+              {filteredTrips.map((trip) => (
+                <TripListItem
+                  key={trip.id}
+                  trip={trip}
+                  onEdit={() => handleEditTrip(trip)}
+                  onDelete={() => confirmDeleteTrip(trip)}
+                  onViewParticipants={() => handleViewParticipants(trip)}
+                />
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
+
+      {/* Trip Form Dialog */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-white">
+              {editingTrip ? "Editar Viaje" : "Nuevo Viaje"}
+            </DialogTitle>
+            <DialogDescription className="text-indigo-200">
+              {editingTrip ? "Actualiza los detalles del viaje" : "Agrega un nuevo viaje al catálogo"}
+            </DialogDescription>
+          </DialogHeader>
+          <TripForm
+            onSubmit={handleSubmit}
+            editingTrip={editingTrip}
+            onCancel={() => {
+              setShowForm(false)
+              setEditingTrip(null)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-white">Confirmar Eliminación</DialogTitle>
+            <DialogDescription className="text-indigo-200">
+              ¿Estás seguro de que deseas eliminar el viaje "{tripToDelete?.title}"? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+              className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleDeleteTrip}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Participants Dialog */}
+      <Dialog open={showParticipants} onOpenChange={setShowParticipants}>
+        <DialogContent className="max-w-2xl bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-white">Participantes</DialogTitle>
+            <DialogDescription className="text-indigo-200">
+              Lista de participantes para {selectedTrip?.title}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedTrip?.participants && selectedTrip.participants.length > 0 ? (
+              <div className="space-y-2">
+                {selectedTrip.participants.map((participant, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg bg-indigo-900/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-indigo-800 flex items-center justify-center">
+                        <User className="h-4 w-4 text-indigo-200" />
+                      </div>
+                      <div>
+                        <p className="text-white font-medium">{participant.name}</p>
+                        <p className="text-sm text-indigo-300">{participant.email}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-indigo-300">No hay participantes registrados para este viaje.</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Toaster />
     </div>
   )
 }

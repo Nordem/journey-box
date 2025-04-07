@@ -76,32 +76,27 @@ export default function WizardProgress({ steps, currentStep, formData }: WizardP
   const completionPercentage = calculateCompletionPercentage()
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4">
-      {isLastStep ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="text-center mb-6"
-        >
-          <h3 className="text-lg font-semibold text-primary mb-2">Perfil completado {completionPercentage}%</h3>
-          <p className="text-gray-600">
-            ¡Gracias por compartir tus preferencias! Ahora podremos ofrecerte experiencias personalizadas y conectarte con personas afines.
-          </p>
-        </motion.div>
-      ) : (
-        <div className="relative">
-          {/* Progress bar */}
-          <div className="absolute top-4 left-0 w-full h-0.5 bg-gray-200">
+    <div className="mb-8">
+      {!isLastStep && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-indigo-300">
+              Progreso: {completionPercentage}%
+            </div>
+            <div className="text-sm text-indigo-300">
+              Paso {currentStep + 1} de {steps.length}
+            </div>
+          </div>
+
+          <div className="relative h-2 w-full rounded-full bg-indigo-900/50 overflow-hidden">
             <motion.div
-              className="absolute top-0 left-0 h-full bg-primary"
-              initial={{ width: "0%" }}
+              className="absolute left-0 top-0 h-full bg-gradient-to-r from-indigo-500 to-purple-500"
+              initial={{ width: 0 }}
               animate={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
               transition={{ duration: 0.3 }}
             />
           </div>
 
-          {/* Steps */}
           <div className="relative flex justify-between">
             {steps.map((step, index) => {
               const isCompleted = index < currentStep
@@ -115,9 +110,11 @@ export default function WizardProgress({ steps, currentStep, formData }: WizardP
                 >
                   <motion.div
                     className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full ${
-                      isCompleted || isCurrent
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 text-gray-400"
+                      isCompleted 
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+                        : isCurrent
+                        ? "bg-indigo-800/50 text-white border border-indigo-500/30"
+                        : "bg-indigo-900/30 text-indigo-400 border border-indigo-500/20"
                     }`}
                     initial={false}
                     animate={{
@@ -134,7 +131,13 @@ export default function WizardProgress({ steps, currentStep, formData }: WizardP
                     )}
                   </motion.div>
                   <div className="mt-2 text-center">
-                    <p className={`text-xs font-medium ${isCurrent ? "text-primary" : "text-gray-500"}`}>
+                    <p className={`text-xs font-medium ${
+                      isCurrent 
+                        ? "text-white" 
+                        : isCompleted
+                        ? "text-indigo-300"
+                        : "text-indigo-400"
+                    }`}>
                       {step.title}
                     </p>
                   </div>

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
-import Sidebar from '@/components/sidebar'
 import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
@@ -28,12 +27,7 @@ export default function RootLayout({
           disableTransitionOnChange
           storageKey="journeybox-theme"
         >
-          <div className="flex min-h-screen">
-            <Sidebar isAdmin={true} />
-            <div className="flex-1 ml-[250px] transition-all duration-300">
-              {children}
-            </div>
-          </div>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>
