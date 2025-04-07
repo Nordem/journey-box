@@ -252,20 +252,20 @@ export default function Dashboard() {
 
   if (loadingAllEvents) {
     return (
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <Sidebar 
           isAdmin={userProfile?.userProfile?.role === 'admin'}
           userName={userProfile?.userProfile?.name || 'Usuario'}
           userAvatar={userProfile?.userProfile?.avatar || '/placeholder.svg'}
         />
-        <div className="flex-1 ml-[250px]"> {/* Adjust margin to match sidebar width */}
-          <div className="container max-w-6xl py-10">
+        <div className="flex-1 transition-all duration-300 ease-in-out md:ml-[250px] md:data-[collapsed=true]:ml-[70px]">
+          <div className="container max-w-6xl p-4 md:p-6 lg:p-8">
             <div className="flex flex-col gap-8">
               <div className="flex justify-between items-center">
                 <Skeleton className="h-10 w-[250px]" />
                 <Skeleton className="h-10 w-[100px]" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Skeleton className="h-[300px] w-full" />
                 <Skeleton className="h-[300px] w-full" />
                 <Skeleton className="h-[300px] w-full" />
@@ -279,9 +279,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Dashboard</h1>
           <p className="text-indigo-200">Bienvenido de vuelta, {userProfile?.userProfile?.name || 'Usuario'}</p>
         </div>
         <div className="flex gap-2">

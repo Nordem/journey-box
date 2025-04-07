@@ -232,9 +232,9 @@ export default function AdminTripsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Gestionar Viajes</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Gestionar Viajes</h1>
           <p className="text-indigo-200">Administra los viajes y eventos disponibles</p>
         </div>
         <div className="flex gap-2">
@@ -248,38 +248,36 @@ export default function AdminTripsPage() {
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-300" />
-              <Input
-                placeholder="Buscar viajes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-indigo-950/50 border-indigo-500/30 text-white placeholder:text-indigo-300"
-              />
-            </div>
-            <Button variant="outline" className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30">
-              <Filter className="mr-2 h-4 w-4" />
-              Filtros
-            </Button>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-300" />
+            <Input
+              placeholder="Buscar viajes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-indigo-950/50 border-indigo-500/30 text-white placeholder:text-indigo-300 w-full"
+            />
           </div>
-
-          <ScrollArea className="h-[calc(100vh-250px)]">
-            <div className="grid gap-4">
-              {filteredTrips.map((trip) => (
-                <TripListItem
-                  key={trip.id}
-                  trip={trip}
-                  onEdit={() => handleEditTrip(trip)}
-                  onDelete={() => confirmDeleteTrip(trip)}
-                  onViewParticipants={() => handleViewParticipants(trip)}
-                />
-              ))}
-            </div>
-          </ScrollArea>
+          <Button variant="outline" className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30 w-full md:w-auto">
+            <Filter className="mr-2 h-4 w-4" />
+            Filtros
+          </Button>
         </div>
+
+        <ScrollArea className="h-[calc(100vh-300px)] md:h-[calc(100vh-250px)]">
+          <div className="grid gap-4">
+            {filteredTrips.map((trip) => (
+              <TripListItem
+                key={trip.id}
+                trip={trip}
+                onEdit={() => handleEditTrip(trip)}
+                onDelete={() => confirmDeleteTrip(trip)}
+                onViewParticipants={() => handleViewParticipants(trip)}
+              />
+            ))}
+          </div>
+        </ScrollArea>
       </div>
 
       {/* Trip Form Dialog */}
