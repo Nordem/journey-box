@@ -65,6 +65,58 @@ export interface RecommendedEvent extends Event {
 }
 
 const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
+
+async function makeOpenAIRequest(prompt: string, retryCount = 0): Promise<OpenAIResponse> {
+  try {
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are an expert event matcher AI. Your task is to analyze multiple events and determine which ones match a user's profile and preferences. Consider all aspects of the user's profile and the event details to make comprehensive match assessments. Respond with JSON only." 
+          },
+          { 
+            role: "user", 
+            content: prompt
+          }
+        ],
+        temperature: 0.5,
+        max_tokens: 4000
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage = error.response?.data?.error?.message || error.message;
+      
+      // Handle quota exceeded error
+      if (error.response?.status === 429 && errorMessage.includes("quota")) {
+        throw new Error("OpenAI API quota exceeded. Please check your billing details or contact support.");
+      }
+      
+      // Handle rate limiting
+      if (error.response?.status === 429 && retryCount < MAX_RETRIES) {
+        const delay = RETRY_DELAY * Math.pow(2, retryCount);
+        console.log(`Rate limited. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return makeOpenAIRequest(prompt, retryCount + 1);
+      }
+      
+      throw new Error(`OpenAI API error: ${error.response?.status} - ${errorMessage}`);
+    }
+    throw error;
+  }
+}
 
 export async function getRecommendedEvents(userProfile: UserProfile): Promise<RecommendedEvent[]> {
   try {
@@ -100,18 +152,7 @@ Music: ${event.music.join(", ")}
 Activities: ${event.activities.join(", ")}
 ---`).join("\n");
 
-    const openaiResponse = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-4",
-        messages: [
-          { 
-            role: "system", 
-            content: "You are an expert event matcher AI. Your task is to analyze multiple events and determine which ones match a user's profile and preferences. Consider all aspects of the user's profile and the event details to make comprehensive match assessments. Respond with JSON only." 
-          },
-          { 
-            role: "user", 
-            content: `Analyze these events and determine which ones are good matches for the user based on their profile and preferences.
+    const prompt = `Analyze these events and determine which ones are good matches for the user based on their profile and preferences.
 
 Available Events:
 ${eventsList}
@@ -148,45 +189,56 @@ Other Information:
 - Calendar Availability: ${userProfile.calendarAvailability ? Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ") : "None"}
 
 For each event, provide a match score (0-100) and specific reasons why it matches or doesn't match.
-Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }`
-          }
-        ],
-        temperature: 0.5,
-        max_tokens: 4000
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }`;
 
-    const openaiData = openaiResponse.data as OpenAIResponse;
-    if (openaiData.choices && openaiData.choices.length > 0) {
-      const content = openaiData.choices[0].message.content.trim();
-      try {
-        // Clean the response to ensure it's valid JSON
-        const cleanContent = content.replace(/^[^{]*({.*})[^}]*$/, '$1');
-        const matchResults = JSON.parse(cleanContent);
-        if (matchResults.matches) {
-          matchResults.matches.forEach((match: any) => {
-            if (match.isMatch && match.score >= 60) {
-              const event = events.find((e: Event) => e.name === match.eventName);
-              if (event) {
-                recommendedEvents.push({
-                  ...event,
-                  matchScore: match.score,
-                  matchReasons: match.reasons
-                });
+    try {
+      const openaiData = await makeOpenAIRequest(prompt);
+
+      if (openaiData.choices && openaiData.choices.length > 0) {
+        const content = openaiData.choices[0].message.content.trim();
+        try {
+          // Clean the response to ensure it's valid JSON
+          const cleanContent = content.replace(/^[^{]*({.*})[^}]*$/, '$1');
+          const matchResults = JSON.parse(cleanContent);
+          if (matchResults.matches) {
+            matchResults.matches.forEach((match: any) => {
+              if (match.isMatch && match.score >= 60) {
+                const event = events.find((e: Event) => e.name === match.eventName);
+                if (event) {
+                  recommendedEvents.push({
+                    ...event,
+                    matchScore: match.score,
+                    matchReasons: match.reasons
+                  });
+                }
               }
-            }
+            });
+          }
+        } catch (parseError) {
+          console.error("Error parsing OpenAI response:", parseError);
+          console.error("Raw response:", content);
+        }
+      }
+    } catch (error) {
+      // If OpenAI API fails, return a basic recommendation based on category matching
+      console.warn("OpenAI API unavailable, falling back to basic recommendations");
+      events.forEach((event: Event) => {
+        const categoryMatch = userProfile.eventPreferences.categories?.includes(event.category_id || '');
+        const activityMatch = event.activities.some(activity => 
+          userProfile.eventPreferences.preferredExperiences?.includes(activity)
+        );
+        
+        if (categoryMatch || activityMatch) {
+          recommendedEvents.push({
+            ...event,
+            matchScore: categoryMatch && activityMatch ? 80 : 60,
+            matchReasons: [
+              categoryMatch ? "Category matches user preferences" : "",
+              activityMatch ? "Activities match user preferences" : ""
+            ].filter(Boolean)
           });
         }
-      } catch (parseError) {
-        console.error("Error parsing OpenAI response:", parseError);
-        console.error("Raw response:", content);
-      }
+      });
     }
 
     return recommendedEvents.sort((a, b) => b.matchScore - a.matchScore);
