@@ -92,24 +92,6 @@ export default function Sidebar({
       href: "/profile",
       icon: User,
       showBadge: false
-    },
-    {
-      title: "Mis Aventuras",
-      href: "/adventures",
-      icon: Map,
-      showBadge: false
-    },
-    {
-      title: "Favoritos",
-      href: "/favorites",
-      icon: Heart,
-      showBadge: false
-    },
-    {
-      title: "Notificaciones",
-      href: "/notifications",
-      icon: Bell,
-      showBadge: true
     }
   ]
 

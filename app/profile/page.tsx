@@ -6,22 +6,22 @@ import { Edit } from "lucide-react"
 
 export default function ProfilePage() {
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col gap-4 md:gap-8 p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Perfil</h1>
-          <p className="text-indigo-200">Gestiona tu información personal y preferencias</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Perfil</h1>
+          <p className="text-indigo-200 text-sm md:text-base">Gestiona tu información personal y preferencias</p>
         </div>
         <Button
           variant="outline"
-          className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
+          className="w-full md:w-auto border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
         >
           <Edit className="mr-2 h-4 w-4" />
           Editar Perfil
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:gap-6">
         {/* Personal Information Card */}
         <Card className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
           <CardHeader>
@@ -29,18 +29,18 @@ export default function ProfilePage() {
             <CardDescription className="text-indigo-200">Tu información básica de perfil</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
                 <h3 className="font-medium text-sm text-indigo-200 mb-1">Nombre</h3>
-                <p className="text-lg text-white">David Sarmiento</p>
+                <p className="text-base md:text-lg text-white">David Sarmiento</p>
               </div>
               <div>
                 <h3 className="font-medium text-sm text-indigo-200 mb-1">Ubicación</h3>
-                <p className="text-lg text-white">Tlaxcala</p>
+                <p className="text-base md:text-lg text-white">Tlaxcala</p>
               </div>
               <div>
                 <h3 className="font-medium text-sm text-indigo-200 mb-1">Aeropuerto más Cercano</h3>
-                <p className="text-lg text-white">Puebla</p>
+                <p className="text-base md:text-lg text-white">Puebla</p>
               </div>
               <div>
                 <h3 className="font-medium text-sm text-indigo-200 mb-1">Idiomas</h3>
@@ -58,7 +58,7 @@ export default function ProfilePage() {
               </div>
               <div className="md:col-span-2">
                 <h3 className="font-medium text-sm text-indigo-200 mb-1">Información Adicional</h3>
-                <p className="text-lg text-white">Me gusta la gastronomía</p>
+                <p className="text-base md:text-lg text-white">Me gusta la gastronomía</p>
               </div>
             </div>
           </CardContent>
@@ -71,7 +71,7 @@ export default function ProfilePage() {
             <CardDescription className="text-indigo-200">Tus rasgos, intereses y objetivos</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
                 <h3 className="font-medium text-sm text-indigo-200 mb-1">Rasgos de Personalidad</h3>
                 <div className="flex flex-wrap gap-2 mt-1">
@@ -126,7 +126,7 @@ export default function ProfilePage() {
             <CardDescription className="text-indigo-200">Tus preferencias para eventos</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4 md:gap-6">
               <div>
                 <h3 className="font-medium text-sm text-indigo-200 mb-1">Preferencias Estacionales</h3>
                 <div className="flex flex-wrap gap-2 mt-1">
