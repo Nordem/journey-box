@@ -40,7 +40,7 @@ export default function LoginPage() {
           variant: "default",
         })
         
-        router.push("/dashboard")
+        router.push("/profile")
       }
     } catch (error) {
       toast({
@@ -65,7 +65,7 @@ export default function LoginPage() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-white">Iniciar Sesión</CardTitle>
             <CardDescription className="text-indigo-200">
-              Ingresa tu correo y contraseña para acceder a tu dashboard
+              Ingresa tu correo y contraseña para acceder a tu perfil
             </CardDescription>
           </CardHeader>
           <CardContent>
