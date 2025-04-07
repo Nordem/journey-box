@@ -17,12 +17,10 @@ export async function GET() {
         highlights: true,
         isHighlight: true,
         maxParticipants: true,
-        price: true,
+        originalPrice: true,
+        finalPrice: true,
         startDate: true,
-        state: true,
-        date: true,
-        location: true,
-        music: true
+        state: true
       }
     });
 
@@ -34,21 +32,19 @@ export async function GET() {
     const formattedEvents = events.map(event => ({
       id: event.id,
       name: event.name,
-      location: event.location || `${event.city}, ${event.state || event.country}`,
-      date: event.date?.toISOString() || event.startDate.toISOString(),
-      music: event.music || [],
-      activities: event.activities || [],
-      category_name: event.category,
+      category: event.category,
+      city: event.city,
+      state: event.state,
+      country: event.country,
       description: event.description,
       startDate: event.startDate.toISOString(),
       endDate: event.endDate.toISOString(),
-      price: event.price,
-      maxParticipants: event.maxParticipants,
-      isHighlight: event.isHighlight,
+      activities: event.activities || [],
       highlights: event.highlights || [],
-      city: event.city,
-      state: event.state,
-      country: event.country
+      maxParticipants: event.maxParticipants,
+      originalPrice: event.originalPrice,
+      finalPrice: event.finalPrice,
+      isHighlight: event.isHighlight
     }));
 
     return NextResponse.json({ events: formattedEvents });

@@ -10,9 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LogOut, User, Calendar, RefreshCw, AlertTriangle, Star } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 // Import types and service
-import { Event } from "@/types"
+import { Event as EventType, UserProfile, RecommendedEvent } from "@/services/userMatchingEvents"
 import { getRecommendedEvents } from "@/services/userMatchingEvents"
 import Sidebar from "@/components/sidebar"
+import { User as PrismaUser } from "@prisma/client"
 
 interface UserData {
   id: string
@@ -25,15 +26,20 @@ interface UserData {
   deliverables: any[]
 }
 
+interface DashboardEvent extends EventType {
+  matchScore?: number;
+  matchReasons?: string[];
+}
+
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [refreshing, setRefreshing] = useState(false)
-  const [recommendedEvents, setRecommendedEvents] = useState<Event[]>([])
-  const [allEvents, setAllEvents] = useState<Event[]>([])
-  const [loadingRecommendedEvents, setLoadingRecommendedEvents] = useState(false)
-  const [loadingAllEvents, setLoadingAllEvents] = useState(false)
+  const [user, setUser] = useState<PrismaUser | null>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [allEvents, setAllEvents] = useState<EventType[]>([])
+  const [recommendedEvents, setRecommendedEvents] = useState<DashboardEvent[]>([])
+  const [loadingAllEvents, setLoadingAllEvents] = useState(true)
+  const [loadingRecommendedEvents, setLoadingRecommendedEvents] = useState(true)
+  const [activeTab, setActiveTab] = useState("profile")
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -47,23 +53,18 @@ export default function Dashboard() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch events: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
-      if (data && Array.isArray(data.events)) {
-        setAllEvents(data.events);
-      } else {
-        setAllEvents([]);
-      }
+      setAllEvents(data.events);
     } catch (error) {
-      setAllEvents([]);
+      console.error('Error fetching events:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch events. Please try again.",
+        description: "Failed to fetch events. Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -137,7 +138,7 @@ export default function Dashboard() {
   // Function to fetch user profile data
   const fetchUserData = async (userId: string) => {
     try {
-      setRefreshing(true);
+      setIsRefreshing(true);
       
       if (typeof window !== 'undefined' && userId) {
         try {
@@ -150,7 +151,7 @@ export default function Dashboard() {
           
           if (!response.ok) {
             if (response.status === 404) {
-              setUserData(null);
+              setUserProfile(null);
               toast({
                 title: "Profile Not Found",
                 description: "You need to complete the registration process first.",
@@ -164,14 +165,14 @@ export default function Dashboard() {
             const data = await response.json();
             
             if (!data.userProfile) {
-              setUserData(null);
+              setUserProfile(null);
               toast({
                 title: "Profile Not Found",
                 description: "Your profile data is incomplete. Please complete the registration process.",
                 variant: "destructive",
               });
             } else {
-              setUserData(data);
+              setUserProfile(data);
             }
           }
         } catch (error) {
@@ -185,7 +186,7 @@ export default function Dashboard() {
     } catch (error) {
       // Handle error silently
     } finally {
-      setRefreshing(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -198,43 +199,44 @@ export default function Dashboard() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        setLoading(true)
-        const { data: { session } } = await supabase.auth.getSession()
+        setLoadingAllEvents(true);
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (!session) {
-          router.push('/login')
-          return
-        }
+        if (session?.user) {
+          const response = await fetch(`/api/user/${session.user.id}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+          }
+          const userData = await response.json();
 
-        if (!session.user.email_confirmed_at) {
-          toast({
-            title: "Email Not Verified",
-            description: "Please check your email and verify your account before accessing the dashboard.",
-            variant: "destructive",
-          })
-          return
-        }
+          if (!userData) {
+            console.error('User not found in database');
+            return;
+          }
 
-        setUser(session.user)
-        await fetchUserData(session.user.id)
-        await fetchAllEvents()
+          setUser(userData as PrismaUser);
+          fetchUserData(userData.id);
+          fetchAllEvents();
+        } else {
+          router.push('/login');
+        }
       } catch (error) {
-        // Handle error silently
+        console.error('Error checking user:', error);
       } finally {
-        setLoading(false)
+        setLoadingAllEvents(false);
       }
-    }
+    };
 
-    checkUser()
+    checkUser();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
   // Add effect to fetch recommended events when user data changes
   useEffect(() => {
-    if (userData?.userProfile) {
-      fetchRecommendedEvents(userData)
+    if (userProfile?.userProfile) {
+      fetchRecommendedEvents(userProfile)
     }
-  }, [userData])
+  }, [userProfile])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -243,17 +245,18 @@ export default function Dashboard() {
 
   const handleRefresh = () => {
     if (user) {
-      fetchUserData(user.id)
+      fetchUserData(user.id);
+      fetchAllEvents();
     }
   }
 
-  if (loading) {
+  if (loadingAllEvents) {
     return (
       <div className="flex">
         <Sidebar 
-          isAdmin={userData?.userProfile?.role === 'admin'}
-          userName={userData?.userProfile?.name || 'Usuario'}
-          userAvatar={userData?.userProfile?.avatar || '/placeholder.svg'}
+          isAdmin={userProfile?.userProfile?.role === 'admin'}
+          userName={userProfile?.userProfile?.name || 'Usuario'}
+          userAvatar={userProfile?.userProfile?.avatar || '/placeholder.svg'}
         />
         <div className="flex-1 ml-[250px]"> {/* Adjust margin to match sidebar width */}
           <div className="container max-w-6xl py-10">
@@ -279,16 +282,16 @@ export default function Dashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <p className="text-indigo-200">Bienvenido de vuelta, {userData?.userProfile?.name || 'Usuario'}</p>
+          <p className="text-indigo-200">Bienvenido de vuelta, {userProfile?.userProfile?.name || 'Usuario'}</p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={handleRefresh}
-            disabled={refreshing}
+            disabled={isRefreshing}
             className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Actualizar
           </Button>
           <Button
@@ -328,7 +331,7 @@ export default function Dashboard() {
         </TabsList>
 
         <TabsContent value="profile" className="mt-6 space-y-6">
-          {userData?.userProfile ? (
+          {userProfile?.userProfile ? (
             <>
               <Card className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
                 <CardHeader>
@@ -339,25 +342,21 @@ export default function Dashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <h3 className="font-medium text-sm text-indigo-200 mb-1">Nombre</h3>
-                      <p className="text-lg text-white">{userData.userProfile.name}</p>
+                      <p className="text-lg text-white">{userProfile.userProfile.name}</p>
                     </div>
                     <div>
                       <h3 className="font-medium text-sm text-indigo-200 mb-1">Ubicación</h3>
-                      <p className="text-lg text-white">{userData.userProfile.location}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-sm text-indigo-200 mb-1">Ubicación Actual de Viaje</h3>
-                      <p className="text-lg text-white">{userData.userProfile.currentTravelLocation || "No especificado"}</p>
+                      <p className="text-lg text-white">{userProfile.userProfile.location}</p>
                     </div>
                     <div>
                       <h3 className="font-medium text-sm text-indigo-200 mb-1">Aeropuerto más Cercano</h3>
-                      <p className="text-lg text-white">{userData.userProfile.nearestAirport || "No especificado"}</p>
+                      <p className="text-lg text-white">{userProfile.userProfile.nearestAirport || "No especificado"}</p>
                     </div>
                     <div>
                       <h3 className="font-medium text-sm text-indigo-200 mb-1">Idiomas</h3>
                       <div className="flex flex-wrap gap-2 mt-1">
-                        {userData.userProfile.languages?.length > 0 ? 
-                          userData.userProfile.languages.map((lang: string, i: number) => (
+                        {userProfile.userProfile.languages?.length > 0 ? 
+                          userProfile.userProfile.languages.map((lang: string, i: number) => (
                             <span key={i} className="bg-indigo-900/50 text-indigo-200 px-2 py-1 rounded-full text-sm">
                               {lang}
                             </span>
@@ -368,15 +367,15 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <h3 className="font-medium text-sm text-indigo-200 mb-1">Información Adicional</h3>
-                      <p className="text-lg text-white">{userData.userProfile.additionalInfo || "No proporcionado"}</p>
+                      <p className="text-lg text-white">{userProfile.userProfile.additionalInfo || "No proporcionado"}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {(userData.userProfile.personalityTraits?.length > 0 || 
-                userData.userProfile.hobbiesAndInterests?.length > 0 || 
-                userData.userProfile.goals?.length > 0) && (
+              {(userProfile.userProfile.personalityTraits?.length > 0 || 
+                userProfile.userProfile.hobbiesAndInterests?.length > 0 || 
+                userProfile.userProfile.goals?.length > 0) && (
                 <Card className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
                   <CardHeader>
                     <CardTitle className="text-white">Personalidad e Intereses</CardTitle>
@@ -384,11 +383,11 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {userData.userProfile.personalityTraits?.length > 0 && (
+                      {userProfile.userProfile.personalityTraits?.length > 0 && (
                         <div>
                           <h3 className="font-medium text-sm text-indigo-200 mb-1">Rasgos de Personalidad</h3>
                           <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.userProfile.personalityTraits.map((trait: string, i: number) => (
+                            {userProfile.userProfile.personalityTraits.map((trait: string, i: number) => (
                               <span key={i} className="bg-indigo-900/50 text-indigo-200 px-2 py-1 rounded-full text-sm">
                                 {trait}
                               </span>
@@ -397,11 +396,11 @@ export default function Dashboard() {
                         </div>
                       )}
                       
-                      {userData.userProfile.hobbiesAndInterests?.length > 0 && (
+                      {userProfile.userProfile.hobbiesAndInterests?.length > 0 && (
                         <div>
                           <h3 className="font-medium text-sm text-indigo-200 mb-1">Hobbies e Intereses</h3>
                           <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.userProfile.hobbiesAndInterests.map((interest: string, i: number) => (
+                            {userProfile.userProfile.hobbiesAndInterests.map((interest: string, i: number) => (
                               <span key={i} className="bg-purple-900/50 text-purple-200 px-2 py-1 rounded-full text-sm">
                                 {interest}
                               </span>
@@ -410,11 +409,11 @@ export default function Dashboard() {
                         </div>
                       )}
                       
-                      {userData.userProfile.goals?.length > 0 && (
+                      {userProfile.userProfile.goals?.length > 0 && (
                         <div>
                           <h3 className="font-medium text-sm text-indigo-200 mb-1">Objetivos</h3>
                           <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.userProfile.goals.map((goal: string, i: number) => (
+                            {userProfile.userProfile.goals.map((goal: string, i: number) => (
                               <span key={i} className="bg-indigo-900/50 text-indigo-200 px-2 py-1 rounded-full text-sm">
                                 {goal}
                               </span>
@@ -428,7 +427,7 @@ export default function Dashboard() {
               )}
 
               {/* Event Preferences Section */}
-              {userData.eventPreferences && (
+              {userProfile.eventPreferences && (
                 <Card className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
                   <CardHeader>
                     <CardTitle className="text-white">Preferencias de Eventos</CardTitle>
@@ -436,11 +435,11 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {userData.eventPreferences.categories?.length > 0 && (
+                      {userProfile.eventPreferences.categories?.length > 0 && (
                         <div>
                           <h3 className="font-medium text-sm text-indigo-200 mb-1">Categorías Preferidas</h3>
                           <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.eventPreferences.categories.map((category: string, i: number) => (
+                            {userProfile.eventPreferences.categories.map((category: string, i: number) => (
                               <span key={i} className="bg-indigo-900/50 text-indigo-200 px-2 py-1 rounded-full text-sm">
                                 {category}
                               </span>
@@ -449,11 +448,11 @@ export default function Dashboard() {
                         </div>
                       )}
 
-                      {userData.eventPreferences.vibeKeywords?.length > 0 && (
+                      {userProfile.eventPreferences.vibeKeywords?.length > 0 && (
                         <div>
                           <h3 className="font-medium text-sm text-indigo-200 mb-1">Palabras Clave de Ambiente</h3>
                           <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.eventPreferences.vibeKeywords.map((keyword: string, i: number) => (
+                            {userProfile.eventPreferences.vibeKeywords.map((keyword: string, i: number) => (
                               <span key={i} className="bg-purple-900/50 text-purple-200 px-2 py-1 rounded-full text-sm">
                                 {keyword}
                               </span>
@@ -462,11 +461,11 @@ export default function Dashboard() {
                         </div>
                       )}
 
-                      {userData.eventPreferences.seasonalPreferences?.length > 0 && (
+                      {userProfile.eventPreferences.seasonalPreferences?.length > 0 && (
                         <div>
                           <h3 className="font-medium text-sm text-indigo-200 mb-1">Preferencias Estacionales</h3>
                           <div className="flex flex-wrap gap-2 mt-1">
-                            {userData.eventPreferences.seasonalPreferences.map((season: string, i: number) => (
+                            {userProfile.eventPreferences.seasonalPreferences.map((season: string, i: number) => (
                               <span key={i} className="bg-indigo-900/50 text-indigo-200 px-2 py-1 rounded-full text-sm">
                                 {season}
                               </span>
@@ -475,10 +474,10 @@ export default function Dashboard() {
                         </div>
                       )}
 
-                      {userData.eventPreferences.budget && (
+                      {userProfile.eventPreferences.budget && (
                         <div>
                           <h3 className="font-medium text-sm text-indigo-200 mb-1">Presupuesto</h3>
-                          <p className="text-lg text-white capitalize">{userData.eventPreferences.budget}</p>
+                          <p className="text-lg text-white capitalize">{userProfile.eventPreferences.budget}</p>
                         </div>
                       )}
                     </div>
@@ -487,10 +486,10 @@ export default function Dashboard() {
               )}
 
               {/* Restrictions Section */}
-              {userData.restrictions && (
-                userData.restrictions.avoidCrowdedDaytimeConferences ||
-                userData.restrictions.avoidOverlyFormalNetworking ||
-                userData.restrictions.avoidFamilyKidsEvents
+              {userProfile.restrictions && (
+                userProfile.restrictions.avoidCrowdedDaytimeConferences ||
+                userProfile.restrictions.avoidOverlyFormalNetworking ||
+                userProfile.restrictions.avoidFamilyKidsEvents
               ) && (
                 <Card className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
                   <CardHeader>
@@ -499,7 +498,7 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 gap-4">
-                      {userData.restrictions.avoidCrowdedDaytimeConferences && (
+                      {userProfile.restrictions.avoidCrowdedDaytimeConferences && (
                         <div className="flex items-start">
                           <div className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-red-500"></div>
                           <div>
@@ -508,7 +507,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       )}
-                      {userData.restrictions.avoidOverlyFormalNetworking && (
+                      {userProfile.restrictions.avoidOverlyFormalNetworking && (
                         <div className="flex items-start">
                           <div className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-red-500"></div>
                           <div>
@@ -517,7 +516,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       )}
-                      {userData.restrictions.avoidFamilyKidsEvents && (
+                      {userProfile.restrictions.avoidFamilyKidsEvents && (
                         <div className="flex items-start">
                           <div className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-red-500"></div>
                           <div>
@@ -570,17 +569,20 @@ export default function Dashboard() {
                   <CardHeader>
                     <CardTitle className="text-white">{event.name}</CardTitle>
                     <CardDescription className="text-indigo-200">
-                      {event.location} • {event.date}
+                      {event.city}, {event.state || event.country}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
+                      <p className="text-sm text-indigo-200">{event.description}</p>
+                      
                       {event.matchScore !== undefined && (
                         <div className="flex items-center gap-2">
                           <Star className="h-4 w-4 text-yellow-500" />
                           <span className="text-sm text-indigo-200">Puntuación: {event.matchScore}%</span>
                         </div>
                       )}
+
                       {event.matchReasons && event.matchReasons.length > 0 && (
                         <div className="text-sm text-indigo-300">
                           {event.matchReasons.map((reason, i) => (
@@ -591,6 +593,38 @@ export default function Dashboard() {
                           ))}
                         </div>
                       )}
+
+                      <div className="flex flex-wrap gap-2">
+                        {event.highlights.map((highlight, i) => (
+                          <span key={i} className="px-2 py-1 text-xs rounded-full bg-indigo-900/50 text-indigo-200">
+                            {highlight}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {event.activities.map((activity, i) => (
+                          <span key={i} className="px-2 py-1 text-xs rounded-full bg-purple-900/50 text-purple-200">
+                            {activity}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex justify-between items-center text-sm text-indigo-200">
+                        <div>
+                          <span>Precio: </span>
+                          <span className="line-through text-indigo-400">${event.originalPrice?.toLocaleString()} MXN</span>
+                          <span className="ml-2 text-white">${event.finalPrice?.toLocaleString()} MXN</span>
+                        </div>
+                        <div>
+                          <span>Participantes: </span>
+                          <span className="text-white">{event.maxParticipants}</span>
+                        </div>
+                      </div>
+
+                      <div className="text-sm text-indigo-200">
+                        <div>Fecha: {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}</div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -625,24 +659,43 @@ export default function Dashboard() {
                   <CardHeader>
                     <CardTitle className="text-white">{event.name}</CardTitle>
                     <CardDescription className="text-indigo-200">
-                      {event.location} • {event.date}
+                      {event.city}, {event.state || event.country}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
+                      <p className="text-sm text-indigo-200">{event.description}</p>
+
                       <div className="flex flex-wrap gap-2">
-                        {event.music.map((genre, i) => (
+                        {event.highlights.map((highlight, i) => (
                           <span key={i} className="px-2 py-1 text-xs rounded-full bg-indigo-900/50 text-indigo-200">
-                            {genre}
+                            {highlight}
                           </span>
                         ))}
                       </div>
+
                       <div className="flex flex-wrap gap-2">
                         {event.activities.map((activity, i) => (
                           <span key={i} className="px-2 py-1 text-xs rounded-full bg-purple-900/50 text-purple-200">
                             {activity}
                           </span>
                         ))}
+                      </div>
+
+                      <div className="flex justify-between items-center text-sm text-indigo-200">
+                        <div>
+                          <span>Precio: </span>
+                          <span className="line-through text-indigo-400">${event.originalPrice?.toLocaleString()} MXN</span>
+                          <span className="ml-2 text-white">${event.finalPrice?.toLocaleString()} MXN</span>
+                        </div>
+                        <div>
+                          <span>Participantes: </span>
+                          <span className="text-white">{event.maxParticipants}</span>
+                        </div>
+                      </div>
+
+                      <div className="text-sm text-indigo-200">
+                        <div>Fecha: {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}</div>
                       </div>
                     </div>
                   </CardContent>

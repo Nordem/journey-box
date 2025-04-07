@@ -11,12 +11,19 @@ interface OpenAIResponse {
 export interface Event {
   id: string;
   name: string;
-  location: string;
-  date: string;
-  music: string[];
+  category: string;
+  city: string;
+  state?: string;
+  country: string;
+  description: string;
+  startDate: string;
+  endDate: string;
   activities: string[];
-  category_id?: string;
-  category_name?: string;
+  highlights: string[];
+  maxParticipants: number;
+  originalPrice: number;
+  finalPrice: number;
+  isHighlight: boolean;
 }
 
 export interface UserProfile {
@@ -30,6 +37,8 @@ export interface UserProfile {
     hobbiesAndInterests: string[];
     additionalInfo: string;
     nearestAirport: string;
+    role?: string;
+    avatar?: string;
   };
   eventPreferences: {
     categories: string[];
@@ -145,11 +154,14 @@ export async function getRecommendedEvents(userProfile: UserProfile): Promise<Re
     // Format events list with more details
     const eventsList = events.map((event: Event) => `
 Event: ${event.name}
-Location: ${event.location}
-Date: ${event.date}
-Category: ${event.category_id || 'Uncategorized'}
-Music: ${event.music.join(", ")}
+Location: ${event.city}, ${event.state || event.country}
+Dates: ${event.startDate} - ${event.endDate}
+Category: ${event.category}
+Description: ${event.description}
+Highlights: ${event.highlights.join(", ")}
 Activities: ${event.activities.join(", ")}
+Max Participants: ${event.maxParticipants}
+Price: ${event.originalPrice} MXN (${event.finalPrice} MXN final)
 ---`).join("\n");
 
     const prompt = `Analyze these events and determine which ones are good matches for the user based on their profile and preferences.
@@ -223,7 +235,7 @@ Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": bo
       // If OpenAI API fails, return a basic recommendation based on category matching
       console.warn("OpenAI API unavailable, falling back to basic recommendations");
       events.forEach((event: Event) => {
-        const categoryMatch = userProfile.eventPreferences.categories?.includes(event.category_id || '');
+        const categoryMatch = userProfile.eventPreferences.categories?.includes(event.category);
         const activityMatch = event.activities.some(activity => 
           userProfile.eventPreferences.preferredExperiences?.includes(activity)
         );
