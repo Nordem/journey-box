@@ -3,12 +3,22 @@
 export interface Event {
   id: string;
   name: string;
-  location: string;
-  date: string;
+  location?: string;
+  date?: string;
   music: string[];
   activities: string[];
-  category_id?: string;
-  category_name?: string;
+  category: string;
+  city: string;
+  country: string;
+  description: string;
+  endDate: string;
+  highlights: string[];
+  isHighlight: boolean;
+  maxParticipants?: number;
+  originalPrice?: number;
+  finalPrice?: number;
+  startDate: string;
+  state?: string;
   matchScore?: number;
   matchReasons?: string[];
 }

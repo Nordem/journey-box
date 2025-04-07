@@ -127,7 +127,8 @@ model Event {
   highlights      String[]
   isHighlight     Boolean       @default(false)
   maxParticipants Int?
-  price           Float?
+  originalPrice   Float?
+  finalPrice      Float?
   startDate       DateTime
   state           String?
   date            DateTime?
