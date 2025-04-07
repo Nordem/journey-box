@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { motion } from "framer-motion"
+import { Check, Box, BarChart2, Users } from "lucide-react"
 
 interface PersonalityInterestsStepProps {
   data: {
@@ -131,20 +132,46 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
           Personaliza tu experiencia compartiendo tus preferencias y descubre viajes hechos para ti.
           Cuéntanos sobre tus gustos para ofrecerte experiencias únicas y conectarte con personas afines.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <Card className="p-4">
-            <h3 className="font-semibold mb-2">Experiencias personalizadas</h3>
-            <p className="text-sm text-gray-600">Viajes y actividades adaptados a tus gustos</p>
-          </Card>
-          <Card className="p-4">
-            <h3 className="font-semibold mb-2">Encuentra afinidades</h3>
-            <p className="text-sm text-gray-600">Conecta con compañeros que comparten tus intereses</p>
-          </Card>
-          <Card className="p-4">
-            <h3 className="font-semibold mb-2">Mejora el team building</h3>
-            <p className="text-sm text-gray-600">Actividades grupales que realmente disfrutarás</p>
-          </Card>
+        <div className="bg-[#1a1b3b] rounded-3xl p-8">
+        <div className="grid grid-cols-3 gap-8">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <Box className="w-6 h-6 text-[#8b8cc7]" />
+              <h3 className="text-xl text-[#8b8cc7]">
+                Experiencias<br />personalizadas
+              </h3>
+            </div>
+            <p className="text-white text-lg">
+              Viajes y actividades<br />adaptados a tus gustos
+            </p>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <BarChart2 className="w-6 h-6 text-[#e991a9]" />
+              <h3 className="text-xl text-[#e991a9]">
+                Encuentra<br />afinidades
+              </h3>
+            </div>
+            <p className="text-white text-lg">
+              Conecta con compañeros<br />que comparten tus<br />intereses
+            </p>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <Users className="w-6 h-6 text-[#b48cc7]" />
+              <h3 className="text-xl text-[#b48cc7]">
+                Mejora el team<br />building
+              </h3>
+            </div>
+            <p className="text-white text-lg">
+              Actividades grupales que<br />realmente disfrutarás
+            </p>
+          </div>
         </div>
+      </div>
+
       </div>
 
       <div>
