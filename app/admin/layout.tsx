@@ -23,10 +23,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         storageKey="journeybox-theme"
         disableTransitionOnChange
       >
-        <div className="flex">
+        <div className="flex min-h-screen">
           <Sidebar isAdmin={true} />
-          <main className="flex-1 ml-[250px] p-8">
-            <div className="container max-w-7xl mx-auto">
+          <main className="flex-1 transition-all duration-300 ease-in-out pt-16 md:pt-0 md:ml-[250px] md:data-[collapsed=true]:ml-[70px] overflow-auto">
+            <div className="container max-w-7xl p-4 md:p-6 lg:p-8">
               {children}
             </div>
           </main>

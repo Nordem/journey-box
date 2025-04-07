@@ -27,9 +27,9 @@ export default function TripListItem({ trip, onEdit, onDelete, onViewParticipant
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <div className="flex gap-6">
-          <div className="relative w-48 h-32 flex-shrink-0">
+      <CardContent className="p-4 md:p-6">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+          <div className="relative w-full md:w-48 h-48 md:h-32 flex-shrink-0">
             <Image
               src={trip.imageUrl || "/placeholder.svg"}
               alt={trip.title}
@@ -38,39 +38,45 @@ export default function TripListItem({ trip, onEdit, onDelete, onViewParticipant
             />
           </div>
           <div className="flex-1">
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
               <div>
                 <h3 className="text-lg font-semibold">{trip.title}</h3>
                 <p className="text-sm text-muted-foreground">{trip.location}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 w-full md:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={onViewParticipants}
+                  className="flex-1 md:flex-none"
                 >
                   <Users className="h-4 w-4 mr-2" />
-                  Ver Participantes
+                  <span className="hidden md:inline">Ver Participantes</span>
+                  <span className="md:hidden">Participantes</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={onEdit}
+                  className="flex-1 md:flex-none"
                 >
                   <Edit3 className="h-4 w-4 mr-2" />
-                  Editar
+                  <span className="hidden md:inline">Editar</span>
+                  <span className="md:hidden">Editar</span>
                 </Button>
                 <Button
                   variant="destructive"
                   size="sm"
                   onClick={onDelete}
+                  className="flex-1 md:flex-none"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Eliminar
+                  <span className="hidden md:inline">Eliminar</span>
+                  <span className="md:hidden">Eliminar</span>
                 </Button>
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Fechas</p>
                 <p className="font-medium">{trip.dates}</p>
@@ -81,11 +87,11 @@ export default function TripListItem({ trip, onEdit, onDelete, onViewParticipant
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Precio Empleado</p>
-                <p className="font-medium">${trip.employeePrice}</p>
+                <p className="font-medium">{formatPrice(trip.employeePrice)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Precio Regular</p>
-                <p className="font-medium">${trip.regularPrice}</p>
+                <p className="font-medium">{formatPrice(trip.regularPrice)}</p>
               </div>
             </div>
           </div>

@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useTheme } from "next-themes"
 import NotificationBadge from "@/components/ui/notification-badge"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 
 interface SidebarProps {
   isAdmin?: boolean
@@ -37,6 +37,7 @@ export default function Sidebar({
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const { setTheme, resolvedTheme } = useTheme()
 
@@ -221,26 +222,28 @@ export default function Sidebar({
     </>
   )
 
-  // Mobile menu trigger button - only shown on mobile
-  const MobileMenuTrigger = () => (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="fixed top-4 left-4 md:hidden z-50"
-    >
-      <Menu className="h-6 w-6" />
-    </Button>
-  )
-
   if (!mounted) return null
 
   if (isMobile) {
     return (
-      <Sheet>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <MobileMenuTrigger />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="fixed top-4 left-4 md:hidden z-50"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-[280px]">
+        <SheetContent 
+          side="left" 
+          className="p-0 w-[280px]"
+          onInteractOutside={() => setIsOpen(false)}
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Navigation Menu</SheetTitle>
+          </SheetHeader>
           <div className="h-full">
             <SidebarContent />
           </div>
