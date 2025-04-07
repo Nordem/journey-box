@@ -5,14 +5,12 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
   Compass,
-  Edit3,
   ChevronLeft,
   ChevronRight,
   Sun,
   Moon,
   User,
   Menu,
-  Briefcase,
   Heart,
   Bell,
   LogOut,
@@ -57,6 +55,7 @@ export default function Sidebar({
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [userProfile, setUserProfile] = useState<{ name: string; avatar?: string } | null>(null)
   const pathname = usePathname()
   const router = useRouter()
   const { setTheme, resolvedTheme } = useTheme()
@@ -71,6 +70,28 @@ export default function Sidebar({
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          const response = await fetch(`/api/user/${session.user.id}`)
+          if (response.ok) {
+            const userData = await response.json()
+            setUserProfile({
+              name: userData.userProfile?.name || userName,
+              avatar: userData.userProfile?.avatar || userAvatar
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error)
+      }
+    }
+
+    fetchUserProfile()
+  }, [userName, userAvatar])
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
@@ -154,14 +175,14 @@ export default function Sidebar({
       {/* User Profile */}
       <div className={cn("flex items-center p-4 mb-4", isCollapsed ? "justify-center" : "px-4 py-2")}>
         <Avatar className="h-10 w-10 border-2 border-indigo-500/30">
-          <AvatarImage src={userAvatar} alt={userName} />
+          <AvatarImage src={userProfile?.avatar || userAvatar} alt={userProfile?.name || userName} />
           <AvatarFallback className="bg-indigo-950 text-indigo-200">
             <User size={16} />
           </AvatarFallback>
         </Avatar>
         {!isCollapsed && (
           <div className="ml-3">
-            <p className="text-sm font-medium text-white">{userName}</p>
+            <p className="text-sm font-medium text-white">{userProfile?.name || userName}</p>
             <p className="text-xs text-indigo-300">Perfil</p>
           </div>
         )}
