@@ -5,18 +5,13 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Compass,
-  Briefcase,
-  Heart,
-  Bell,
   Edit3,
-  BarChart2,
-  Settings,
   ChevronLeft,
   ChevronRight,
   Sun,
   Moon,
   User,
-  Users,
+  Menu
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useTheme } from "next-themes"
 import NotificationBadge from "@/components/ui/notification-badge"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 interface SidebarProps {
   isAdmin?: boolean
@@ -33,18 +29,25 @@ interface SidebarProps {
 }
 
 export default function Sidebar({
-  isAdmin = false,
+  isAdmin = true,
   userName = "Carlos Mendez",
   userAvatar = "/placeholder.svg?height=40&width=40",
   className,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const pathname = usePathname()
   const { setTheme, resolvedTheme } = useTheme()
 
   useEffect(() => {
     setMounted(true)
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768) // 768px is the md breakpoint
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   const toggleSidebar = () => {
@@ -57,29 +60,11 @@ export default function Sidebar({
 
   const mainNavItems = [
     {
-      title: "Descubrir Viajes",
-      href: "/",
+      title: "Dashboard",
+      href: "/dashboard",
       icon: Compass,
-      isActive: pathname === "/",
-    },
-    {
-      title: "Mis Aventuras",
-      href: "/my-trips",
-      icon: Briefcase,
-      isActive: pathname === "/my-trips",
-    },
-    {
-      title: "Favoritos",
-      href: "/favorites",
-      icon: Heart,
-      isActive: pathname === "/favorites",
-    },
-    {
-      title: "Notificaciones",
-      href: "/notifications",
-      icon: Bell,
-      isActive: pathname === "/notifications",
-    },
+      isActive: pathname === "/dashboard",
+    }
   ]
 
   const adminNavItems = [
@@ -88,54 +73,24 @@ export default function Sidebar({
       href: "/admin/trips",
       icon: Edit3,
       isActive: pathname === "/admin/trips",
-    },
-    {
-      title: "Participantes",
-      href: "/admin/participants",
-      icon: Users,
-      isActive: pathname === "/admin/participants",
-    },
-    {
-      title: "Estadísticas",
-      href: "/admin/stats",
-      icon: BarChart2,
-      isActive: pathname === "/admin/stats",
-    },
-    {
-      title: "Notificaciones",
-      href: "/admin/notifications",
-      icon: Bell,
-      isActive: pathname === "/admin/notifications",
-      showBadge: true,
-    },
-    {
-      title: "Configuración",
-      href: "/admin/settings",
-      icon: Settings,
-      isActive: pathname === "/admin/settings",
-    },
+    }
   ]
 
-  return (
-    <div
-      className={cn(
-        "flex flex-col h-screen fixed top-0 left-0 z-40 transition-all duration-300 ease-in-out border-r border-indigo-500/20",
-        isCollapsed ? "w-[70px]" : "w-[250px]",
-        className,
-      )}
-    >
+  const SidebarContent = () => (
+    <>
       {/* Glassmorphism Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md -z-10" />
 
-      {/* Toggle Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute -right-3 top-8 h-6 w-6 rounded-full border border-indigo-500/30 bg-black text-white shadow-md"
-        onClick={toggleSidebar}
-      >
-        {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-      </Button>
+      {!isMobile && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute -right-3 top-8 h-6 w-6 rounded-full border border-indigo-500/30 bg-black text-white shadow-md"
+          onClick={toggleSidebar}
+        >
+          {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+        </Button>
+      )}
 
       {/* Logo */}
       <div className={cn("flex items-center p-4 h-20", isCollapsed ? "justify-center" : "justify-start")}>
@@ -255,6 +210,46 @@ export default function Sidebar({
           )}
         </Button>
       </div>
+    </>
+  )
+
+  // Mobile menu trigger button - only shown on mobile
+  const MobileMenuTrigger = () => (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="fixed top-4 left-4 md:hidden z-50"
+    >
+      <Menu className="h-6 w-6" />
+    </Button>
+  )
+
+  if (!mounted) return null
+
+  if (isMobile) {
+    return (
+      <Sheet>
+        <SheetTrigger asChild>
+          <MobileMenuTrigger />
+        </SheetTrigger>
+        <SheetContent side="left" className="p-0 w-[280px]">
+          <div className="h-full">
+            <SidebarContent />
+          </div>
+        </SheetContent>
+      </Sheet>
+    )
+  }
+
+  return (
+    <div
+      className={cn(
+        "hidden md:flex flex-col h-screen fixed top-0 left-0 z-40 transition-all duration-300 ease-in-out border-r border-indigo-500/20",
+        isCollapsed ? "w-[70px]" : "w-[250px]",
+        className,
+      )}
+    >
+      <SidebarContent />
     </div>
   )
 } 

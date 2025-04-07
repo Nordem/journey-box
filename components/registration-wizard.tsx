@@ -319,7 +319,7 @@ export default function RegistrationWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-black border border-indigo-500/30 rounded-2xl">
       <div className="max-w-4xl mx-auto py-8 px-4">
         <div className="flex justify-end mb-4">
           <Button
