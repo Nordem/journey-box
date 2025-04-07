@@ -40,7 +40,7 @@ export default function LoginPage() {
           variant: "default",
         })
         
-        router.push("/profile")
+        router.push("/discover")
       }
     } catch (error) {
       toast({
