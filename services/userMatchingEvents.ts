@@ -24,6 +24,7 @@ export interface Event {
   originalPrice: number;
   finalPrice: number;
   isHighlight: boolean;
+  location?: string;
 }
 
 export interface UserProfile {
@@ -164,7 +165,7 @@ Max Participants: ${event.maxParticipants}
 Price: ${event.originalPrice} MXN (${event.finalPrice} MXN final)
 ---`).join("\n");
 
-    const prompt = `Analyze these events and determine which ones are good matches for the user based on their profile and preferences.
+    const prompt = `Analyze these events and determine which ones are good matches for the user based on their profile and preferences. Be very selective and only recommend events that truly match the user's preferences.
 
 Available Events:
 ${eventsList}
@@ -197,10 +198,15 @@ Team Building Preferences:
 - Additional Suggestions: ${userProfile.eventPreferences.teamBuildingPrefs?.suggestions?.join(", ") || "None"}
 
 Other Information:
-- Restrictions: ${userProfile.restrictions ? Object.entries(userProfile.restrictions).map(([key, val]) => `${key}: ${val}`).join(", ") : "None"}
 - Calendar Availability: ${userProfile.calendarAvailability ? Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ") : "None"}
 
-For each event, provide a match score (0-100) and specific reasons why it matches or doesn't match.
+For each event, provide a match score (0-100) and specific reasons why it matches or doesn't match. Only recommend events that:
+1. Match at least 3 key preferences
+2. Don't violate any restrictions
+3. Have a match score of 75 or higher
+4. Are within the user's budget range
+5. Match the user's preferred group size
+
 Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }`;
 
     try {
@@ -214,14 +220,21 @@ Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": bo
           const matchResults = JSON.parse(cleanContent);
           if (matchResults.matches) {
             matchResults.matches.forEach((match: any) => {
-              if (match.isMatch && match.score >= 60) {
+              if (match.isMatch && match.score >= 75) {
                 const event = events.find((e: Event) => e.name === match.eventName);
                 if (event) {
-                  recommendedEvents.push({
-                    ...event,
-                    matchScore: match.score,
-                    matchReasons: match.reasons
-                  });
+                  // Additional validation
+                  const isWithinBudget = validateBudget(event, userProfile.eventPreferences.budget);
+                  const matchesGroupSize = validateGroupSize(event, userProfile.eventPreferences.groupSizePreference);
+                  const matchesRestrictions = validateRestrictions(event, userProfile.restrictions);
+                  
+                  if (isWithinBudget && matchesGroupSize && matchesRestrictions) {
+                    recommendedEvents.push({
+                      ...event,
+                      matchScore: match.score,
+                      matchReasons: match.reasons
+                    });
+                  }
                 }
               }
             });
@@ -232,30 +245,173 @@ Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": bo
         }
       }
     } catch (error) {
-      // If OpenAI API fails, return a basic recommendation based on category matching
-      console.warn("OpenAI API unavailable, falling back to basic recommendations");
+      // If OpenAI API fails, implement a more sophisticated fallback mechanism
+      console.warn("OpenAI API unavailable, falling back to advanced recommendations");
       events.forEach((event: Event) => {
-        const categoryMatch = userProfile.eventPreferences.categories?.includes(event.category);
-        const activityMatch = event.activities.some(activity => 
-          userProfile.eventPreferences.preferredExperiences?.includes(activity)
-        );
-        
-        if (categoryMatch || activityMatch) {
+        const score = calculateMatchScore(event, userProfile);
+        if (score >= 75) {
           recommendedEvents.push({
             ...event,
-            matchScore: categoryMatch && activityMatch ? 80 : 60,
-            matchReasons: [
-              categoryMatch ? "Category matches user preferences" : "",
-              activityMatch ? "Activities match user preferences" : ""
-            ].filter(Boolean)
+            matchScore: score,
+            matchReasons: generateMatchReasons(event, userProfile)
           });
         }
       });
     }
 
-    return recommendedEvents.sort((a, b) => b.matchScore - a.matchScore);
+    // Sort by match score and limit to top 5 recommendations
+    return recommendedEvents
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, 5);
   } catch (error) {
     console.error("Error in getRecommendedEvents:", error);
     return [];
   }
+}
+
+function validateBudget(event: Event, budgetPreference: string | undefined): boolean {
+  if (!budgetPreference || !event.finalPrice) return true;
+  
+  const price = event.finalPrice;
+  switch (budgetPreference.toLowerCase()) {
+    case 'low':
+      return price <= 1000;
+    case 'medium':
+      return price > 1000 && price <= 3000;
+    case 'high':
+      return price > 3000;
+    default:
+      return true;
+  }
+}
+
+function validateGroupSize(event: Event, groupSizePreference: string[] | undefined): boolean {
+  if (!groupSizePreference || !event.maxParticipants) return true;
+  
+  const maxParticipants = event.maxParticipants;
+  return groupSizePreference.some(pref => {
+    switch (pref.toLowerCase()) {
+      case 'individual':
+        return maxParticipants <= 2;
+      case 'small group':
+        return maxParticipants > 2 && maxParticipants <= 10;
+      case 'large group':
+        return maxParticipants > 10;
+      default:
+        return true;
+    }
+  });
+}
+
+function validateRestrictions(event: Event, restrictions: any | undefined): boolean {
+  if (!restrictions) return true;
+  
+  const eventName = event.name.toLowerCase();
+  const eventDescription = event.description.toLowerCase();
+  
+  if (restrictions.avoidCrowdedDaytimeConferences) {
+    if (eventName.includes('conference') || eventDescription.includes('conference')) {
+      return false;
+    }
+  }
+  
+  if (restrictions.avoidOverlyFormalNetworking) {
+    if (eventName.includes('networking') || eventDescription.includes('networking')) {
+      return false;
+    }
+  }
+  
+  if (restrictions.avoidFamilyKidsEvents) {
+    if (eventName.includes('family') || eventName.includes('kids') || 
+        eventDescription.includes('family') || eventDescription.includes('kids')) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+function calculateMatchScore(event: Event, userProfile: UserProfile): number {
+  let score = 0;
+  const maxScore = 100;
+  const weights = {
+    category: 20,
+    activities: 20,
+    location: 15,
+    groupSize: 15,
+    budget: 10,
+    preferences: 20
+  };
+
+  // Category match
+  if (userProfile.eventPreferences.categories?.includes(event.category)) {
+    score += weights.category;
+  }
+
+  // Activities match
+  const matchingActivities = event.activities.filter(activity => 
+    userProfile.eventPreferences.preferredExperiences?.includes(activity)
+  ).length;
+  score += (matchingActivities / event.activities.length) * weights.activities;
+
+  // Location match
+  if (userProfile.eventPreferences.preferredDestinations?.some(dest => 
+    event.location?.toLowerCase().includes(dest.toLowerCase())
+  )) {
+    score += weights.location;
+  }
+
+  // Group size match
+  if (validateGroupSize(event, userProfile.eventPreferences.groupSizePreference)) {
+    score += weights.groupSize;
+  }
+
+  // Budget match
+  if (validateBudget(event, userProfile.eventPreferences.budget)) {
+    score += weights.budget;
+  }
+
+  // Additional preferences match
+  const matchingPreferences = [
+    ...(userProfile.eventPreferences.vibeKeywords || []),
+    ...(userProfile.eventPreferences.seasonalPreferences || [])
+  ].filter(pref => 
+    event.description.toLowerCase().includes(pref.toLowerCase()) ||
+    event.highlights.some(h => h.toLowerCase().includes(pref.toLowerCase()))
+  ).length;
+
+  score += (matchingPreferences / 5) * weights.preferences;
+
+  return Math.min(score, maxScore);
+}
+
+function generateMatchReasons(event: Event, userProfile: UserProfile): string[] {
+  const reasons: string[] = [];
+
+  if (userProfile.eventPreferences.categories?.includes(event.category)) {
+    reasons.push(`Category matches user preferences: ${event.category}`);
+  }
+
+  const matchingActivities = event.activities.filter(activity => 
+    userProfile.eventPreferences.preferredExperiences?.includes(activity)
+  );
+  if (matchingActivities.length > 0) {
+    reasons.push(`Activities match user preferences: ${matchingActivities.join(", ")}`);
+  }
+
+  if (userProfile.eventPreferences.preferredDestinations?.some(dest => 
+    event.location?.toLowerCase().includes(dest.toLowerCase())
+  )) {
+    reasons.push(`Location matches preferred destinations`);
+  }
+
+  if (validateGroupSize(event, userProfile.eventPreferences.groupSizePreference)) {
+    reasons.push(`Group size matches user preferences`);
+  }
+
+  if (validateBudget(event, userProfile.eventPreferences.budget)) {
+    reasons.push(`Price is within user's budget range`);
+  }
+
+  return reasons;
 }
