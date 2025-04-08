@@ -24,8 +24,6 @@ import { Separator } from "@/components/ui/separator"
 import { useTheme } from "next-themes"
 import NotificationBadge from "@/components/ui/notification-badge"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Icons } from "@/components/icons"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
 
@@ -173,20 +171,44 @@ export default function Sidebar({
       </div>
 
       {/* User Profile */}
-      <div className={cn("flex items-center p-4 mb-4", isCollapsed ? "justify-center" : "px-4 py-2")}>
-        <Avatar className="h-10 w-10 border-2 border-indigo-500/30">
-          <AvatarImage src={userProfile?.avatar || userAvatar} alt={userProfile?.name || userName} />
-          <AvatarFallback className="bg-indigo-950 text-indigo-200">
-            <User size={16} />
-          </AvatarFallback>
-        </Avatar>
-        {!isCollapsed && (
-          <div className="ml-3">
-            <p className="text-sm font-medium text-white">{userProfile?.name || userName}</p>
-            <p className="text-xs text-indigo-300">Perfil</p>
+      <div className="flex flex-col items-center p-4 mb-4">
+            <Avatar className="h-14 w-14 border-2 border-indigo-500/30 mb-2">
+              <AvatarImage src={userAvatar} alt={userName} />
+              <AvatarFallback className="bg-indigo-950 text-indigo-200 relative">
+                <User size={16} />
+                <div className="absolute bottom-0 right-0 bg-indigo-800 rounded-full p-1 border border-indigo-500/30">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-white"
+                  >
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                    <circle cx="12" cy="13" r="3" />
+                  </svg>
+                </div>
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col items-center">
+              <p className="text-base font-medium text-white">{userName}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-1 h-7 text-xs px-3 py-0 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
+                asChild
+              >
+                <Link href="/profile">
+                  Mi Perfil
+                </Link>
+              </Button>
+            </div>
           </div>
-        )}
-      </div>
 
       {isCollapsed ? 
       <Separator className="mx-4 bg-indigo-500/20 w-[40px]" />

@@ -266,17 +266,29 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
             <CardContent>
                 <form onSubmit={handleFormSubmit} className="space-y-6">
                     <Tabs defaultValue="basic" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6">
-                            <TabsTrigger value="basic" className="text-xs md:text-sm">
+                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 mb-6 bg-transparent border border-indigo-500/30 rounded-xl p-2">
+                            <TabsTrigger 
+                                value="basic" 
+                                className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
+                            >
                                 Información Básica
                             </TabsTrigger>
-                            <TabsTrigger value="media" className="text-xs md:text-sm">
+                            <TabsTrigger 
+                                value="media" 
+                                className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
+                            >
                                 Imágenes y Videos
                             </TabsTrigger>
-                            <TabsTrigger value="details" className="text-xs md:text-sm">
+                            <TabsTrigger 
+                                value="details" 
+                                className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
+                            >
                                 Detalles
                             </TabsTrigger>
-                            <TabsTrigger value="itinerary" className="text-xs md:text-sm">
+                            <TabsTrigger 
+                                value="itinerary" 
+                                className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
+                            >
                                 Itinerario
                             </TabsTrigger>
                         </TabsList>
