@@ -104,11 +104,7 @@ export default function DiscoverPage() {
             eventPreferences: {
               categories: data.eventPreferences?.categories || [],
               vibeKeywords: data.eventPreferences?.vibeKeywords || [],
-              idealTimeSlots: data.eventPreferences?.idealTimeSlots || [],
               budget: data.eventPreferences?.budget || "",
-              preferredGroupType: data.eventPreferences?.preferredGroupType || [],
-              preferredEventSize: data.eventPreferences?.preferredEventSize || [],
-              maxDistanceKm: data.eventPreferences?.maxDistanceKm || 100,
               preferredExperiences: data.eventPreferences?.preferredExperiences || [],
               preferredDestinations: data.eventPreferences?.preferredDestinations || [],
               seasonalPreferences: data.eventPreferences?.seasonalPreferences || [],
@@ -116,9 +112,9 @@ export default function DiscoverPage() {
               blockedDates: data.eventPreferences?.blockedDates || [],
               teamBuildingPrefs: data.eventPreferences?.teamBuildingPrefs || {
                 preferredActivities: [],
-                location: "",
-                duration: "",
-                suggestions: []
+                location: "both",
+                duration: "half_day",
+                suggestions: ""
               }
             },
             restrictions: data.restrictions || {},
@@ -234,13 +230,27 @@ export default function DiscoverPage() {
                       <span className="text-white font-medium">{event.maxParticipants || 0}</span>
                     </div>
                     {event.matchScore && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-indigo-200">Coincidencia</span>
-                        <span className="text-white font-medium">{event.matchScore}%</span>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-indigo-200">Coincidencia</span>
+                          <span className="text-white font-medium">{event.matchScore}%</span>
+                        </div>
+                        {event.matchReasons && event.matchReasons.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            <span className="text-xs text-indigo-200">Razones de la recomendación:</span>
+                            <ul className="list-disc list-inside space-y-1">
+                              {event.matchReasons.map((reason, idx) => (
+                                <li key={idx} className="text-xs text-indigo-200/80">{reason}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                  <Button className="w-full mt-4 border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30">
+                  <Button 
+                    className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
+                  >
                     Ver Detalles
                   </Button>
                 </CardContent>
@@ -267,7 +277,9 @@ export default function DiscoverPage() {
                       <span className="text-white font-medium">{event.maxParticipants || 0}</span>
                     </div>
                   </div>
-                  <Button className="w-full mt-4 border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30">
+                  <Button 
+                    className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
+                  >
                     Ver Detalles
                   </Button>
                 </CardContent>

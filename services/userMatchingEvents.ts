@@ -31,35 +31,29 @@ export interface UserProfile {
   userProfile: {
     name: string;
     location: string;
-    currentTravelLocation: string;
+    currentTravelLocation?: string;
     languages: string[];
     personalityTraits: string[];
-    goals: string[];
     hobbiesAndInterests: string[];
-    additionalInfo: string;
-    nearestAirport: string;
-    role?: string;
-    avatar?: string;
+    additionalInfo?: string;
+    nearestAirport?: string;
+    goals: string[];
   };
   eventPreferences: {
-    categories: string[];
-    vibeKeywords: string[];
-    idealTimeSlots: string[];
-    budget: string;
-    preferredGroupType: string[];
-    preferredEventSize: string[];
-    maxDistanceKm: number;
     preferredExperiences: string[];
     preferredDestinations: string[];
+    teamBuildingPrefs?: {
+      preferredActivities: string[];
+      location: 'office' | 'outside' | 'both';
+      duration: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days';
+      suggestions?: string;
+    };
     seasonalPreferences: string[];
     groupSizePreference: string[];
     blockedDates: string[];
-    teamBuildingPrefs?: {
-      preferredActivities: string[];
-      location: string;
-      duration: string;
-      suggestions: string[];
-    };
+    categories: string[];
+    vibeKeywords: string[];
+    budget: string;
   };
   restrictions?: {
     avoidCrowdedDaytimeConferences: boolean;
@@ -159,13 +153,13 @@ Location: ${event.city}, ${event.state || event.country}
 Dates: ${event.startDate} - ${event.endDate}
 Category: ${event.category}
 Description: ${event.description}
-Highlights: ${event.highlights.join(", ")}
 Activities: ${event.activities.join(", ")}
 Max Participants: ${event.maxParticipants}
-Price: ${event.originalPrice} MXN (${event.finalPrice} MXN final)
+Normal Price: (${event.originalPrice} MXN)
+Final Price: (${event.finalPrice} MXN)
 ---`).join("\n");
 
-    const prompt = `Analyze these events and determine which ones are good matches for the user based on their profile and preferences. Be very selective and only recommend events that truly match the user's preferences.
+    const prompt = `Analyze evnets list and select which ones are best fit for the user profile provided. Only recommend events that truly match the user's preferences.
 
 Available Events:
 ${eventsList}
@@ -195,7 +189,7 @@ Team Building Preferences:
 - Preferred Activities: ${userProfile.eventPreferences.teamBuildingPrefs?.preferredActivities?.join(", ") || "None"}
 - Location Preference: ${userProfile.eventPreferences.teamBuildingPrefs?.location || "Not specified"}
 - Duration Preference: ${userProfile.eventPreferences.teamBuildingPrefs?.duration || "Not specified"}
-- Additional Suggestions: ${userProfile.eventPreferences.teamBuildingPrefs?.suggestions?.join(", ") || "None"}
+- Additional Suggestions: ${userProfile.eventPreferences.teamBuildingPrefs?.suggestions || "None"}
 
 Other Information:
 - Calendar Availability: ${userProfile.calendarAvailability ? Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ") : "None"}
@@ -207,7 +201,9 @@ For each event, provide a match score (0-100) and specific reasons why it matche
 4. Are within the user's budget range
 5. Match the user's preferred group size
 
-Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }`;
+Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }
+
+IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language to explain why the event matches the user's profile.`;
 
     try {
       const openaiData = await makeOpenAIRequest(prompt);
