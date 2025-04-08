@@ -7,8 +7,6 @@ import {
   Compass,
   ChevronLeft,
   ChevronRight,
-  Sun,
-  Moon,
   User,
   Menu,
   Heart,
@@ -21,32 +19,26 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { useTheme } from "next-themes"
 import NotificationBadge from "@/components/ui/notification-badge"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { supabase } from "@/lib/supabase"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 
 interface SidebarProps {
   isAdmin?: boolean
-  userName?: string
-  userAvatar?: string
   className?: string
 }
 
 interface NavItem {
   title: string
-  href?: string
-  disabled?: boolean
-  external?: boolean
-  icon: React.ComponentType<{ className?: string }>
+  href: string
+  icon: any
   showBadge?: boolean
+  isActive?: boolean
 }
 
 export default function Sidebar({
   isAdmin = true,
-  userName = "Carlos Mendez",
-  userAvatar = "/placeholder.svg?height=40&width=40",
   className,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -56,7 +48,6 @@ export default function Sidebar({
   const [userProfile, setUserProfile] = useState<{ name: string; avatar?: string } | null>(null)
   const pathname = usePathname()
   const router = useRouter()
-  const { setTheme, resolvedTheme } = useTheme()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -78,8 +69,8 @@ export default function Sidebar({
           if (response.ok) {
             const userData = await response.json()
             setUserProfile({
-              name: userData.userProfile?.name || userName,
-              avatar: userData.userProfile?.avatar || userAvatar
+              name: userData.userProfile?.name || 'Usuario',
+              avatar: userData.userProfile?.avatar
             })
           }
         }
@@ -89,14 +80,10 @@ export default function Sidebar({
     }
 
     fetchUserProfile()
-  }, [userName, userAvatar])
+  }, [])
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
-  }
-
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark")
   }
 
   const mainNavItems: NavItem[] = [
@@ -172,43 +159,43 @@ export default function Sidebar({
 
       {/* User Profile */}
       <div className="flex flex-col items-center p-4 mb-4">
-            <Avatar className="h-14 w-14 border-2 border-indigo-500/30 mb-2">
-              <AvatarImage src={userAvatar} alt={userName} />
-              <AvatarFallback className="bg-indigo-950 text-indigo-200 relative">
-                <User size={16} />
-                <div className="absolute bottom-0 right-0 bg-indigo-800 rounded-full p-1 border border-indigo-500/30">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-white"
-                  >
-                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                    <circle cx="12" cy="13" r="3" />
-                  </svg>
-                </div>
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col items-center">
-              <p className="text-base font-medium text-white">{userName}</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-1 h-7 text-xs px-3 py-0 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
-                asChild
+        <Avatar className="h-14 w-14 border-2 border-indigo-500/30 mb-2">
+          <AvatarImage src={userProfile?.avatar} alt={userProfile?.name} />
+          <AvatarFallback className="bg-indigo-950 text-indigo-200 relative">
+            <User size={16} />
+            <div className="absolute bottom-0 right-0 bg-indigo-800 rounded-full p-1 border border-indigo-500/30">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-white"
               >
-                <Link href="/profile">
-                  Mi Perfil
-                </Link>
-              </Button>
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                <circle cx="12" cy="13" r="3" />
+              </svg>
             </div>
-          </div>
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col items-center">
+          <p className="text-base font-medium text-white">{userProfile?.name || 'Usuario'}</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-1 h-7 text-xs px-3 py-0 text-indigo-200 hover:text-white hover:bg-indigo-800/30"
+            asChild
+          >
+            <Link href="/profile">
+              Mi Perfil
+            </Link>
+          </Button>
+        </div>
+      </div>
 
       {isCollapsed ? 
       <Separator className="mx-4 bg-indigo-500/20 w-[40px]" />
@@ -281,31 +268,6 @@ export default function Sidebar({
             </nav>
           </>
         )}
-      </div>
-
-      {/* Theme Toggle */}
-      <div className="p-4 mt-auto">
-        <Button
-          variant="ghost"
-          size={isCollapsed ? "icon" : "default"}
-          onClick={toggleTheme}
-          className={cn(
-            "w-full justify-center border border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-800/30 text-indigo-100",
-            isCollapsed ? "px-0" : "",
-          )}
-        >
-          {mounted && resolvedTheme === "dark" ? (
-            <>
-              <Sun size={16} className={isCollapsed ? "" : "mr-2"} />
-              {!isCollapsed && <span>Tema Claro</span>}
-            </>
-          ) : (
-            <>
-              <Moon size={16} className={isCollapsed ? "" : "mr-2"} />
-              {!isCollapsed && <span>Tema Oscuro</span>}
-            </>
-          )}
-        </Button>
       </div>
 
       <div className="px-3 py-2">

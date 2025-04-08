@@ -212,51 +212,67 @@ export default function DiscoverPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="recommended" className="mt-4 md:mt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-            {recommendedEvents.map((event, index) => (
-              <Card key={index} className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
-                <CardHeader>
-                  <CardTitle className="text-white text-lg md:text-xl">{event.name}</CardTitle>
-                  <CardDescription className="text-indigo-200 text-sm md:text-base">{event.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-indigo-200">Precio</span>
-                      <span className="text-white font-medium">${event.finalPrice || event.originalPrice || 0} MXN</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-indigo-200">Participantes</span>
-                      <span className="text-white font-medium">{event.maxParticipants || 0}</span>
-                    </div>
-                    {event.matchScore && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-indigo-200">Coincidencia</span>
-                          <span className="text-white font-medium">{event.matchScore}%</span>
-                        </div>
-                        {event.matchReasons && event.matchReasons.length > 0 && (
-                          <div className="mt-2 space-y-1">
-                            <span className="text-xs text-indigo-200">Razones de la recomendación:</span>
-                            <ul className="list-disc list-inside space-y-1">
-                              {event.matchReasons.map((reason, idx) => (
-                                <li key={idx} className="text-xs text-indigo-200/80">{reason}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+          {loadingRecommendedEvents ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-500/30"></div>
+                <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
+                </div>
+              </div>
+              <p className="text-indigo-200 text-sm animate-pulse">Cargando eventos recomendados...</p>
+            </div>
+          ) : recommendedEvents.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+              {recommendedEvents.map((event, index) => (
+                <Card key={index} className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md border border-indigo-500/30">
+                  <CardHeader>
+                    <CardTitle className="text-white text-lg md:text-xl">{event.name}</CardTitle>
+                    <CardDescription className="text-indigo-200 text-sm md:text-base">{event.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-indigo-200">Precio</span>
+                        <span className="text-white font-medium">${event.finalPrice || event.originalPrice || 0} MXN</span>
                       </div>
-                    )}
-                  </div>
-                  <Button 
-                    className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
-                  >
-                    Ver Detalles
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-indigo-200">Participantes</span>
+                        <span className="text-white font-medium">{event.maxParticipants || 0}</span>
+                      </div>
+                      {event.matchScore && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-indigo-200">Coincidencia</span>
+                            <span className="text-white font-medium">{event.matchScore}%</span>
+                          </div>
+                          {event.matchReasons && event.matchReasons.length > 0 && (
+                            <div className="mt-2 space-y-1">
+                              <span className="text-xs text-indigo-200">Razones de la recomendación:</span>
+                              <ul className="list-disc list-inside space-y-1">
+                                {event.matchReasons.map((reason, idx) => (
+                                  <li key={idx} className="text-xs text-indigo-200/80">{reason}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <Button 
+                      className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
+                    >
+                      Ver Detalles
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12">
+              <p className="text-indigo-200 text-sm">No hay eventos recomendados disponibles.</p>
+            </div>
+          )}
         </TabsContent>
         <TabsContent value="all" className="mt-4 md:mt-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
