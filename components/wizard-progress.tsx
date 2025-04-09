@@ -25,13 +25,16 @@ interface FormData {
     preferredDestinations: string[];
     teamBuildingPrefs?: {
       preferredActivities: string[];
-      location: 'office' | 'outside' | 'both';
-      duration: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days';
+      location?: 'office' | 'outside' | 'both';
+      duration?: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days';
       suggestions?: string;
     };
     seasonalPreferences: string[];
     groupSizePreference: string[];
     blockedDates: string[];
+    categories: string[];
+    vibeKeywords: string[];
+    budget: string;
   };
 }
 
@@ -45,15 +48,18 @@ export default function WizardProgress({ steps, currentStep, formData }: WizardP
   const isLastStep = currentStep === steps.length - 1
 
   const calculateCompletionPercentage = () => {
-    const totalQuestions = 15 // Total number of questions across all steps
+    const totalQuestions = 16 // Reduced from 17 to exclude budget field
     let answeredQuestions = 0
 
     // Check userProfile fields
     if (formData.userProfile.name) answeredQuestions++
     if (formData.userProfile.location) answeredQuestions++
+    if (formData.userProfile.currentTravelLocation) answeredQuestions++
     if (formData.userProfile.languages.length > 0) answeredQuestions++
     if (formData.userProfile.personalityTraits.length > 0) answeredQuestions++
     if (formData.userProfile.hobbiesAndInterests.length > 0) answeredQuestions++
+    if (formData.userProfile.additionalInfo) answeredQuestions++
+    if (formData.userProfile.nearestAirport) answeredQuestions++
     if (formData.userProfile.goals.length > 0) answeredQuestions++
 
     // Check eventPreferences fields
@@ -62,12 +68,17 @@ export default function WizardProgress({ steps, currentStep, formData }: WizardP
     if (formData.eventPreferences.seasonalPreferences.length > 0) answeredQuestions++
     if (formData.eventPreferences.groupSizePreference.length > 0) answeredQuestions++
     if (formData.eventPreferences.blockedDates.length > 0) answeredQuestions++
+    if (formData.eventPreferences.categories.length > 0) answeredQuestions++
+    if (formData.eventPreferences.vibeKeywords.length > 0) answeredQuestions++
 
-    // Check teamBuildingPrefs fields
+    // Check teamBuildingPrefs fields - only count if user has interacted with them
     if (formData.eventPreferences.teamBuildingPrefs) {
-      if (formData.eventPreferences.teamBuildingPrefs.preferredActivities.length > 0) answeredQuestions++
-      if (formData.eventPreferences.teamBuildingPrefs.location) answeredQuestions++
-      if (formData.eventPreferences.teamBuildingPrefs.duration) answeredQuestions++
+      const teamBuildingPrefs = formData.eventPreferences.teamBuildingPrefs
+      // Only count if user has selected activities or changed from default values
+      if (teamBuildingPrefs.preferredActivities.length > 0) answeredQuestions++
+      if (teamBuildingPrefs.location) answeredQuestions++
+      if (teamBuildingPrefs.duration) answeredQuestions++
+      if (teamBuildingPrefs.suggestions) answeredQuestions++
     }
 
     return Math.round((answeredQuestions / totalQuestions) * 100)

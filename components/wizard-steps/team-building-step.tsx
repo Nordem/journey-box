@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -35,67 +35,51 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
   const [selectedActivities, setSelectedActivities] = useState<string[]>(
     data.teamBuildingPrefs?.preferredActivities || []
   )
-  const [location, setLocation] = useState<'office' | 'outside' | 'both'>(
-    data.teamBuildingPrefs?.location || 'both'
+  const [location, setLocation] = useState<'office' | 'outside' | 'both' | undefined>(
+    data.teamBuildingPrefs?.location
   )
-  const [duration, setDuration] = useState<'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days'>(
-    data.teamBuildingPrefs?.duration || 'half_day'
+  const [duration, setDuration] = useState<'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days' | undefined>(
+    data.teamBuildingPrefs?.duration
   )
   const [newActivity, setNewActivity] = useState("")
   const [customActivities, setCustomActivities] = useState<Array<{icon: string, label: string}>>([])
 
-  const toggleActivity = (activity: string) => {
-    setSelectedActivities(prev => 
-      prev.includes(activity) ? prev.filter(a => a !== activity) : [...prev, activity]
-    )
+  useEffect(() => {
+    // Update form data whenever state changes
     updateData({
       ...data,
       teamBuildingPrefs: {
         ...data.teamBuildingPrefs,
-        preferredActivities: selectedActivities.includes(activity)
-          ? selectedActivities.filter(a => a !== activity)
-          : [...selectedActivities, activity]
+        preferredActivities: selectedActivities,
+        location,
+        duration,
+        suggestions: data.teamBuildingPrefs?.suggestions || ""
       }
     })
+  }, [selectedActivities, location, duration])
+
+  const handleLocationChange = (value: 'office' | 'outside' | 'both') => {
+    setLocation(value)
+  }
+
+  const handleDurationChange = (value: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days') => {
+    setDuration(value)
+  }
+
+  const toggleActivity = (activity: string) => {
+    const newSelectedActivities = selectedActivities.includes(activity)
+      ? selectedActivities.filter(a => a !== activity)
+      : [...selectedActivities, activity]
+    setSelectedActivities(newSelectedActivities)
   }
 
   const addCustomActivity = () => {
     if (newActivity.trim() && !selectedActivities.includes(newActivity.trim())) {
       const activity = newActivity.trim();
       setCustomActivities(prev => [...prev, { icon: "✨", label: activity }]);
-      const updatedActivities = [...selectedActivities, activity];
-      setSelectedActivities(updatedActivities);
-      updateData({
-        ...data,
-        teamBuildingPrefs: {
-          ...data.teamBuildingPrefs,
-          preferredActivities: updatedActivities
-        }
-      });
+      setSelectedActivities(prev => [...prev, activity]);
       setNewActivity("");
     }
-  }
-
-  const handleLocationChange = (value: 'office' | 'outside' | 'both') => {
-    setLocation(value)
-    updateData({
-      ...data,
-      teamBuildingPrefs: {
-        ...data.teamBuildingPrefs,
-        location: value
-      }
-    })
-  }
-
-  const handleDurationChange = (value: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days') => {
-    setDuration(value)
-    updateData({
-      ...data,
-      teamBuildingPrefs: {
-        ...data.teamBuildingPrefs,
-        duration: value
-      }
-    })
   }
 
   const handleSuggestions = (value: string) => {
