@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import AuthStep from "./wizard-steps/auth-step"
 import WizardProgress from "./wizard-progress"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Save } from "lucide-react"
+import { ChevronLeft, ChevronRight, Save, Eye, EyeOff } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
@@ -45,6 +45,13 @@ interface UserProfileData {
   goals: string[];
 }
 
+interface TeamBuildingPreferencesData {
+  preferredActivities: string[];
+  location?: 'office' | 'outside' | 'both';
+  duration?: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days';
+  suggestions?: string;
+}
+
 interface EventPreferencesData {
   preferredExperiences: string[];
   preferredDestinations: string[];
@@ -54,14 +61,7 @@ interface EventPreferencesData {
   blockedDates: string[];
   categories: string[];
   vibeKeywords: string[];
-  budget?: string;
-}
-
-interface TeamBuildingPreferencesData {
-  preferredActivities: string[];
-  location: 'office' | 'outside' | 'both';
-  duration: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days';
-  suggestions?: string;
+  budget: string;
 }
 
 interface RestrictionsData {
@@ -105,6 +105,8 @@ export default function RegistrationWizard() {
   const [saveCompleted, setSaveCompleted] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const [formData, setFormData] = useState<FormData>({
     auth: {
@@ -128,8 +130,6 @@ export default function RegistrationWizard() {
       preferredDestinations: [],
       teamBuildingPrefs: {
         preferredActivities: [],
-        location: 'both',
-        duration: 'half_day',
         suggestions: "",
       },
       seasonalPreferences: [],
@@ -318,6 +318,109 @@ export default function RegistrationWizard() {
     }
   }
 
+  const renderAuthStep = () => (
+    <div className="space-y-6">
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-indigo-100 mb-2">
+          Email
+        </label>
+        <input
+          type="email"
+          id="email"
+          value={formData.auth.email}
+          onChange={(e) => updateFormData("auth", { email: e.target.value })}
+          className="w-full px-4 py-2 bg-indigo-900/50 border border-indigo-700/50 rounded-lg text-white placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="tu@email.com"
+          required
+        />
+        <p className="mt-1 text-sm text-indigo-300">
+          Usaremos este email para enviarte confirmaciones y actualizaciones sobre tus eventos.
+        </p>
+
+        <div className="mt-2 space-y-1">
+          <p className="text-sm text-indigo-300">Tu contraseña debe tener:</p>
+          <ul className="text-sm text-indigo-300 list-disc list-inside space-y-1">
+            <li className={formData.auth.password.length >= 8 ? "text-green-400" : ""}>
+              Al menos 8 caracteres
+            </li>
+            <li className={/[A-Z]/.test(formData.auth.password) ? "text-green-400" : ""}>
+              Una letra mayúscula
+            </li>
+            <li className={/[a-z]/.test(formData.auth.password) ? "text-green-400" : ""}>
+              Una letra minúscula
+            </li>
+            <li className={/\d/.test(formData.auth.password) ? "text-green-400" : ""}>
+              Un número
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-indigo-100 mb-2">
+          Contraseña
+        </label>
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            id="password"
+            value={formData.auth.password}
+            onChange={(e) => updateFormData("auth", { password: e.target.value })}
+            className="w-full px-4 py-2 bg-indigo-900/50 border border-indigo-700/50 rounded-lg text-white placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+            placeholder="••••••••"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400 hover:text-indigo-300"
+          >
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
+        </div>
+        
+      </div>
+      <div>
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-indigo-100 mb-2">
+          Confirmar Contraseña
+        </label>
+        <div className="relative">
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            id="confirmPassword"
+            value={formData.auth.confirmPassword}
+            onChange={(e) => updateFormData("auth", { confirmPassword: e.target.value })}
+            className="w-full px-4 py-2 bg-indigo-900/50 border border-indigo-700/50 rounded-lg text-white placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+            placeholder="••••••••"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-400 hover:text-indigo-300"
+          >
+            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
+        </div>
+        {formData.auth.password && formData.auth.confirmPassword && (
+          <p className={`mt-1 text-sm ${formData.auth.password === formData.auth.confirmPassword ? "text-green-400" : "text-red-400"}`}>
+            {formData.auth.password === formData.auth.confirmPassword 
+              ? "✓ Las contraseñas coinciden" 
+              : "✗ Las contraseñas no coinciden"}
+          </p>
+        )}
+      </div>
+      <div className="mt-6 p-4 bg-indigo-900/30 rounded-lg border border-indigo-700/50">
+        <h3 className="text-sm font-medium text-indigo-200 mb-2">Próximos pasos:</h3>
+        <ol className="text-sm text-indigo-300 space-y-2 list-decimal list-inside">
+          <li>Recibirás un email de verificación</li>
+          <li>Confirma tu cuenta haciendo clic en el enlace del email</li>
+          <li>Inicia sesión con tus credenciales</li>
+          <li>¡Comienza a personalizar tus preferencias de eventos!</li>
+        </ol>
+      </div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-black border border-indigo-500/30 rounded-2xl">
       <div className="max-w-4xl mx-auto py-8 px-4">
@@ -346,7 +449,7 @@ export default function RegistrationWizard() {
             transition={{ duration: 0.3 }}
             className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md rounded-lg border border-indigo-500/30 p-6"
           >
-            {steps[currentStep].component}
+            {currentStep === 5 ? renderAuthStep() : steps[currentStep].component}
           </motion.div>
         </AnimatePresence>
 

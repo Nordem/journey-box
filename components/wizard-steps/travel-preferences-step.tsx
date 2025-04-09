@@ -160,7 +160,7 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
             Agregar
           </Button>
         </div>
-        <p className="text-sm text-gray-500 mt-4">
+        <p className="text-sm text-gray-300 mt-4">
           Sugerencia: Seleccionar tus destinos favoritos nos ayuda a ofrecerte experiencias más personalizadas
           y encontrar compañeros de viaje con intereses similares.
         </p>
