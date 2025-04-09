@@ -103,6 +103,7 @@ export default function RegistrationWizard() {
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [saveCompleted, setSaveCompleted] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
@@ -287,19 +288,17 @@ export default function RegistrationWizard() {
 
       // Dismiss the saving toast
       savingToast.dismiss()
-      toast({
-        title: "Success!",
-        description: "Your profile has been created successfully. Please check your email to verify your account.",
-        variant: "default",
-      })
       
       setIsSaving(false)
       setSaveCompleted(true)
+      setShowSuccessModal(true)
       
-      // Redirect to login page after a short delay
-      setTimeout(() => {
-        router.push('/login')
-      }, 2000)
+      // Show success toast
+      toast({
+        title: "¡Perfil creado con éxito!",
+        description: "Tu perfil ha sido creado correctamente. Por favor, verifica tu email para activar tu cuenta.",
+        variant: "default",
+      })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create profile"
       setError(errorMessage)
@@ -310,9 +309,6 @@ export default function RegistrationWizard() {
         description: errorMessage,
         variant: "destructive",
       })
-      
-      // If Supabase user was created but profile saving failed, we might need to clean up
-      // Consider adding code here to delete the Supabase user in case of failure
     } finally {
       setIsSubmitting(false)
     }
@@ -423,6 +419,34 @@ export default function RegistrationWizard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-black border border-indigo-500/30 rounded-2xl">
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md rounded-lg border border-indigo-500/30 p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-500/20 mb-4">
+                <svg className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-white mb-2">¡Perfil creado con éxito!</h3>
+              <p className="text-sm text-indigo-300 mb-6">
+                Tu perfil ha sido creado correctamente. Por favor, verifica tu email para activar tu cuenta.
+              </p>
+              <Button
+                onClick={() => {
+                  setShowSuccessModal(false)
+                  router.push('/login')
+                }}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 w-full"
+              >
+                Ir a Iniciar Sesión
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto py-8 px-4">
         <div className="flex justify-end mb-4">
           <Button
