@@ -4,8 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+// import { Label } from "@/components/ui/label"
 
 interface AvailabilityStepProps {
   data: {
@@ -99,7 +99,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
         </div>
       </Card>
 
-      <Card className="p-6">
+      {/* <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Tipo de evento y tamaño de grupo que prefieres</h2>
         <RadioGroup
           value={selectedGroupSizes[0] || ""}
@@ -122,7 +122,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
             </div>
           ))}
         </RadioGroup>
-      </Card>
+      </Card> */}
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Fechas bloqueadas</h2>

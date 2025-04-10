@@ -60,9 +60,9 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold mb-4">¡Casi listo!</h1>
+        <h1 className="text-2xl font-bold mb-4">Informacion Personal</h1>
         <p className="text-gray-400 mb-6">
-          Completa tu información personal y revisa tus preferencias
+          Completa tu información personal
         </p>
       </div>
 

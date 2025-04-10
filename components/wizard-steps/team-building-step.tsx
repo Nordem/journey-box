@@ -3,18 +3,18 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/textarea"
+// import { Label } from "@/components/ui/label"
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+// import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 
 interface TeamBuildingStepProps {
   data: {
-    teamBuildingPrefs?: {
+    teamBuildingPrefs: {
       preferredActivities: string[];
       location: 'office' | 'outside' | 'both';
       duration: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days';
-      suggestions?: string;
+      suggestions: string;
     };
   };
   updateData: (data: any) => void;
@@ -130,7 +130,7 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
         </div>
       </Card>
 
-      <Card className="p-6">
+      {/* <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">¿Dónde prefieres las actividades?</h2>
         <RadioGroup
           value={location}
@@ -150,9 +150,9 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
             <Label htmlFor="both">Ambas</Label>
           </div>
         </RadioGroup>
-      </Card>
+      </Card> */}
 
-      <Card className="p-6">
+      {/* <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Duración preferida</h2>
         <RadioGroup
           value={duration}
@@ -178,9 +178,9 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
             <Label htmlFor="multiple_days">Más de un día</Label>
           </div>
         </RadioGroup>
-      </Card>
+      </Card> */}
 
-      <div>
+      {/* <div>
         <Label htmlFor="suggestions">¿Tienes alguna sugerencia específica?</Label>
         <Textarea
           id="suggestions"
@@ -188,7 +188,7 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
           onChange={(e) => handleSuggestions(e.target.value)}
           className="mt-2"
         />
-      </div>
+      </div> */}
     </div>
   )
 } 
