@@ -127,6 +127,52 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
   return (
     <div className="space-y-8">
 
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold mb-2">¡Bienvenido a Journey Box, Carlos!</h1>
+        <p className="text-gray-400">
+          Personaliza tu experiencia compartiendo tus preferencias y descubre viajes hechos para ti.
+        </p>
+        <div className="bg-[#1a1b3b] rounded-3xl p-8 mt-6">
+          <div className="grid grid-cols-3 gap-8">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <Box className="w-6 h-6 text-[#8b8cc7]" />
+                <h3 className="text-xl text-[#8b8cc7]">
+                  Experiencias<br />personalizadas
+                </h3>
+              </div>
+              <p className="text-white text-md">
+                Viajes y actividades<br />adaptados a tus gustos
+              </p>
+            </div>
+
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <BarChart2 className="w-6 h-6 text-[#e991a9]" />
+                <h3 className="text-xl text-[#e991a9]">
+                  Encuentra<br />afinidades
+                </h3>
+              </div>
+              <p className="text-white text-md">
+                Conecta con compañeros<br />que comparten tus<br />intereses
+              </p>
+            </div>
+
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <Users className="w-6 h-6 text-[#b48cc7]" />
+                <h3 className="text-xl text-[#b48cc7]">
+                  Mejora el team<br />building
+                </h3>
+              </div>
+              <p className="text-white text-md">
+                Actividades grupales que<br />realmente disfrutarás
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-6">Intereses y hobbies</h2>
         <p className="text-sm text-gray-400 mb-4">Selecciona tus intereses principales</p>
