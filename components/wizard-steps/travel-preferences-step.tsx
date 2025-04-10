@@ -32,7 +32,7 @@ const destinations = [
   { icon: "🍷", label: "Destinos gastronómicos" },
   { icon: "🦁", label: "Reservas naturales" },
   { icon: "🗿", label: "Sitios arqueológicos" },
-  { icon: "🏙️", label: "Destinos urbanos modernos" }
+  { icon: "🏙️", label: "Destinos urbanos" }
 ]
 
 export default function TravelPreferencesStep({ data, updateData }: TravelPreferencesStepProps) {

@@ -4,9 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
-// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-// import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 
 interface AvailabilityStepProps {
   data: {
@@ -100,31 +97,6 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
           ))}
         </div>
       </Card>
-
-      {/* <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Tipo de evento y tamaño de grupo que prefieres</h2>
-        <RadioGroup
-          value={selectedGroupSizes[0] || ""}
-          onValueChange={(value) => {
-            setSelectedGroupSizes([value]);
-            updateData({
-              ...data,
-              groupSizePreference: [value]
-            });
-          }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
-        >
-          {groupSizes.map(({ value, label, description }) => (
-            <div key={value} className="flex items-start space-x-2">
-              <RadioGroupItem value={value} id={value} />
-              <div>
-                <Label htmlFor={value} className="font-medium">{label}</Label>
-                <p className="text-sm text-gray-400">{description}</p>
-              </div>
-            </div>
-          ))}
-        </RadioGroup>
-      </Card> */}
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-6">Fechas bloqueadas</h2>
