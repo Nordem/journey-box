@@ -84,13 +84,14 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
       </div>
 
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Temporadas preferidas</h2>
+        <h2 className="text-xl font-semibold mb-6">Temporadas preferidas</h2>
+        <p className="text-sm text-gray-400 mb-4">Selecciona las temporadas que prefieres para viajar</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...seasons, ...customSeasons].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedSeasons.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-12"
               onClick={() => toggleSeason(label)}
             >
               <span>{icon}</span>
@@ -126,8 +127,8 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
       </Card> */}
 
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Fechas bloqueadas</h2>
-        <p className="text-gray-400 mb-4">Selecciona fechas en las que no estarás disponible</p>
+        <h2 className="text-xl font-semibold mb-6">Fechas bloqueadas</h2>
+        <p className="text-sm text-gray-400 mb-4">Selecciona fechas en las que no estarás disponible</p>
         <Calendar
           mode="multiple"
           selected={selectedDates}

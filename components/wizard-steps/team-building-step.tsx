@@ -102,14 +102,14 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
       </div>
 
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Actividades que te interesan</h2>
-        <p className="text-gray-400 mb-4">Selecciona las actividades de team building que prefieres</p>
+        <h2 className="text-xl font-semibold mb-6">Actividades que te interesan</h2>
+        <p className="text-sm text-gray-400 mb-4">Selecciona las actividades de team building que prefieres</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...activities, ...customActivities].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedActivities.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-12"
               onClick={() => toggleActivity(label)}
             >
               <span>{icon}</span>
@@ -123,72 +123,87 @@ export default function TeamBuildingStep({ data, updateData }: TeamBuildingStepP
             value={newActivity}
             onChange={(e) => setNewActivity(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomActivity()}
+            className="flex-1"
           />
-          <Button onClick={addCustomActivity} variant="outline">
+          <Button onClick={addCustomActivity} variant="default">
             Agregar
           </Button>
         </div>
       </Card>
 
-      {/* <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">¿Dónde prefieres las actividades?</h2>
-        <RadioGroup
-          value={location}
-          onValueChange={(value: 'office' | 'outside' | 'both') => handleLocationChange(value)}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="office" id="office" />
-            <Label htmlFor="office">Dentro de la oficina</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="outside" id="outside" />
-            <Label htmlFor="outside">Fuera de la oficina</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="both" id="both" />
-            <Label htmlFor="both">Ambas</Label>
-          </div>
-        </RadioGroup>
-      </Card> */}
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-6">¿Dónde prefieres las actividades?</h2>
+        <p className="text-sm text-gray-400 mb-4">Selecciona tu preferencia de ubicación</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Button
+            variant={location === 'office' ? "default" : "outline"}
+            className="h-12"
+            onClick={() => handleLocationChange('office')}
+          >
+            Dentro de la oficina
+          </Button>
+          <Button
+            variant={location === 'outside' ? "default" : "outline"}
+            className="h-12"
+            onClick={() => handleLocationChange('outside')}
+          >
+            Fuera de la oficina
+          </Button>
+          <Button
+            variant={location === 'both' ? "default" : "outline"}
+            className="h-12"
+            onClick={() => handleLocationChange('both')}
+          >
+            Ambas
+          </Button>
+        </div>
+      </Card>
 
-      {/* <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Duración preferida</h2>
-        <RadioGroup
-          value={duration}
-          onValueChange={(value: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days') => 
-            handleDurationChange(value)
-          }
-          className="grid grid-cols-1 md:grid-cols-4 gap-4"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="less_than_2h" id="less_than_2h" />
-            <Label htmlFor="less_than_2h">Menos de 2 horas</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="half_day" id="half_day" />
-            <Label htmlFor="half_day">Medio día</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="full_day" id="full_day" />
-            <Label htmlFor="full_day">Día completo</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="multiple_days" id="multiple_days" />
-            <Label htmlFor="multiple_days">Más de un día</Label>
-          </div>
-        </RadioGroup>
-      </Card> */}
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-6">Duración preferida</h2>
+        <p className="text-sm text-gray-400 mb-4">Selecciona la duración que prefieres para las actividades</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Button
+            variant={duration === 'less_than_2h' ? "default" : "outline"}
+            className="h-12"
+            onClick={() => handleDurationChange('less_than_2h')}
+          >
+            Menos de 2 horas
+          </Button>
+          <Button
+            variant={duration === 'half_day' ? "default" : "outline"}
+            className="h-12"
+            onClick={() => handleDurationChange('half_day')}
+          >
+            Medio día
+          </Button>
+          <Button
+            variant={duration === 'full_day' ? "default" : "outline"}
+            className="h-12"
+            onClick={() => handleDurationChange('full_day')}
+          >
+            Día completo
+          </Button>
+          <Button
+            variant={duration === 'multiple_days' ? "default" : "outline"}
+            className="h-12"
+            onClick={() => handleDurationChange('multiple_days')}
+          >
+            Más de un día
+          </Button>
+        </div>
+      </Card>
 
-      {/* <div>
-        <Label htmlFor="suggestions">¿Tienes alguna sugerencia específica?</Label>
-        <Textarea
-          id="suggestions"
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-6">Sugerencias</h2>
+        <p className="text-sm text-gray-400 mb-4">¿Tienes alguna sugerencia específica?</p>
+        <Input
           value={data.teamBuildingPrefs?.suggestions || ""}
           onChange={(e) => handleSuggestions(e.target.value)}
+          placeholder="Comparte tus ideas y sugerencias..."
           className="mt-2"
         />
-      </div> */}
+      </Card>
     </div>
   )
 } 
