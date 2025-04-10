@@ -68,13 +68,6 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold mb-4">Informacion Personal</h1>
-        <p className="text-gray-400 mb-6">
-          Completa tu información personal
-        </p>
-      </div>
-
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-6">Información personal</h2>
         
@@ -92,7 +85,6 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
 
           <div>
             <Label htmlFor="airport" className="text-sm font-medium">Aeropuerto más cercano</Label>
-            <p className="text-sm text-gray-400 mt-1">Si es diferente a tu ubicación de residencia</p>
             <Input
               id="airport"
               value={data.nearestAirport || ""}

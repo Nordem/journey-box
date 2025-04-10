@@ -126,42 +126,6 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold mb-4">Personalidad e intereses</h1>
-        <p className="text-gray-400 mb-6">
-          Cuéntanos sobre tus gustos y preferencias
-        </p>
-      </div>
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-6">Rasgos de personalidad</h2>
-        <p className="text-sm text-gray-400 mb-4">Selecciona los rasgos que mejor te describen</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...personalityTraits, ...customTraits].map(({ icon, label }) => (
-            <Button
-              key={label}
-              variant={selectedTraits.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2 h-12"
-              onClick={() => toggleTrait(label)}
-            >
-              <span>{icon}</span>
-              <span>{label}</span>
-            </Button>
-          ))}
-        </div>
-        <div className="flex gap-2 mt-4">
-          <Input
-            placeholder="Agregar otro rasgo..."
-            value={newTrait}
-            onChange={(e) => setNewTrait(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addCustomTrait()}
-            className="flex-1"
-          />
-          <Button onClick={addCustomTrait} variant="default">
-            Agregar
-          </Button>
-        </div>
-      </Card>
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-6">Intereses y hobbies</h2>

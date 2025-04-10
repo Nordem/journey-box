@@ -97,43 +97,6 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold mb-4">Preferencias de viaje</h1>
-        <p className="text-gray-400 mb-6">
-          Cuéntanos qué tipo de experiencias y destinos prefieres
-        </p>
-      </div>
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-6">Experiencias que prefieres</h2>
-        <p className="text-sm text-gray-400 mb-4">Selecciona los tipos de experiencias que más disfrutas</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...experiences, ...customExperiences].map(({ icon, label }) => (
-            <Button
-              key={label}
-              variant={selectedExperiences.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2 h-12"
-              onClick={() => toggleExperience(label)}
-            >
-              <span>{icon}</span>
-              <span>{label}</span>
-            </Button>
-          ))}
-        </div>
-        <div className="flex gap-2 mt-4">
-          <Input
-            placeholder="Agregar otra experiencia..."
-            value={newExperience}
-            onChange={(e) => setNewExperience(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addCustomExperience()}
-            className="flex-1"
-          />
-          <Button onClick={addCustomExperience} variant="default">
-            Agregar
-          </Button>
-        </div>
-      </Card>
-
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-6">Destinos que te atraen</h2>
         <p className="text-sm text-gray-400 mb-4">Selecciona los tipos de destinos que prefieres visitar</p>
