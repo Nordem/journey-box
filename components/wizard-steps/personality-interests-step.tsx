@@ -174,7 +174,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
 
       </div>
 
-      <div>
+      {/* <div>
         <h2 className="text-xl font-semibold mb-4">😊 Rasgos de personalidad</h2>
         <p className="text-gray-400 mb-4">Selecciona los rasgos que mejor te describen</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -201,7 +201,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             Agregar
           </Button>
         </div>
-      </div>
+      </div> */}
 
       <div>
         <h2 className="text-xl font-semibold mb-4">❤️ Intereses y hobbies</h2>
@@ -230,19 +230,6 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             Agregar
           </Button>
         </div>
-      </div>
-
-      <div>
-        {/* <Label htmlFor="additionalInfo">
-          Algo que quieras agregar para entender mejor tus preferencias
-        </Label>
-        <Textarea
-          id="additionalInfo"
-          placeholder="Comparte cualquier información adicional que nos ayude a personalizar tu experiencia"
-          value={data.additionalInfo || ""}
-          onChange={(e) => handleAdditionalInfo(e.target.value)}
-          className="mt-2"
-        /> */}
       </div>
     </div>
   )

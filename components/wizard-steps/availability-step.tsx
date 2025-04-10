@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 // import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 // import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 interface AvailabilityStepProps {
   data: {
@@ -76,7 +77,7 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold mb-4">Disponibilidad y preferencias de tiempo</h1>
+        <h1 className="text-2xl font-bold mb-4">Disponibilidad y temporadas</h1>
         <p className="text-gray-400 mb-6">
           Cuéntanos cuándo prefieres viajar y participar en actividades
         </p>

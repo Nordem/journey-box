@@ -97,14 +97,14 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
 
   return (
     <div className="space-y-8">
-      <div>
+      {/* <div>
         <h1 className="text-2xl font-bold mb-4">Tus preferencias de viaje</h1>
         <p className="text-gray-400 mb-6">
           Cuéntanos qué tipo de experiencias y destinos prefieres
         </p>
-      </div>
+      </div> */}
 
-      <Card className="p-6">
+      {/* <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Experiencias que prefieres</h2>
         <p className="text-gray-400 mb-4">Selecciona los tipos de experiencias que más disfrutas</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -131,7 +131,7 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
             Agregar
           </Button>
         </div>
-      </Card>
+      </Card> */}
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Destinos que te atraen</h2>

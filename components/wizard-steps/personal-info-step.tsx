@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 
 interface PersonalInfoStepProps {
   data: {
@@ -30,6 +31,13 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
     updateData({
       ...data,
       [field]: value
+    })
+  }
+
+  const handleAdditionalInfo = (value: string) => {
+    updateData({
+      ...data,
+      additionalInfo: value
     })
   }
 
@@ -70,7 +78,7 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
         <h2 className="text-xl font-semibold mb-6">Información personal</h2>
         
         <div className="space-y-4">
-          <div>
+          {/* <div>
             <Label htmlFor="name">Nombre completo</Label>
             <Input
               id="name"
@@ -78,7 +86,7 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
               onChange={(e) => handleInputChange("name", e.target.value)}
               placeholder="Carlos Mendez"
             />
-          </div>
+          </div> */}
 
           <div>
             <Label htmlFor="location">Ubicación de residencia</Label>
@@ -102,6 +110,19 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
           </div>
 
           <div>
+            <Label htmlFor="additionalInfo">
+              Algo que quieras agregar para entender mejor tus preferencias
+            </Label>
+            <Textarea
+              id="additionalInfo"
+              placeholder="Comparte cualquier información adicional que nos ayude a personalizar tu experiencia"
+              value={data.additionalInfo || ""}
+              onChange={(e) => handleAdditionalInfo(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+
+          {/* <div>
             <Label>Idiomas</Label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
               {languages.map(({ value, label }) => (
@@ -135,7 +156,7 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
               />
               <Button onClick={addCustomLanguage}>Agregar</Button>
             </div>
-          </div>
+          </div> */}
         </div>
       </Card>
     </div>
