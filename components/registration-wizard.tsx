@@ -55,7 +55,12 @@ interface TeamBuildingPreferencesData {
 interface EventPreferencesData {
   preferredExperiences: string[];
   preferredDestinations: string[];
-  teamBuildingPrefs?: TeamBuildingPreferencesData;
+  teamBuildingPrefs: {
+    preferredActivities: string[];
+    location: 'office' | 'outside' | 'both';
+    duration: 'less_than_2h' | 'half_day' | 'full_day' | 'multiple_days';
+    suggestions: string;
+  };
   seasonalPreferences: string[];
   groupSizePreference: string[];
   blockedDates: string[];
@@ -131,6 +136,8 @@ export default function RegistrationWizard() {
       preferredDestinations: [],
       teamBuildingPrefs: {
         preferredActivities: [],
+        location: 'office',
+        duration: 'less_than_2h',
         suggestions: "",
       },
       seasonalPreferences: [],
@@ -144,29 +151,25 @@ export default function RegistrationWizard() {
 
   const steps = [
     {
-      title: "Personalidad e Intereses",
-      description: "Cuéntanos sobre ti y tus intereses",
-      component: <PersonalityInterestsStep data={formData.userProfile} updateData={(data) => updateFormData("userProfile", data)} />
-    },
-    {
-      title: "Preferencias de Viaje",
-      description: "Selecciona tus experiencias y destinos preferidos",
-      component: <TravelPreferencesStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
-    },
-    {
-      title: "Team Building",
-      description: "Configura tus preferencias para actividades grupales",
-      component: <TeamBuildingStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
+      title: "Intereses & Destinos",
+      description: "Cuéntanos sobre tus intereses y destinos preferidos",
+      component: (
+        <>
+          <PersonalityInterestsStep data={formData.userProfile} updateData={(data) => updateFormData("userProfile", data)} />
+          <TravelPreferencesStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
+          <TeamBuildingStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
+        </>
+      )
     },
     {
       title: "Disponibilidad",
       description: "Indica tus preferencias de tiempo y fechas",
-      component: <AvailabilityStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
-    },
-    {
-      title: "Información Personal",
-      description: "Completa tus datos personales",
-      component: <PersonalInfoStep data={formData.userProfile} updateData={(data) => updateFormData("userProfile", data)} />
+      component: (
+        <>
+          <AvailabilityStep data={formData.eventPreferences} updateData={(data) => updateFormData("eventPreferences", data)} />
+          <PersonalInfoStep data={formData.userProfile} updateData={(data) => updateFormData("userProfile", data)} />
+        </>
+      )
     },
     {
       title: "Crear Cuenta",
@@ -316,6 +319,12 @@ export default function RegistrationWizard() {
 
   const renderAuthStep = () => (
     <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold mb-2 text-white">¡Casi listo!</h2>
+        <p className="text-gray-400 mb-6">
+          Registara tu cuenta de correo y crea tu contraseña
+        </p>
+      </div>
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-indigo-100 mb-2">
           Email
@@ -473,7 +482,7 @@ export default function RegistrationWizard() {
             transition={{ duration: 0.3 }}
             className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md rounded-lg border border-indigo-500/30 p-6"
           >
-            {currentStep === 5 ? renderAuthStep() : steps[currentStep].component}
+            {currentStep === 2 ? renderAuthStep() : steps[currentStep].component}
           </motion.div>
         </AnimatePresence>
 

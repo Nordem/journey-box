@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+// import { Card } from "@/components/ui/card"
+// import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { motion } from "framer-motion"
+// import { Textarea } from "@/components/ui/textarea"
+// import { motion } from "framer-motion"
 import { Check, Box, BarChart2, Users } from "lucide-react"
 
 interface PersonalityInterestsStepProps {
@@ -233,7 +233,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
       </div>
 
       <div>
-        <Label htmlFor="additionalInfo">
+        {/* <Label htmlFor="additionalInfo">
           Algo que quieras agregar para entender mejor tus preferencias
         </Label>
         <Textarea
@@ -242,7 +242,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
           value={data.additionalInfo || ""}
           onChange={(e) => handleAdditionalInfo(e.target.value)}
           className="mt-2"
-        />
+        /> */}
       </div>
     </div>
   )
