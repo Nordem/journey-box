@@ -125,79 +125,78 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
   }
 
   return (
-    <div className="space-y-8">
-
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold mb-2">¡Bienvenido a Journey Box, Carlos!</h1>
-        <p className="text-gray-400">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold mb-2">¡Bienvenido a Journey Box, Carlos!</h1>
+        <p className="text-sm sm:text-base text-gray-400">
           Personaliza tu experiencia compartiendo tus preferencias y descubre viajes hechos para ti.
         </p>
-        <div className="bg-[#1a1b3b] rounded-3xl p-8 mt-6">
-          <div className="grid grid-cols-3 gap-8">
+        <div className="bg-[#1a1b3b] rounded-2xl sm:rounded-3xl p-4 sm:p-8 mt-4 sm:mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-8">
             <div className="flex flex-col">
-              <div className="flex items-center gap-3 mb-4">
-                <Box className="w-6 h-6 text-[#8b8cc7]" />
-                <h3 className="text-xl text-[#8b8cc7]">
-                  Experiencias<br />personalizadas
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+                <Box className="w-5 h-5 sm:w-6 sm:h-6 text-[#8b8cc7]" />
+                <h3 className="text-lg sm:text-xl text-[#8b8cc7]">
+                  Experiencias<br className="hidden sm:block" />personalizadas
                 </h3>
               </div>
-              <p className="text-white text-md">
-                Viajes y actividades<br />adaptados a tus gustos
+              <p className="text-white text-sm sm:text-md">
+                Viajes y actividades<br className="hidden sm:block" />adaptados a tus gustos
               </p>
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center gap-3 mb-4">
-                <BarChart2 className="w-6 h-6 text-[#e991a9]" />
-                <h3 className="text-xl text-[#e991a9]">
-                  Encuentra<br />afinidades
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+                <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#e991a9]" />
+                <h3 className="text-lg sm:text-xl text-[#e991a9]">
+                  Encuentra<br className="hidden sm:block" />afinidades
                 </h3>
               </div>
-              <p className="text-white text-md">
-                Conecta con compañeros<br />que comparten tus<br />intereses
+              <p className="text-white text-sm sm:text-md">
+                Conecta con compañeros<br className="hidden sm:block" />que comparten tus<br className="hidden sm:block" />intereses
               </p>
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center gap-3 mb-4">
-                <Users className="w-6 h-6 text-[#b48cc7]" />
-                <h3 className="text-xl text-[#b48cc7]">
-                  Mejora el team<br />building
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-[#b48cc7]" />
+                <h3 className="text-lg sm:text-xl text-[#b48cc7]">
+                  Mejora el team<br className="hidden sm:block" />building
                 </h3>
               </div>
-              <p className="text-white text-md">
-                Actividades grupales que<br />realmente disfrutarás
+              <p className="text-white text-sm sm:text-md">
+                Actividades grupales que<br className="hidden sm:block" />realmente disfrutarás
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-6">Intereses y hobbies</h2>
-        <p className="text-sm text-gray-400 mb-4">Selecciona tus intereses principales</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Card className="p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Intereses y hobbies</h2>
+        <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">Selecciona tus intereses principales</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
           {[...hobbiesAndInterests, ...customInterests].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedInterests.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2 h-12"
+              className="flex items-center gap-2 h-10 sm:h-12 text-xs sm:text-sm"
               onClick={() => toggleInterest(label)}
             >
               <span>{icon}</span>
-              <span>{label}</span>
+              <span className="truncate">{label}</span>
             </Button>
           ))}
         </div>
-        <div className="flex gap-2 mt-4">
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
           <Input
             placeholder="Agregar otro interés..."
             value={newInterest}
             onChange={(e) => setNewInterest(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomInterest()}
-            className="flex-1"
+            className="flex-1 text-sm sm:text-base"
           />
-          <Button onClick={addCustomInterest} variant="default">
+          <Button onClick={addCustomInterest} variant="default" className="w-full sm:w-auto">
             Agregar
           </Button>
         </div>

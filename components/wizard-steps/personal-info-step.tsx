@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 
 interface PersonalInfoStepProps {
   data: {
@@ -66,47 +67,47 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
   }
 
   return (
-    <div className="space-y-8">
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-6">Información personal</h2>
+    <div className="space-y-6 sm:space-y-8">
+      <Card className="p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Información personal</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <Label htmlFor="name" className="text-sm font-medium">Nombre completo</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-xs sm:text-sm font-medium">Nombre completo</Label>
             <Input
               id="name"
               value={data.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
               placeholder="Tu nombre completo"
-              className="mt-2"
+              className="text-sm sm:text-base"
               required
             />
           </div>
 
-          <div>
-            <Label htmlFor="location" className="text-sm font-medium">Ubicación de residencia</Label>
+          <div className="space-y-2">
+            <Label htmlFor="location" className="text-xs sm:text-sm font-medium">Ubicación de residencia</Label>
             <Input
               id="location"
               value={data.location}
               onChange={(e) => handleInputChange("location", e.target.value)}
               placeholder="Tijuana, B.C., México"
-              className="mt-2"
+              className="text-sm sm:text-base"
             />
           </div>
 
-          <div>
-            <Label htmlFor="airport" className="text-sm font-medium">Aeropuerto más cercano</Label>
+          <div className="space-y-2">
+            <Label htmlFor="airport" className="text-xs sm:text-sm font-medium">Aeropuerto más cercano</Label>
             <Input
               id="airport"
               value={data.nearestAirport || ""}
               onChange={(e) => handleInputChange("nearestAirport", e.target.value)}
               placeholder="Tijuana, B.C., México"
-              className="mt-2"
+              className="text-sm sm:text-base"
             />
           </div>
 
-          <div className="md:col-span-2">
-            <Label htmlFor="additionalInfo" className="text-sm font-medium">
+          <div className="sm:col-span-2 space-y-2">
+            <Label htmlFor="additionalInfo" className="text-xs sm:text-sm font-medium">
               Algo que quieras agregar para entender mejor tus preferencias
             </Label>
             <Textarea
@@ -114,7 +115,7 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
               placeholder="Comparte cualquier información adicional que nos ayude a personalizar tu experiencia"
               value={data.additionalInfo || ""}
               onChange={(e) => handleAdditionalInfo(e.target.value)}
-              className="mt-2"
+              className="text-sm sm:text-base min-h-[100px]"
             />
           </div>
         </div>
