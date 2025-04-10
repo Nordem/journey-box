@@ -208,6 +208,23 @@ export default function RegistrationWizard() {
       setError(null)
       setIsSaving(true)
       setSaveCompleted(false)
+
+      // Validate required fields
+      if (!formData.userProfile.name) {
+        throw new Error("Por favor ingresa tu nombre")
+      }
+
+      if (!formData.userProfile.location) {
+        throw new Error("Por favor ingresa tu ubicación")
+      }
+
+      if (!formData.auth.email) {
+        throw new Error("Por favor ingresa tu correo electrónico")
+      }
+
+      if (!formData.auth.password) {
+        throw new Error("Por favor ingresa tu contraseña")
+      }
       
       // Show persistent toast while saving
       const savingToast = toast({
@@ -302,6 +319,11 @@ export default function RegistrationWizard() {
         description: "Tu perfil ha sido creado correctamente. Por favor, verifica tu email para activar tu cuenta.",
         variant: "default",
       })
+
+      // Redirect to login page after 3 seconds
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 3000)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create profile"
       setError(errorMessage)
