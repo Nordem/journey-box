@@ -47,43 +47,11 @@ interface WizardProgressProps {
 export default function WizardProgress({ steps, currentStep, formData }: WizardProgressProps) {
   const isLastStep = currentStep === steps.length - 1
 
-  const calculateCompletionPercentage = () => {
-    const totalQuestions = 16 // Total number of fields across all steps
-    let answeredQuestions = 0
-
-    // Step 1: Interests & Destinations
-    if (formData.userProfile.personalityTraits.length > 0) answeredQuestions++
-    if (formData.userProfile.hobbiesAndInterests.length > 0) answeredQuestions++
-    if (formData.eventPreferences.preferredExperiences.length > 0) answeredQuestions++
-    if (formData.eventPreferences.preferredDestinations.length > 0) answeredQuestions++
-    if (formData.eventPreferences.teamBuildingPrefs.preferredActivities.length > 0) answeredQuestions++
-    if (formData.eventPreferences.teamBuildingPrefs.location) answeredQuestions++
-    if (formData.eventPreferences.teamBuildingPrefs.duration) answeredQuestions++
-    if (formData.eventPreferences.teamBuildingPrefs.suggestions) answeredQuestions++
-
-    // Step 2: Availability
-    if (formData.eventPreferences.seasonalPreferences.length > 0) answeredQuestions++
-    if (formData.eventPreferences.groupSizePreference.length > 0) answeredQuestions++
-    if (formData.eventPreferences.blockedDates.length > 0) answeredQuestions++
-    if (formData.userProfile.name) answeredQuestions++
-    if (formData.userProfile.location) answeredQuestions++
-    if (formData.userProfile.currentTravelLocation) answeredQuestions++
-    if (formData.userProfile.languages.length > 0) answeredQuestions++
-    if (formData.userProfile.nearestAirport) answeredQuestions++
-
-    return Math.round((answeredQuestions / totalQuestions) * 100)
-  }
-
-  const completionPercentage = calculateCompletionPercentage()
-
   return (
     <div className="mb-8">
       {!isLastStep && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <div className="text-sm text-indigo-300">
-              Progreso: {completionPercentage}%
-            </div>
             <div className="text-sm text-indigo-300">
               Paso {currentStep + 1} de {steps.length}
             </div>
