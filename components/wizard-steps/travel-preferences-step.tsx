@@ -32,7 +32,7 @@ const destinations = [
   { icon: "🍷", label: "Destinos gastronómicos" },
   { icon: "🦁", label: "Reservas naturales" },
   { icon: "🗿", label: "Sitios arqueológicos" },
-  { icon: "🏙️", label: "Destinos urbanos modernos" }
+  { icon: "🏙️", label: "Destinos urbanos" }
 ]
 
 export default function TravelPreferencesStep({ data, updateData }: TravelPreferencesStepProps) {
@@ -97,51 +97,15 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold mb-4">Tus preferencias de viaje</h1>
-        <p className="text-gray-400 mb-6">
-          Cuéntanos qué tipo de experiencias y destinos prefieres
-        </p>
-      </div>
-
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Experiencias que prefieres</h2>
-        <p className="text-gray-400 mb-4">Selecciona los tipos de experiencias que más disfrutas</p>
+        <h2 className="text-xl font-semibold mb-6">Destinos que te atraen</h2>
+        <p className="text-sm text-gray-400 mb-4">Selecciona los tipos de destinos que prefieres visitar</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...experiences, ...customExperiences].map(({ icon, label }) => (
-            <Button
-              key={label}
-              variant={selectedExperiences.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2"
-              onClick={() => toggleExperience(label)}
-            >
-              <span>{icon}</span>
-              <span>{label}</span>
-            </Button>
-          ))}
-        </div>
-        <div className="flex gap-2 mt-4">
-          <Input
-            placeholder="Agregar otra experiencia..."
-            value={newExperience}
-            onChange={(e) => setNewExperience(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addCustomExperience()}
-          />
-          <Button onClick={addCustomExperience} variant="outline">
-            Agregar
-          </Button>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Destinos que te atraen</h2>
-        <p className="text-gray-400 mb-4">Selecciona los tipos de destinos que prefieres visitar</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[...destinations, ...customDestinations].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedDestinations.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-12"
               onClick={() => toggleDestination(label)}
             >
               <span>{icon}</span>
@@ -155,12 +119,13 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
             value={newDestination}
             onChange={(e) => setNewDestination(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomDestination()}
+            className="flex-1"
           />
-          <Button onClick={addCustomDestination} variant="outline">
+          <Button onClick={addCustomDestination} variant="default">
             Agregar
           </Button>
         </div>
-        <p className="text-sm text-gray-300 mt-4">
+        <p className="text-sm text-gray-400 mt-4">
           Sugerencia: Seleccionar tus destinos favoritos nos ayuda a ofrecerte experiencias más personalizadas
           y encontrar compañeros de viaje con intereses similares.
         </p>

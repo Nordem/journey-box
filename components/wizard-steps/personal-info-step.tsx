@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 
 interface PersonalInfoStepProps {
   data: {
@@ -12,6 +12,7 @@ interface PersonalInfoStepProps {
     location: string;
     nearestAirport?: string;
     languages: string[];
+    additionalInfo?: string;
   };
   updateData: (data: any) => void;
 }
@@ -30,6 +31,13 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
     updateData({
       ...data,
       [field]: value
+    })
+  }
+
+  const handleAdditionalInfo = (value: string) => {
+    updateData({
+      ...data,
+      additionalInfo: value
     })
   }
 
@@ -59,82 +67,43 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold mb-4">Informacion Personal</h1>
-        <p className="text-gray-400 mb-6">
-          Completa tu información personal
-        </p>
-      </div>
-
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-6">Información personal</h2>
         
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Label htmlFor="name">Nombre completo</Label>
-            <Input
-              id="name"
-              value={data.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              placeholder="Carlos Mendez"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="location">Ubicación de residencia</Label>
+            <Label htmlFor="location" className="text-sm font-medium">Ubicación de residencia</Label>
             <Input
               id="location"
               value={data.location}
               onChange={(e) => handleInputChange("location", e.target.value)}
               placeholder="Tijuana, B.C., México"
+              className="mt-2"
             />
           </div>
 
           <div>
-            <Label htmlFor="airport">Aeropuerto más cercano</Label>
-            <p className="text-sm text-gray-400 mb-2">Si es diferente a tu ubicación de residencia</p>
+            <Label htmlFor="airport" className="text-sm font-medium">Aeropuerto más cercano</Label>
             <Input
               id="airport"
               value={data.nearestAirport || ""}
               onChange={(e) => handleInputChange("nearestAirport", e.target.value)}
               placeholder="Tijuana, B.C., México"
+              className="mt-2"
             />
           </div>
 
-          <div>
-            <Label>Idiomas</Label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-              {languages.map(({ value, label }) => (
-                <Button
-                  key={value}
-                  variant={selectedLanguages.includes(label) ? "default" : "outline"}
-                  className="flex items-center gap-2"
-                  onClick={() => toggleLanguage(label)}
-                >
-                  <span>{label}</span>
-                </Button>
-              ))}
-              {customLanguages.map(({ icon, label }) => (
-                <Button
-                  key={label}
-                  variant={selectedLanguages.includes(label) ? "default" : "outline"}
-                  className="flex items-center gap-2"
-                  onClick={() => toggleLanguage(label)}
-                >
-                  <span>{icon}</span>
-                  <span>{label}</span>
-                </Button>
-              ))}
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Input
-                placeholder="Otro idioma..."
-                value={customLanguage}
-                onChange={(e) => setCustomLanguage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && addCustomLanguage()}
-              />
-              <Button onClick={addCustomLanguage}>Agregar</Button>
-            </div>
+          <div className="md:col-span-2">
+            <Label htmlFor="additionalInfo" className="text-sm font-medium">
+              Algo que quieras agregar para entender mejor tus preferencias
+            </Label>
+            <Textarea
+              id="additionalInfo"
+              placeholder="Comparte cualquier información adicional que nos ayude a personalizar tu experiencia"
+              value={data.additionalInfo || ""}
+              onChange={(e) => handleAdditionalInfo(e.target.value)}
+              className="mt-2"
+            />
           </div>
         </div>
       </Card>

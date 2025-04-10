@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-// import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 // import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -125,93 +125,63 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold mb-2">¡Bienvenido a Journey Box!</h1>
+        <h1 className="text-2xl font-bold mb-2">¡Bienvenido a Journey Box, Carlos!</h1>
         <p className="text-gray-400">
           Personaliza tu experiencia compartiendo tus preferencias y descubre viajes hechos para ti.
-          Cuéntanos sobre tus gustos para ofrecerte experiencias únicas y conectarte con personas afines.
         </p>
-        <div className="bg-[#1a1b3b] rounded-3xl p-8">
-        <div className="grid grid-cols-3 gap-8">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-4">
-              <Box className="w-6 h-6 text-[#8b8cc7]" />
-              <h3 className="text-xl text-[#8b8cc7]">
-                Experiencias<br />personalizadas
-              </h3>
+        <div className="bg-[#1a1b3b] rounded-3xl p-8 mt-6">
+          <div className="grid grid-cols-3 gap-8">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <Box className="w-6 h-6 text-[#8b8cc7]" />
+                <h3 className="text-xl text-[#8b8cc7]">
+                  Experiencias<br />personalizadas
+                </h3>
+              </div>
+              <p className="text-white text-md">
+                Viajes y actividades<br />adaptados a tus gustos
+              </p>
             </div>
-            <p className="text-white text-md">
-              Viajes y actividades<br />adaptados a tus gustos
-            </p>
-          </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-4">
-              <BarChart2 className="w-6 h-6 text-[#e991a9]" />
-              <h3 className="text-xl text-[#e991a9]">
-                Encuentra<br />afinidades
-              </h3>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <BarChart2 className="w-6 h-6 text-[#e991a9]" />
+                <h3 className="text-xl text-[#e991a9]">
+                  Encuentra<br />afinidades
+                </h3>
+              </div>
+              <p className="text-white text-md">
+                Conecta con compañeros<br />que comparten tus<br />intereses
+              </p>
             </div>
-            <p className="text-white text-md">
-              Conecta con compañeros<br />que comparten tus<br />intereses
-            </p>
-          </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="w-6 h-6 text-[#b48cc7]" />
-              <h3 className="text-xl text-[#b48cc7]">
-                Mejora el team<br />building
-              </h3>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3 mb-4">
+                <Users className="w-6 h-6 text-[#b48cc7]" />
+                <h3 className="text-xl text-[#b48cc7]">
+                  Mejora el team<br />building
+                </h3>
+              </div>
+              <p className="text-white text-md">
+                Actividades grupales que<br />realmente disfrutarás
+              </p>
             </div>
-            <p className="text-white text-md">
-              Actividades grupales que<br />realmente disfrutarás
-            </p>
           </div>
         </div>
       </div>
 
-      </div>
-
-      <div>
-        <h2 className="text-xl font-semibold mb-4">😊 Rasgos de personalidad</h2>
-        <p className="text-gray-400 mb-4">Selecciona los rasgos que mejor te describen</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...personalityTraits, ...customTraits].map(({ icon, label }) => (
-            <Button
-              key={label}
-              variant={selectedTraits.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2"
-              onClick={() => toggleTrait(label)}
-            >
-              <span>{icon}</span>
-              <span>{label}</span>
-            </Button>
-          ))}
-        </div>
-        <div className="flex gap-2 mt-4">
-          <Input
-            placeholder="Agregar otro rasgo..."
-            value={newTrait}
-            onChange={(e) => setNewTrait(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addCustomTrait()}
-          />
-          <Button onClick={addCustomTrait} variant="default">
-            Agregar
-          </Button>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-xl font-semibold mb-4">❤️ Intereses y hobbies</h2>
-        <p className="text-gray-400 mb-4">Selecciona tus intereses principales</p>
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-6">Intereses y hobbies</h2>
+        <p className="text-sm text-gray-400 mb-4">Selecciona tus intereses principales</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...hobbiesAndInterests, ...customInterests].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedInterests.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-12"
               onClick={() => toggleInterest(label)}
             >
               <span>{icon}</span>
@@ -225,25 +195,13 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             value={newInterest}
             onChange={(e) => setNewInterest(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomInterest()}
+            className="flex-1"
           />
           <Button onClick={addCustomInterest} variant="default">
             Agregar
           </Button>
         </div>
-      </div>
-
-      <div>
-        {/* <Label htmlFor="additionalInfo">
-          Algo que quieras agregar para entender mejor tus preferencias
-        </Label>
-        <Textarea
-          id="additionalInfo"
-          placeholder="Comparte cualquier información adicional que nos ayude a personalizar tu experiencia"
-          value={data.additionalInfo || ""}
-          onChange={(e) => handleAdditionalInfo(e.target.value)}
-          className="mt-2"
-        /> */}
-      </div>
+      </Card>
     </div>
   )
 } 
