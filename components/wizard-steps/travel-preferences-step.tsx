@@ -96,36 +96,36 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
   }
 
   return (
-    <div className="space-y-8">
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-6">Destinos que te atraen</h2>
-        <p className="text-sm text-gray-400 mb-4">Selecciona los tipos de destinos que prefieres visitar</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="space-y-6 sm:space-y-8">
+      <Card className="p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Destinos que te atraen</h2>
+        <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">Selecciona los tipos de destinos que prefieres visitar</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
           {[...destinations, ...customDestinations].map(({ icon, label }) => (
             <Button
               key={label}
               variant={selectedDestinations.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2 h-12"
+              className="flex items-center gap-2 h-10 sm:h-12 text-xs sm:text-sm"
               onClick={() => toggleDestination(label)}
             >
               <span>{icon}</span>
-              <span>{label}</span>
+              <span className="truncate">{label}</span>
             </Button>
           ))}
         </div>
-        <div className="flex gap-2 mt-4">
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
           <Input
             placeholder="Agregar otro destino..."
             value={newDestination}
             onChange={(e) => setNewDestination(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomDestination()}
-            className="flex-1"
+            className="flex-1 text-sm sm:text-base"
           />
-          <Button onClick={addCustomDestination} variant="default">
+          <Button onClick={addCustomDestination} variant="default" className="w-full sm:w-auto">
             Agregar
           </Button>
         </div>
-        <p className="text-sm text-gray-400 mt-4">
+        <p className="text-xs sm:text-sm text-gray-400 mt-3 sm:mt-4">
           Sugerencia: Seleccionar tus destinos favoritos nos ayuda a ofrecerte experiencias más personalizadas
           y encontrar compañeros de viaje con intereses similares.
         </p>
