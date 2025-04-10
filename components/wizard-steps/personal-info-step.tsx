@@ -72,6 +72,18 @@ export default function PersonalInfoStep({ data, updateData }: PersonalInfoStepP
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
+            <Label htmlFor="name" className="text-sm font-medium">Nombre completo</Label>
+            <Input
+              id="name"
+              value={data.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              placeholder="Tu nombre completo"
+              className="mt-2"
+              required
+            />
+          </div>
+
+          <div>
             <Label htmlFor="location" className="text-sm font-medium">Ubicación de residencia</Label>
             <Input
               id="location"
