@@ -35,28 +35,7 @@ export default function UserProfileStep({ data, updateData, isMobile }: UserProf
   const [newTrait, setNewTrait] = useState("")
   const [newGoal, setNewGoal] = useState("")
 
-  // Suggested options
-  const suggestedTraits = [
-    "chill",
-    "social",
-    "creative",
-    "ambitious",
-    "curious",
-    "adventurous",
-    "analytical",
-    "energetic",
-  ]
-  const suggestedGoals = [
-    "meet new people",
-    "find networking opportunities",
-    "discover party scenes",
-    "attend music, art, or tech events",
-    "explore indie scenes",
-    "learn about startups",
-  ]
-
   useEffect(() => {
-    // Only update if the data has actually changed
     const hasChanged = 
       JSON.stringify({
         name,
