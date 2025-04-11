@@ -113,6 +113,7 @@ export default function RegistrationWizard() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<FormData>({
     auth: {
@@ -189,6 +190,42 @@ export default function RegistrationWizard() {
   }, [])
 
   const handleNext = () => {
+    if (currentStep === 0) {
+      // Validate interests and destinations for the first step
+      if (formData.userProfile.hobbiesAndInterests.length === 0) {
+        setValidationError("Por favor selecciona al menos un interés para continuar")
+        window.scrollTo({ top: 0, behavior: "smooth" })
+        return
+      }
+
+      if (formData.eventPreferences.preferredDestinations.length === 0) {
+        setValidationError("Por favor selecciona al menos un tipo de destino para continuar")
+        window.scrollTo({ top: 0, behavior: "smooth" })
+        return
+      }
+      
+      // Clear validation error if all checks pass
+      setValidationError(null)
+    }
+
+    if (currentStep === 1) {
+      // Validate seasonal preferences and personal information for the second step
+      if (formData.eventPreferences.seasonalPreferences.length === 0) {
+        setValidationError("Por favor selecciona al menos una temporada preferida")
+        window.scrollTo({ top: 0, behavior: "smooth" })
+        return
+      }
+
+      if (!formData.userProfile.name || !formData.userProfile.location || !formData.userProfile.nearestAirport) {
+        setValidationError("Por favor completa tu nombre y ubicación")
+        window.scrollTo({ top: 0, behavior: "smooth" })
+        return
+      }
+      
+      // Clear validation error if all checks pass
+      setValidationError(null)
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
       window.scrollTo({ top: 0, behavior: "smooth" })
@@ -479,6 +516,18 @@ export default function RegistrationWizard() {
       )}
 
       <div className="max-w-4xl mx-auto py-8 px-4">
+        {/* Flash Error Message */}
+        {validationError && (
+          <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 animate-fade-in">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p>{validationError}</p>
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-end mb-4">
           <Button
             variant="ghost"
@@ -533,7 +582,7 @@ export default function RegistrationWizard() {
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Guardar y Continuar
+                  Guardar Perfil
                 </>
               )}
             </Button>
