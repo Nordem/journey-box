@@ -195,7 +195,7 @@ export default function PersonalityInterestsStep({ data, updateData }: Personali
             <Button
               size="sm"
               onClick={addCustomInterest}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               Agregar
             </Button>

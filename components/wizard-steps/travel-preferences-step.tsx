@@ -133,7 +133,7 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
           <Button
             size="sm"
             onClick={addCustomDestination}
-            className="bg-indigo-600 hover:bg-indigo-700"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             Agregar
           </Button>
