@@ -480,11 +480,11 @@ export default function RegistrationWizard() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-black border border-indigo-500/30 rounded-2xl">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-950/95 to-black/100 border border-indigo-500/30 rounded-2xl">
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gradient-to-b from-indigo-950/90 via-purple-950/80 to-black/90 backdrop-blur-md rounded-lg border border-indigo-500/30 p-6 max-w-md w-full mx-4">
+          <div className="bg-gradient-to-b from-indigo-950/95 via-purple-950/95 to-black/95 backdrop-blur-md rounded-lg border border-indigo-500/30 p-6 max-w-md w-full mx-4">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-500/20 mb-4">
                 <svg className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
