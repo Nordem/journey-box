@@ -2,9 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
-import { Input } from "@/components/ui/input"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { Badge } from "@/components/ui/badge"
+import { X } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface AvailabilityStepProps {
   data: {
@@ -73,56 +77,90 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Disponibilidad y temporadas</h1>
-        <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6">
-          Cuéntanos cuándo prefieres viajar y participar en actividades
-        </p>
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          Disponibilidad y temporadas
+        </h2>
+        <p className="text-gray-400 mt-2">Cuéntanos cuándo prefieres viajar y participar en actividades</p>
       </div>
 
-      <Card className="p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Temporadas preferidas</h2>
-        <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">Selecciona las temporadas que prefieres para viajar</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
-          {[...seasons, ...customSeasons].map(({ icon, label }) => (
-            <Button
-              key={label}
-              variant={selectedSeasons.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2 h-10 sm:h-12 text-xs sm:text-sm"
-              onClick={() => toggleSeason(label)}
-            >
-              <span>{icon}</span>
-              <span className="truncate">{label}</span>
-            </Button>
-          ))}
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 mt-4">
-          <Input
-            placeholder="Agregar otra temporada..."
-            value={newSeason}
-            onChange={(e) => setNewSeason(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && addCustomSeason()}
-            className="flex-1 text-sm sm:text-base"
-          />
-          <Button onClick={addCustomSeason} variant="default" className="w-full sm:w-auto">
-            Agregar
-          </Button>
-        </div>
-      </Card>
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <div className="text-sm font-medium flex items-center">
+            <CalendarIcon className="h-4 w-4 mr-2 text-indigo-400" />
+            Temporadas preferidas para viajar
+          </div>
 
-      <Card className="p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Fechas bloqueadas</h2>
-        <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">Selecciona fechas en las que no estarás disponible</p>
-        <div className="flex justify-center">
-          <Calendar
-            mode="multiple"
-            selected={selectedDates}
-            onSelect={handleDateSelect}
-            className="rounded-md border w-full max-w-[350px]"
-          />
+          <div className="grid grid-cols-4 gap-1 mt-2">
+            {[...seasons, ...customSeasons].map(({ icon, label }) => (
+              <div
+                key={label}
+                className={`flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer transition-all text-center ${
+                  selectedSeasons.includes(label)
+                    ? "border-indigo-500 bg-indigo-950/50 text-white"
+                    : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30"
+                }`}
+                onClick={() => toggleSeason(label)}
+              >
+                <div className="text-base">{icon}</div>
+                <div className="text-xs mt-0.5">{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
-      </Card>
+
+        <div className="space-y-3 mt-4">
+          <div className="text-sm font-medium">Fechas bloqueadas</div>
+          <p className="text-xs text-gray-400">Selecciona fechas en las que no estarás disponible</p>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start border-indigo-500/30 bg-indigo-950/20 hover:bg-indigo-500/20 text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDates.length > 0 ? (
+                  <span>{selectedDates.length} fechas seleccionadas</span>
+                ) : (
+                  <span>Seleccionar fechas bloqueadas</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-indigo-950/90 border border-indigo-500/30" align="start">
+              <Calendar
+                mode="multiple"
+                selected={selectedDates}
+                onSelect={handleDateSelect}
+                className="rounded-md border-0"
+                locale={es}
+              />
+            </PopoverContent>
+          </Popover>
+
+          {selectedDates.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {selectedDates.map((date, index) => (
+                <Badge key={index} variant="outline" className="bg-indigo-950/30">
+                  {format(date, "d MMM yyyy", { locale: es })}
+                  <X
+                    className="ml-1 h-3 w-3 cursor-pointer"
+                    onClick={() => {
+                      const newDates = selectedDates.filter((d) => d !== date)
+                      setSelectedDates(newDates)
+                      updateData({
+                        ...data,
+                        blockedDates: newDates.map(date => date.toISOString())
+                      })
+                    }}
+                  />
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 } 

@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Compass } from "lucide-react"
 
 interface TravelPreferencesStepProps {
   data: {
@@ -96,40 +96,49 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <Card className="p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Destinos que te atraen</h2>
-        <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">Selecciona los tipos de destinos que prefieres visitar</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
+    <div className="space-y-6 mt-10">
+      <div className="space-y-3">
+        <div className="text-sm font-medium flex items-center">
+          <Compass className="h-4 w-4 mr-2 text-purple-400" />
+          Destinos que te atraen
+        </div>
+        <p className="text-xs text-gray-400">Selecciona los tipos de destinos que prefieres visitar</p>
+
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mt-2">
           {[...destinations, ...customDestinations].map(({ icon, label }) => (
-            <Button
+            <div
               key={label}
-              variant={selectedDestinations.includes(label) ? "default" : "outline"}
-              className="flex items-center gap-2 h-10 sm:h-12 text-xs sm:text-sm"
+              className={`flex items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center ${
+                selectedDestinations.includes(label)
+                  ? "border-indigo-500 bg-indigo-950/50 text-white"
+                  : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30"
+              }`}
               onClick={() => toggleDestination(label)}
             >
-              <span>{icon}</span>
-              <span className="truncate">{label}</span>
-            </Button>
+              <div>
+                <div className="text-base mb-0.5">{icon}</div>
+                <div className="text-xs">{label}</div>
+              </div>
+            </div>
           ))}
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 mt-4">
+        <div className="flex items-center mt-3 space-x-2">
           <Input
-            placeholder="Agregar otro destino..."
+            placeholder="Agregar destino personalizado..."
+            className="bg-indigo-950/20 border-indigo-500/30 text-white text-xs"
             value={newDestination}
             onChange={(e) => setNewDestination(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomDestination()}
-            className="flex-1 text-sm sm:text-base"
           />
-          <Button onClick={addCustomDestination} variant="default" className="w-full sm:w-auto">
+          <Button
+            size="sm"
+            onClick={addCustomDestination}
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
             Agregar
           </Button>
         </div>
-        <p className="text-xs sm:text-sm text-gray-400 mt-3 sm:mt-4">
-          Sugerencia: Seleccionar tus destinos favoritos nos ayuda a ofrecerte experiencias más personalizadas
-          y encontrar compañeros de viaje con intereses similares.
-        </p>
-      </Card>
+      </div>
     </div>
   )
 } 
