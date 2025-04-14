@@ -9,10 +9,7 @@ import {
   ChevronRight,
   User,
   Menu,
-  Heart,
-  Bell,
   LogOut,
-  Map,
   Settings
 } from "lucide-react"
 import { cn } from "@/lib/utils"
