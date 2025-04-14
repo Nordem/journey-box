@@ -112,6 +112,8 @@ export default function RegistrationWizard() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveCompleted, setSaveCompleted] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showEmailErrorModal, setShowEmailErrorModal] = useState(false)
+  const [emailErrorMessage, setEmailErrorMessage] = useState<string>("")
   const { toast } = useToast()
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
@@ -278,6 +280,24 @@ export default function RegistrationWizard() {
         throw new Error("Passwords do not match")
       }
 
+      // Check if email already exists
+      const emailCheckResponse = await fetch("/api/check-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: formData.auth.email }),
+      })
+
+      if (emailCheckResponse.status === 409) {
+        const emailData = await emailCheckResponse.json()
+        savingToast.dismiss()
+        setIsSaving(false)
+        setEmailErrorMessage(emailData.error || "Este correo electrónico ya está registrado en nuestra plataforma. Por favor, utiliza otro correo o inicia sesión si ya tienes una cuenta.")
+        setShowEmailErrorModal(true)
+        return // Stop the registration process here
+      }
+
       // 1. Create Supabase user
       console.log("Creating Supabase user...")
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -369,11 +389,17 @@ export default function RegistrationWizard() {
       setError(errorMessage)
       setIsSaving(false)
       setSaveCompleted(false)
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      })
+      
+      // Special handling for email already exists error
+      if (errorMessage.includes("correo electrónico ya está registrado")) {
+        setShowEmailErrorModal(true)
+      } else {
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -504,6 +530,47 @@ export default function RegistrationWizard() {
               >
                 Ir a Iniciar Sesión
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Error Modal */}
+      {showEmailErrorModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-b from-indigo-950/95 via-purple-950/95 to-black/95 backdrop-blur-md rounded-lg border border-red-500/30 p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-500/20 mb-4">
+                <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-white mb-2">Correo electrónico ya registrado</h3>
+              <p className="text-sm text-indigo-300 mb-6">
+                {emailErrorMessage}
+              </p>
+              <div className="flex space-x-3">
+                <Button
+                  onClick={() => {
+                    setShowEmailErrorModal(false)
+                    // Clear the email field
+                    updateFormData("auth", { email: "" })
+                  }}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 flex-1"
+                >
+                  Cambiar correo
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowEmailErrorModal(false)
+                    window.location.href = '/login'
+                  }}
+                  variant="outline"
+                  className="border-indigo-500/30 text-indigo-200 hover:text-white hover:bg-indigo-800/30 flex-1"
+                >
+                  Ir a Iniciar Sesión
+                </Button>
+              </div>
             </div>
           </div>
         </div>
