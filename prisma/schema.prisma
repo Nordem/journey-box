@@ -34,6 +34,7 @@ model UserProfile {
   additionalInfo        String?    // For "Algo que quieras agregar"
   nearestAirport        String?
   goals                 String[]   // User's goals and objectives
+  phone                 String?    // User's phone number
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                String   @unique
 }
