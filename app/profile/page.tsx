@@ -191,6 +191,8 @@ export default function ProfilePage() {
   const [isEditingTraits, setIsEditingTraits] = useState(false)
   const [editedTraits, setEditedTraits] = useState<string[]>([])
   const [newTraitInput, setNewTraitInput] = useState("")
+  const [newExperienceInput, setNewExperienceInput] = useState("")
+  const [newDestinationInput, setNewDestinationInput] = useState("")
 
   // Add these constants for the preferences options
   const experiencePreferences = [
@@ -419,6 +421,20 @@ export default function ProfilePage() {
         description: "No se pudieron actualizar tus rasgos de personalidad. Por favor, intenta nuevamente.",
         variant: "destructive",
       })
+    }
+  }
+
+  const handleAddCustomExperience = () => {
+    if (newExperienceInput.trim()) {
+      setEditedExperiences(prev => [...prev, newExperienceInput.trim()])
+      setNewExperienceInput("")
+    }
+  }
+
+  const handleAddCustomDestination = () => {
+    if (newDestinationInput.trim()) {
+      setEditedDestinations(prev => [...prev, newDestinationInput.trim()])
+      setNewDestinationInput("")
     }
   }
 
@@ -1319,6 +1335,21 @@ export default function ProfilePage() {
                               </div>
                             ))}
                           </div>
+                          <div className="flex mt-3">
+                            <Input
+                              placeholder="Agregar experiencia personalizada..."
+                              value={newExperienceInput}
+                              onChange={(e) => setNewExperienceInput(e.target.value)}
+                              className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs"
+                            />
+                            <Button
+                              onClick={handleAddCustomExperience}
+                              disabled={!newExperienceInput.trim()}
+                              className="bg-indigo-600 hover:bg-indigo-700 rounded-l-none h-7 text-xs"
+                            >
+                              Agregar
+                            </Button>
+                          </div>
                           <div className="flex justify-end gap-2 mt-3">
                             <Button
                               variant="outline"
@@ -1407,6 +1438,21 @@ export default function ProfilePage() {
                                 <span className="text-xs">{dest.label}</span>
                               </div>
                             ))}
+                          </div>
+                          <div className="flex mt-3">
+                            <Input
+                              placeholder="Agregar destino personalizado..."
+                              value={newDestinationInput}
+                              onChange={(e) => setNewDestinationInput(e.target.value)}
+                              className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs"
+                            />
+                            <Button
+                              onClick={handleAddCustomDestination}
+                              disabled={!newDestinationInput.trim()}
+                              className="bg-indigo-600 hover:bg-indigo-700 rounded-l-none h-7 text-xs"
+                            >
+                              Agregar
+                            </Button>
                           </div>
                           <div className="flex justify-end gap-2 mt-3">
                             <Button
