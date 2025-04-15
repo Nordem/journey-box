@@ -170,7 +170,6 @@ export default function ProfilePage() {
     airport: string;
   }>({
     name: "",
-    email: "",
     phone: "",
     location: "",
     airport: ""
@@ -322,8 +321,33 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: editedData.phone,
+          location: editedData.location,
+          nearestAirport: editedData.airport
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile')
+      }
+
+      const updatedUser = await response.json()
+      setUserProfile(updatedUser.userProfile)
       setIsEditing(false)
+
       toast({
         title: "Éxito",
         description: "Tu perfil ha sido actualizado correctamente",
