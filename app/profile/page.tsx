@@ -128,6 +128,7 @@ const getTraitIcon = (trait: string) => {
 
 export default function ProfilePage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [sessionEmail, setSessionEmail] = useState<string>("")
   const [eventPreferences, setEventPreferences] = useState<{
     preferredExperiences: string[];
     preferredDestinations: string[];
@@ -164,7 +165,6 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<{
     name: string;
-    email: string;
     phone: string;
     location: string;
     airport: string;
@@ -314,7 +314,6 @@ export default function ProfilePage() {
     setIsEditing(false)
     setEditedData({
       name: userProfile?.name || "",
-      email: userProfile?.email || "",
       phone: userProfile?.phone || "",
       location: userProfile?.location || "",
       airport: userProfile?.nearestAirport || ""
@@ -447,6 +446,8 @@ export default function ProfilePage() {
           router.push('/login')
           return
         }
+
+        setSessionEmail(session.user.email || "")
 
         const response = await fetch(`/api/user/${session.user.id}`)
         if (!response.ok) {
@@ -763,8 +764,7 @@ export default function ProfilePage() {
                               <Input
                                 id="email"
                                 name="email"
-                                value={editedData?.email || ""}
-                                onChange={handleInputChange}
+                                value={sessionEmail}
                                 className="bg-indigo-950/20 border-indigo-500/30 text-white opacity-70"
                                 readOnly
                                 disabled
@@ -841,8 +841,7 @@ export default function ProfilePage() {
                               setIsEditing(true)
                               setEditedData({
                                 name: userProfile?.name || "",
-                                email: userProfile?.email || "",
-                                phone: userProfile?.phone || "",
+                                phone: userProfile?.phone || "xxx",
                                 location: userProfile?.location || "",
                                 airport: userProfile?.nearestAirport || ""
                               })
@@ -858,7 +857,7 @@ export default function ProfilePage() {
                             <Mail className="h-4 w-4 text-indigo-400 mr-3" />
                             <div>
                               <p className="text-xs text-gray-400">Correo electrónico</p>
-                              <p className="text-sm">{userProfile?.email}</p>
+                              <p className="text-sm">{sessionEmail}</p>
                             </div>
                           </div>
 
