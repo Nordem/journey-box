@@ -35,4 +35,44 @@ export async function GET(
       { status: 500 }
     )
   }
+}
+
+export async function PUT(
+  request: Request,
+  context: RouteContext
+) {
+  const params = await context.params
+  const { id } = params
+
+  try {
+    const body = await request.json()
+    const { name, phone, location, nearestAirport } = body
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        userProfile: {
+          update: {
+            name,
+            phone,
+            location,
+            nearestAirport
+          }
+        }
+      },
+      include: {
+        userProfile: true,
+        eventPreferences: true,
+        restrictions: true
+      }
+    })
+
+    return NextResponse.json(updatedUser)
+  } catch (error) {
+    console.error('Error updating user:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
 } 
