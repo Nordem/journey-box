@@ -31,6 +31,8 @@ interface UserProfile {
   additionalInfo?: string;
   nearestAirport?: string;
   goals: string[];
+  email: string;
+  phone: string;
 }
 
 interface EventPreferences {
@@ -159,18 +161,58 @@ export default function ProfilePage() {
     nextYear: true,
     followingYear: true,
   })
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedData, setEditedData] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    location: string;
+    airport: string;
+  }>({
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    airport: ""
+  })
+  const [isAddingDestination, setIsAddingDestination] = useState(false)
+  const [newDestination, setNewDestination] = useState<{
+    country: string;
+    destination: string;
+    isArkusTrip: boolean;
+  }>({
+    country: "",
+    destination: "",
+    isArkusTrip: false
+  })
+  const [isEditingInterests, setIsEditingInterests] = useState(false)
+  const [editedInterests, setEditedInterests] = useState<string[]>([])
+  const [newInterestInput, setNewInterestInput] = useState("")
+  const [isEditingTraits, setIsEditingTraits] = useState(false)
+  const [editedTraits, setEditedTraits] = useState<string[]>([])
+  const [newTraitInput, setNewTraitInput] = useState("")
 
   // Add these constants for the preferences options
   const experiencePreferences = [
-    { value: "Beginner", label: "Principiante", icon: <Star className="h-4 w-4" /> },
-    { value: "Intermediate", label: "Intermedio", icon: <Trophy className="h-4 w-4" /> },
-    { value: "Advanced", label: "Avanzado", icon: <Award className="h-4 w-4" /> },
+    { value: "relajación", label: "Relajación", icon: "🧖" },
+    { value: "aventura", label: "Aventura", icon: "🧗" },
+    { value: "aprendizaje", label: "Aprendizaje", icon: "🎓" },
+    { value: "socialización", label: "Socialización", icon: "🗣️" },
+    { value: "cultural", label: "Exploración cultural", icon: "🏛️" },
+    { value: "gastronomía", label: "Experiencias gastronómicas", icon: "🍽️" },
+    { value: "bienestar", label: "Actividades de bienestar", icon: "💆" }
   ]
 
   const destinationPreferences = [
-    { value: "Beach", label: "Playa", icon: <Map className="h-4 w-4" /> },
-    { value: "Mountain", label: "Montaña", icon: <Compass className="h-4 w-4" /> },
-    { value: "City", label: "Ciudad", icon: <Building className="h-4 w-4" /> },
+    { value: "playa", label: "Playa", icon: "🏖️" },
+    { value: "montaña", label: "Montaña", icon: "⛰️" },
+    { value: "ciudades_históricas", label: "Ciudades históricas", icon: "🏰" },
+    { value: "pueblos_magicos", label: "Pueblos Mágicos", icon: "🌾" },
+    { value: "parques_temáticos", label: "Parques temáticos", icon: "🎢" },
+    { value: "destinos_gastronómicos", label: "Destinos gastronómicos", icon: "🍷" },
+    { value: "reservas_naturales", label: "Reservas naturales", icon: "🦁" },
+    { value: "sitios_arqueológicos", label: "Sitios arqueológicos", icon: "🗿" },
+    { value: "destinos_urbanos", label: "Destinos urbanos modernos", icon: "🏙️" },
   ]
 
   const travelSeasons = [
@@ -182,24 +224,24 @@ export default function ProfilePage() {
 
   // Add these utility functions
   const toggleExperience = (value: string) => {
-    setEditedExperiences(prev => 
-      prev.includes(value) 
+    setEditedExperiences(prev =>
+      prev.includes(value)
         ? prev.filter(v => v !== value)
         : [...prev, value]
     )
   }
 
   const toggleDestination = (value: string) => {
-    setEditedDestinations(prev => 
-      prev.includes(value) 
+    setEditedDestinations(prev =>
+      prev.includes(value)
         ? prev.filter(v => v !== value)
         : [...prev, value]
     )
   }
 
   const toggleSeason = (value: string) => {
-    setEditedSeasons(prev => 
-      prev.includes(value) 
+    setEditedSeasons(prev =>
+      prev.includes(value)
         ? prev.filter(v => v !== value)
         : [...prev, value]
     )
@@ -255,6 +297,128 @@ export default function ProfilePage() {
       setIsEditingAvailability(false)
     } catch (error) {
       console.error('Error saving availability:', error)
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setEditedData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditedData({
+      name: userProfile?.name || "",
+      email: userProfile?.email || "",
+      phone: userProfile?.phone || "",
+      location: userProfile?.location || "",
+      airport: userProfile?.nearestAirport || ""
+    })
+  }
+
+  const handleSaveProfile = async () => {
+    try {
+      // Add your save logic here
+      setIsEditing(false)
+      toast({
+        title: "Éxito",
+        description: "Tu perfil ha sido actualizado correctamente",
+      })
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar tu perfil. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleAddDestination = async () => {
+    try {
+      // Add your save logic here
+      setIsAddingDestination(false)
+      setNewDestination({ country: "", destination: "", isArkusTrip: false })
+      toast({
+        title: "Éxito",
+        description: "El destino ha sido agregado correctamente",
+      })
+    } catch (error) {
+      console.error('Error adding destination:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo agregar el destino. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const toggleInterest = (interest: string) => {
+    setEditedInterests(prev =>
+      prev.includes(interest)
+        ? prev.filter(i => i !== interest)
+        : [...prev, interest]
+    )
+  }
+
+  const handleAddCustomInterest = () => {
+    if (newInterestInput.trim()) {
+      setEditedInterests(prev => [...prev, newInterestInput.trim()])
+      setNewInterestInput("")
+    }
+  }
+
+  const handleSaveInterests = async () => {
+    try {
+      // Add your save logic here
+      setIsEditingInterests(false)
+      toast({
+        title: "Éxito",
+        description: "Tus intereses han sido actualizados correctamente",
+      })
+    } catch (error) {
+      console.error('Error saving interests:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron actualizar tus intereses. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const toggleTrait = (trait: string) => {
+    setEditedTraits(prev =>
+      prev.includes(trait)
+        ? prev.filter(t => t !== trait)
+        : [...prev, trait]
+    )
+  }
+
+  const handleAddCustomTrait = () => {
+    if (newTraitInput.trim()) {
+      setEditedTraits(prev => [...prev, newTraitInput.trim()])
+      setNewTraitInput("")
+    }
+  }
+
+  const handleSaveTraits = async () => {
+    try {
+      // Add your save logic here
+      setIsEditingTraits(false)
+      toast({
+        title: "Éxito",
+        description: "Tus rasgos de personalidad han sido actualizados correctamente",
+      })
+    } catch (error) {
+      console.error('Error saving traits:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron actualizar tus rasgos de personalidad. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -555,112 +719,287 @@ export default function ProfilePage() {
 
                 {/* Pestaña Sobre mí */}
                 <TabsContent value="personal" className="mt-5">
-                  <Card className="bg-indigo-950/30 border border-indigo-500/30 mb-4">
-                    <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
-                      <CardTitle className="text-lg flex items-center">
-                        <User className="mr-2 h-5 w-5 text-indigo-400" />
-                        Información personal
-                      </CardTitle>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                        onClick={() => router.push('/profile/edit')}
-                      >
-                        <Edit2 size={14} className="mr-2" /> Editar
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="py-2 px-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 text-indigo-400 mr-3" />
-                          <div>
-                            <p className="text-xs text-gray-400">Nombre</p>
-                            <p className="text-sm">{userProfile.name}</p>
-                          </div>
-                        </div>
+                  {isEditing ? (
+                    <div className="space-y-6">
+                      <Card className="bg-indigo-950/30 border border-indigo-500/30">
+                        <CardHeader className="py-3 px-4">
+                          <CardTitle className="text-lg flex items-center">
+                            <Edit2 className="mr-2 h-5 w-5 text-indigo-400" />
+                            Editar información personal
+                          </CardTitle>
+                          <CardDescription>Actualiza tu información básica</CardDescription>
+                        </CardHeader>
+                        <CardContent className="py-3 px-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="name">Nombre completo</Label>
+                              <Input
+                                id="name"
+                                name="name"
+                                value={editedData?.name || ""}
+                                onChange={handleInputChange}
+                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                              />
+                            </div>
 
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 text-purple-400 mr-3" />
-                          <div>
-                            <p className="text-xs text-gray-400">Ubicación</p>
-                            <p className="text-sm">{userProfile.location}</p>
-                          </div>
-                        </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="email">Correo electrónico</Label>
+                              <Input
+                                id="email"
+                                name="email"
+                                value={editedData?.email || ""}
+                                onChange={handleInputChange}
+                                className="bg-indigo-950/20 border-indigo-500/30 text-white opacity-70"
+                                readOnly
+                                disabled
+                              />
+                            </div>
 
-                        <div className="flex items-center">
-                          <Globe className="h-4 w-4 text-indigo-400 mr-3" />
-                          <div>
-                            <p className="text-xs text-gray-400">Idiomas</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {userProfile.languages?.map((language, index) => (
-                                <Badge
-                                  key={index}
-                                  className="bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20 transition-colors"
-                                >
-                                  {language}
+                            <div className="space-y-2">
+                              <Label htmlFor="phone">Teléfono</Label>
+                              <Input
+                                id="phone"
+                                name="phone"
+                                value={editedData?.phone || ""}
+                                onChange={handleInputChange}
+                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="location">Ciudad de ubicación</Label>
+                              <Input
+                                id="location"
+                                name="location"
+                                placeholder="Ej: Tijuana, B.C., México"
+                                value={editedData?.location || ""}
+                                onChange={handleInputChange}
+                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="airport">Aeropuerto más cercano</Label>
+                              <Input
+                                id="airport"
+                                name="airport"
+                                placeholder="Ej: Tijuana, B.C., México"
+                                value={editedData?.airport || ""}
+                                onChange={handleInputChange}
+                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <div className="flex justify-end gap-3">
+                        <Button
+                          variant="outline"
+                          className="border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                          onClick={handleCancelEdit}
+                        >
+                          <X size={16} className="mr-2" /> Cancelar
+                        </Button>
+                        <Button
+                          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                          onClick={handleSaveProfile}
+                        >
+                          <Save size={16} className="mr-2" /> Guardar cambios
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Card className="bg-indigo-950/30 border border-indigo-500/30 mb-4">
+                        <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
+                          <CardTitle className="text-lg flex items-center">
+                            <User className="mr-2 h-5 w-5 text-indigo-400" />
+                            Información personal
+                          </CardTitle>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                            onClick={() => {
+                              setIsEditing(true)
+                              setEditedData({
+                                name: userProfile?.name || "",
+                                email: userProfile?.email || "",
+                                phone: userProfile?.phone || "",
+                                location: userProfile?.location || "",
+                                airport: userProfile?.nearestAirport || ""
+                              })
+                            }}
+                          >
+                            <Edit2 size={14} className="mr-2" /> Editar
+                          </Button>
+                        </CardHeader>
+                        <CardContent className="py-2 px-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center">
+                              <User className="h-4 w-4 text-indigo-400 mr-3" />
+                              <div>
+                                <p className="text-xs text-gray-400">Nombre</p>
+                                <p className="text-sm">{userProfile?.name}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 text-purple-400 mr-3" />
+                              <div>
+                                <p className="text-xs text-gray-400">Ubicación</p>
+                                <p className="text-sm">{userProfile?.location}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center">
+                              <Globe className="h-4 w-4 text-indigo-400 mr-3" />
+                              <div>
+                                <p className="text-xs text-gray-400">Idiomas</p>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {userProfile?.languages?.map((language, index) => (
+                                    <Badge
+                                      key={index}
+                                      className="bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20 transition-colors"
+                                    >
+                                      {language}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center">
+                              <Plane className="h-4 w-4 text-purple-400 mr-3" />
+                              <div>
+                                <p className="text-xs text-gray-400">Aeropuerto más cercano</p>
+                                <p className="text-sm">{userProfile?.nearestAirport || "No especificado"}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-indigo-950/30 border border-indigo-500/30">
+                        <CardHeader className="py-3 px-4">
+                          <CardTitle className="text-lg flex items-center">
+                            <MapPin className="mr-2 h-5 w-5 text-pink-400" />
+                            Destinos visitados recientemente
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="py-2 px-4">
+                          <div className="space-y-3">
+                            <div className="relative h-[150px] w-full rounded-lg overflow-hidden">
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                              <div className="absolute bottom-2 left-2">
+                                <Badge className="bg-indigo-600 mb-1 text-xs">
+                                  0 destinos
                                 </Badge>
-                              ))}
+                                <div className="flex flex-wrap gap-1 max-w-[250px]">
+                                  <Badge
+                                    variant="outline"
+                                    className="border-indigo-500/30 text-indigo-300 text-[10px]"
+                                  >
+                                    No hay destinos registrados
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <h3 className="text-xs font-medium text-gray-300">Últimos destinos visitados</h3>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                                  onClick={() => setIsAddingDestination(true)}
+                                >
+                                  <Plus size={12} className="mr-1" /> Agregar
+                                </Button>
+                              </div>
+
+                              {isAddingDestination ? (
+                                <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
+                                  <div className="grid grid-cols-2 gap-2 mb-2">
+                                    <div>
+                                      <Label htmlFor="country" className="text-sm text-gray-300">
+                                        País
+                                      </Label>
+                                      <Input
+                                        id="country"
+                                        value={newDestination.country}
+                                        onChange={(e) =>
+                                          setNewDestination({ ...newDestination, country: e.target.value })
+                                        }
+                                        className="bg-indigo-950/20 border-indigo-500/30 text-white h-7 text-xs"
+                                        placeholder="Ej: México"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="destination" className="text-sm text-gray-300">
+                                        Destino
+                                      </Label>
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          id="destination"
+                                          value={newDestination.destination}
+                                          onChange={(e) =>
+                                            setNewDestination({ ...newDestination, destination: e.target.value })
+                                          }
+                                          className="bg-indigo-950/20 border-indigo-500/30 text-white h-7 text-xs"
+                                          placeholder="Ej: Cancún"
+                                        />
+                                        <div className="flex items-center gap-1">
+                                          <Switch
+                                            id="isArkusTrip"
+                                            checked={newDestination.isArkusTrip}
+                                            onCheckedChange={(checked) =>
+                                              setNewDestination({ ...newDestination, isArkusTrip: checked })
+                                            }
+                                            className="scale-75"
+                                          />
+                                          <Label htmlFor="isArkusTrip" className="text-[10px] text-gray-400">
+                                            Arkus
+                                          </Label>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-6 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                                      onClick={() => {
+                                        setIsAddingDestination(false)
+                                        setNewDestination({ country: "", destination: "", isArkusTrip: false })
+                                      }}
+                                    >
+                                      Cancelar
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      className="h-6 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                                      onClick={handleAddDestination}
+                                      disabled={!newDestination.country || !newDestination.destination}
+                                    >
+                                      Guardar
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="p-2 text-center text-gray-400 text-xs">
+                                  No has registrado destinos visitados
+                                </div>
+                              )}
                             </div>
                           </div>
-                        </div>
-
-                        <div className="flex items-center">
-                          <Plane className="h-4 w-4 text-purple-400 mr-3" />
-                          <div>
-                            <p className="text-xs text-gray-400">Aeropuerto más cercano</p>
-                            <p className="text-sm">{userProfile.nearestAirport || "No especificado"}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-indigo-950/30 border border-indigo-500/30">
-                    <CardHeader className="py-3 px-4">
-                      <CardTitle className="text-lg flex items-center">
-                        <MapPin className="mr-2 h-5 w-5 text-pink-400" />
-                        Destinos visitados recientemente
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="py-2 px-4">
-                      <div className="space-y-3">
-                        <div className="relative h-[150px] w-full rounded-lg overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                          <div className="absolute bottom-2 left-2">
-                            <Badge className="bg-indigo-600 mb-1 text-xs">
-                              0 destinos
-                            </Badge>
-                            <div className="flex flex-wrap gap-1 max-w-[250px]">
-                              <Badge
-                                variant="outline"
-                                className="border-indigo-500/30 text-indigo-300 text-[10px]"
-                              >
-                                No hay destinos registrados
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <h3 className="text-xs font-medium text-gray-300">Últimos destinos visitados</h3>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                            >
-                              <Plus size={12} className="mr-1" /> Agregar
-                            </Button>
-                          </div>
-
-                          <div className="p-2 text-center text-gray-400 text-xs">
-                            No has registrado destinos visitados
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        </CardContent>
+                      </Card>
+                    </>
+                  )}
                 </TabsContent>
 
                 {/* Pestaña Intereses */}
@@ -678,44 +1017,134 @@ export default function ProfilePage() {
                     <CardContent className="py-2 px-4">
                       <div className="space-y-4">
                         <div>
-
-                          <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-4">
-                            {userProfile.hobbiesAndInterests?.map((interest) => (
-                              <div
-                                key={interest}
-                                className="flex items-center gap-1.5 p-1.5 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
+                          <div className="flex justify-end items-center mb-2">
+                            {!isEditingInterests ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                                onClick={() => {
+                                  setIsEditingInterests(true)
+                                  setEditedInterests([...(userProfile?.hobbiesAndInterests || [])])
+                                }}
                               >
-                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900/60 flex items-center justify-center">
-                                  {getInterestIcon(interest)}
-                                </div>
-                                <span className="text-xs">{interest}</span>
-                              </div>
-                            ))}
-                            {(!userProfile.hobbiesAndInterests ||
-                              userProfile.hobbiesAndInterests.length === 0) && (
-                              <div className="col-span-4 p-3 text-center text-gray-400 text-xs">
-                                <p>No has seleccionado intereses todavía</p>
+                                <Edit2 size={12} className="mr-1" /> Editar
+                              </Button>
+                            ) : (
+                              <div className="flex gap-2">
                                 <Button
-                                  variant="link"
-                                  className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs"
-                                  onClick={() => router.push('/profile/edit')}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                                  onClick={() => {
+                                    setIsEditingInterests(false)
+                                    setEditedInterests([...(userProfile?.hobbiesAndInterests || [])])
+                                  }}
                                 >
-                                  Agregar intereses
+                                  <X size={12} className="mr-1" /> Cancelar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                                  onClick={handleSaveInterests}
+                                >
+                                  <Save size={12} className="mr-1" /> Guardar
                                 </Button>
                               </div>
                             )}
                           </div>
 
-                          <div className="flex justify-end items-center mb-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                              onClick={() => router.push('/profile/edit')}
-                            >
-                              <Edit2 size={12} className="mr-1" /> Editar
-                            </Button>
-                          </div>
+                          {!isEditingInterests ? (
+                            <div>
+                              <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-4">
+                                {userProfile?.hobbiesAndInterests?.map((interest) => (
+                                  <div
+                                    key={interest}
+                                    className="flex items-center gap-1.5 p-1.5 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
+                                  >
+                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900/60 flex items-center justify-center">
+                                      {getInterestIcon(interest)}
+                                    </div>
+                                    <span className="text-xs">{interest}</span>
+                                  </div>
+                                ))}
+                                {(!userProfile?.hobbiesAndInterests ||
+                                  userProfile.hobbiesAndInterests.length === 0) && (
+                                    <div className="col-span-4 p-3 text-center text-gray-400 text-xs">
+                                      <p>No has seleccionado intereses todavía</p>
+                                      <Button
+                                        variant="link"
+                                        className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs"
+                                        onClick={() => setIsEditingInterests(true)}
+                                      >
+                                        Agregar intereses
+                                      </Button>
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <p className="text-xs text-gray-400 mb-1">Selecciona tus intereses principales</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  { name: "Deportes por TV", icon: <Tv className="h-3 w-3 text-blue-400" /> },
+                                  { name: "Actividades deportivas", icon: <Trophy className="h-3 w-3 text-yellow-400" /> },
+                                  { name: "Música", icon: <Music className="h-3 w-3 text-purple-400" /> },
+                                  { name: "Arte", icon: <Palette className="h-3 w-3 text-pink-400" /> },
+                                  { name: "Tecnología", icon: <Laptop className="h-3 w-3 text-blue-400" /> },
+                                  { name: "Lectura", icon: <BookOpen className="h-3 w-3 text-green-400" /> },
+                                  { name: "Cocina", icon: <Utensils className="h-3 w-3 text-orange-400" /> },
+                                  { name: "Parrilladas al aire libre", icon: <Flame className="h-3 w-3 text-red-400" /> },
+                                  { name: "Convivencias", icon: <Users className="h-3 w-3 text-yellow-400" /> },
+                                  { name: "Jardinería", icon: <Flower2 className="h-3 w-3 text-green-400" /> },
+                                  { name: "Fotografía", icon: <Camera className="h-3 w-3 text-purple-400" /> },
+                                  { name: "Manualidades", icon: <Scissors className="h-3 w-3 text-red-400" /> },
+                                  { name: "Videojuegos", icon: <Gamepad2 className="h-3 w-3 text-indigo-400" /> },
+                                  { name: "Baile", icon: <Music2 className="h-3 w-3 text-pink-400" /> },
+                                  { name: "Yoga", icon: <Activity className="h-3 w-3 text-purple-400" /> },
+                                  { name: "Meditación", icon: <Moon className="h-3 w-3 text-blue-400" /> },
+                                  { name: "Networking", icon: <Network className="h-3 w-3 text-blue-400" /> },
+                                  { name: "Startups", icon: <Rocket className="h-3 w-3 text-orange-400" /> },
+                                  { name: "Fórmula 1", icon: <Car className="h-3 w-3 text-red-400" /> },
+                                  { name: "Naturaleza", icon: <Trees className="h-3 w-3 text-green-400" /> },
+                                  { name: "Ir al estadio", icon: <Flag className="h-3 w-3 text-yellow-400" /> },
+                                  { name: "Talleres creativos", icon: <Paintbrush className="h-3 w-3 text-pink-400" /> },
+                                  { name: "Conciertos", icon: <Music4 className="h-3 w-3 text-purple-400" /> },
+                                  { name: "Actividades al aire libre", icon: <Mountain className="h-3 w-3 text-green-400" /> },
+                                  { name: "Cine", icon: <Film className="h-3 w-3 text-indigo-400" /> },
+                                ].map((interest) => (
+                                  <button
+                                    key={interest.name}
+                                    onClick={() => toggleInterest(interest.name)}
+                                    className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedInterests.includes(interest.name)
+                                      ? "bg-indigo-600 text-white"
+                                      : "bg-indigo-950 border border-indigo-500/30 text-white"
+                                      }`}
+                                  >
+                                    {interest.icon}
+                                    <span>{interest.name}</span>
+                                  </button>
+                                ))}
+                              </div>
+
+                              <div className="flex mt-5">
+                                <Input
+                                  placeholder="Agregar interés personalizado..."
+                                  value={newInterestInput}
+                                  onChange={(e) => setNewInterestInput(e.target.value)}
+                                  className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs"
+                                />
+                                <Button
+                                  onClick={handleAddCustomInterest}
+                                  disabled={!newInterestInput.trim()}
+                                  className="bg-indigo-600 hover:bg-indigo-700 rounded-l-none h-7 text-xs"
+                                >
+                                  Agregar
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -731,44 +1160,115 @@ export default function ProfilePage() {
                     <CardContent className="py-2 px-4">
                       <div className="space-y-4">
                         <div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {userProfile.personalityTraits?.map((trait) => (
-                              <div
-                                key={trait}
-                                className="flex items-center gap-1.5 p-1.5 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
+                          <div className="flex justify-end items-center mb-2">
+                            {!isEditingTraits ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                                onClick={() => {
+                                  setIsEditingTraits(true)
+                                  setEditedTraits([...(userProfile?.personalityTraits || [])])
+                                }}
                               >
-                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900/60 flex items-center justify-center">
-                                  {getTraitIcon(trait)}
-                                </div>
-                                <span className="text-xs">{trait}</span>
-                              </div>
-                            ))}
-                            {(!userProfile.personalityTraits ||
-                              userProfile.personalityTraits.length === 0) && (
-                              <div className="col-span-4 p-3 text-center text-gray-400 text-xs">
-                                <p>No has seleccionado rasgos de personalidad todavía</p>
+                                <Edit2 size={12} className="mr-1" /> Editar
+                              </Button>
+                            ) : (
+                              <div className="flex gap-2">
                                 <Button
-                                  variant="link"
-                                  className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs"
-                                  onClick={() => router.push('/profile/edit')}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                                  onClick={() => {
+                                    setIsEditingTraits(false)
+                                    setEditedTraits([...(userProfile?.personalityTraits || [])])
+                                  }}
                                 >
-                                  Agregar rasgos de personalidad
+                                  <X size={12} className="mr-1" /> Cancelar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                                  onClick={handleSaveTraits}
+                                >
+                                  <Save size={12} className="mr-1" /> Guardar
                                 </Button>
                               </div>
                             )}
                           </div>
 
-                          <div className="flex justify-end items-center mb-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                              onClick={() => router.push('/profile/edit')}
-                            >
-                              <Edit2 size={12} className="mr-1" /> Editar
-                            </Button>
-                          </div>
+                          {!isEditingTraits ? (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              {userProfile?.personalityTraits?.map((trait) => (
+                                <div
+                                  key={trait}
+                                  className="flex items-center gap-1.5 p-1.5 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
+                                >
+                                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900/60 flex items-center justify-center">
+                                    {getTraitIcon(trait)}
+                                  </div>
+                                  <span className="text-xs">{trait}</span>
+                                </div>
+                              ))}
+                              {(!userProfile?.personalityTraits ||
+                                userProfile.personalityTraits.length === 0) && (
+                                  <div className="col-span-4 p-3 text-center text-gray-400 text-xs">
+                                    <p>No has seleccionado rasgos de personalidad todavía</p>
+                                    <Button
+                                      variant="link"
+                                      className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs"
+                                      onClick={() => setIsEditingTraits(true)}
+                                    >
+                                      Agregar rasgos de personalidad
+                                    </Button>
+                                  </div>
+                                )}
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <p className="text-xs text-gray-400 mb-1">Selecciona tus rasgos de personalidad</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  { name: "Sociable", icon: <Users className="h-3 w-3 text-yellow-400" /> },
+                                  { name: "Introvertido", icon: <User className="h-3 w-3 text-orange-400" /> },
+                                  { name: "Creativo", icon: <Paintbrush className="h-3 w-3 text-pink-400" /> },
+                                  { name: "Estructurado", icon: <LayoutGrid className="h-3 w-3 text-red-400" /> },
+                                  { name: "Curioso", icon: <Search className="h-3 w-3 text-blue-400" /> },
+                                  { name: "Aventurero", icon: <Compass className="h-3 w-3 text-indigo-400" /> },
+                                  { name: "Analítico", icon: <BarChart className="h-3 w-3 text-purple-400" /> },
+                                  { name: "Energético", icon: <Zap className="h-3 w-3 text-yellow-400" /> },
+                                ].map((trait) => (
+                                  <button
+                                    key={trait.name}
+                                    onClick={() => toggleTrait(trait.name)}
+                                    className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedTraits.includes(trait.name)
+                                      ? "bg-indigo-600 text-white"
+                                      : "bg-indigo-950 border border-indigo-500/30 text-white"
+                                      }`}
+                                  >
+                                    {trait.icon}
+                                    <span>{trait.name}</span>
+                                  </button>
+                                ))}
+                              </div>
 
+                              <div className="flex mt-3">
+                                <Input
+                                  placeholder="Agregar rasgo personalizado..."
+                                  value={newTraitInput}
+                                  onChange={(e) => setNewTraitInput(e.target.value)}
+                                  className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs"
+                                />
+                                <Button
+                                  onClick={handleAddCustomTrait}
+                                  disabled={!newTraitInput.trim()}
+                                  className="bg-indigo-600 hover:bg-indigo-700 rounded-l-none h-7 text-xs"
+                                >
+                                  Agregar
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
