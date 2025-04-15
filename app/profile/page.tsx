@@ -846,7 +846,7 @@ export default function ProfilePage() {
                               <Input
                                 id="airport"
                                 name="airport"
-                                placeholder="Ej: Tijuana, B.C., México"
+                                placeholder="Opcional - Ej: Tijuana, B.C., México"
                                 value={editedData?.airport || ""}
                                 onChange={handleInputChange}
                                 className="bg-indigo-950/20 border-indigo-500/30 text-white"
