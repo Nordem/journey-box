@@ -303,10 +303,22 @@ export default function ProfilePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setEditedData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    
+    if (name === 'phone') {
+      // Only allow numbers
+      const numericValue = value.replace(/\D/g, '')
+      // Limit to 10 characters
+      const limitedValue = numericValue.slice(0, 10)
+      setEditedData(prev => ({
+        ...prev,
+        [name]: limitedValue
+      }))
+    } else {
+      setEditedData(prev => ({
+        ...prev,
+        [name]: value
+      }))
+    }
   }
 
   const handleCancelEdit = () => {
@@ -801,10 +813,20 @@ export default function ProfilePage() {
                               <Input
                                 id="phone"
                                 name="phone"
+                                type="tel"
                                 value={editedData?.phone || ""}
                                 onChange={handleInputChange}
-                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                                className={cn(
+                                  "bg-indigo-950/20 border-indigo-500/30 text-white",
+                                  editedData?.phone && (editedData.phone.length < 8 || editedData.phone.length > 10) && "border-red-500"
+                                )}
+                                placeholder="Ingresa tu número de teléfono"
                               />
+                              {editedData?.phone && (editedData.phone.length < 8 || editedData.phone.length > 10) && (
+                                <p className="text-xs text-red-500">
+                                  El número de teléfono debe tener entre 8 y 10 dígitos
+                                </p>
+                              )}
                             </div>
 
                             <div className="space-y-2">
@@ -824,7 +846,7 @@ export default function ProfilePage() {
                               <Input
                                 id="airport"
                                 name="airport"
-                                placeholder="Ej: Tijuana, B.C., México"
+                                placeholder="Opcional - Ej: Tijuana, B.C., México"
                                 value={editedData?.airport || ""}
                                 onChange={handleInputChange}
                                 className="bg-indigo-950/20 border-indigo-500/30 text-white"
@@ -866,7 +888,7 @@ export default function ProfilePage() {
                               setIsEditing(true)
                               setEditedData({
                                 name: userProfile?.name || "",
-                                phone: userProfile?.phone || "xxx",
+                                phone: userProfile?.phone || "",
                                 location: userProfile?.location || "",
                                 airport: userProfile?.nearestAirport || ""
                               })
