@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit, User, MapPin, Globe, Languages, Heart, Target, Calendar, Star, Info, Tag, Hash, DollarSign, Compass, Users, CalendarX, Users2, Plane, Map, Clock, Trophy, Edit2, Camera, LogOut, Award, Building, Sun, Snowflake, Flower, Leaf } from "lucide-react"
+import { Edit, User, MapPin, Globe, Languages, Heart, Target, Calendar, Star, Info, Tag, Hash, DollarSign, Compass, Users, CalendarX, Users2, Plane, Map, Clock, Trophy, Edit2, Camera, LogOut, Award, Building, Sun, Snowflake, Flower, Leaf, Plus, X, Save, Tv, Music, Palette, Laptop, BookOpen, Utensils, Flame, Flower2, Scissors, Gamepad2, Music2, Moon, Network, Rocket, Car, Trees, Flag, Paintbrush, Music4, Mountain, Film, LayoutGrid, Search, BarChart, Zap, Activity } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
@@ -14,6 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar"
 import { ProfileSkeleton } from "@/components/skeletons/profile-skeleton"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 
 interface UserProfile {
   name: string;
@@ -73,19 +79,190 @@ const getSeasonIcon = (season: string) => {
   }
 }
 
+const getInterestIcon = (interest: string) => {
+  switch (interest) {
+    case 'Deportes por TV': return <Tv className="h-3 w-3 text-blue-400" />
+    case 'Actividades deportivas': return <Trophy className="h-3 w-3 text-yellow-400" />
+    case 'Música': return <Music className="h-3 w-3 text-purple-400" />
+    case 'Arte': return <Palette className="h-3 w-3 text-pink-400" />
+    case 'Tecnología': return <Laptop className="h-3 w-3 text-blue-400" />
+    case 'Lectura': return <BookOpen className="h-3 w-3 text-green-400" />
+    case 'Cocina': return <Utensils className="h-3 w-3 text-orange-400" />
+    case 'Parrilladas al aire libre': return <Flame className="h-3 w-3 text-red-400" />
+    case 'Convivencias': return <Users className="h-3 w-3 text-yellow-400" />
+    case 'Jardinería': return <Flower2 className="h-3 w-3 text-green-400" />
+    case 'Fotografía': return <Camera className="h-3 w-3 text-purple-400" />
+    case 'Manualidades': return <Scissors className="h-3 w-3 text-red-400" />
+    case 'Videojuegos': return <Gamepad2 className="h-3 w-3 text-indigo-400" />
+    case 'Baile': return <Music2 className="h-3 w-3 text-pink-400" />
+    case 'Yoga': return <Activity className="h-3 w-3 text-purple-400" />
+    case 'Meditación': return <Moon className="h-3 w-3 text-blue-400" />
+    case 'Networking': return <Network className="h-3 w-3 text-blue-400" />
+    case 'Startups': return <Rocket className="h-3 w-3 text-orange-400" />
+    case 'Fórmula 1': return <Car className="h-3 w-3 text-red-400" />
+    case 'Naturaleza': return <Trees className="h-3 w-3 text-green-400" />
+    case 'Ir al estadio': return <Flag className="h-3 w-3 text-yellow-400" />
+    case 'Talleres creativos': return <Paintbrush className="h-3 w-3 text-pink-400" />
+    case 'Conciertos': return <Music4 className="h-3 w-3 text-purple-400" />
+    case 'Actividades al aire libre': return <Mountain className="h-3 w-3 text-green-400" />
+    case 'Cine': return <Film className="h-3 w-3 text-indigo-400" />
+    default: return <Heart className="h-3 w-3 text-indigo-400" />
+  }
+}
+
+const getTraitIcon = (trait: string) => {
+  switch (trait) {
+    case 'Sociable': return <Users className="h-3 w-3 text-yellow-400" />
+    case 'Introvertido': return <User className="h-3 w-3 text-orange-400" />
+    case 'Creativo': return <Paintbrush className="h-3 w-3 text-pink-400" />
+    case 'Estructurado': return <LayoutGrid className="h-3 w-3 text-red-400" />
+    case 'Curioso': return <Search className="h-3 w-3 text-blue-400" />
+    case 'Aventurero': return <Compass className="h-3 w-3 text-indigo-400" />
+    case 'Analítico': return <BarChart className="h-3 w-3 text-purple-400" />
+    case 'Energético': return <Zap className="h-3 w-3 text-yellow-400" />
+    default: return <User className="h-3 w-3 text-indigo-400" />
+  }
+}
+
 export default function ProfilePage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [eventPreferences, setEventPreferences] = useState<EventPreferences | null>(null)
+  const [eventPreferences, setEventPreferences] = useState<{
+    preferredExperiences: string[];
+    preferredDestinations: string[];
+    seasonalPreferences: string[];
+    blockedDates: string[];
+    generalAvailability: boolean;
+  }>({
+    preferredExperiences: [],
+    preferredDestinations: [],
+    seasonalPreferences: [],
+    blockedDates: [],
+    generalAvailability: true
+  })
   const [loading, setLoading] = useState(true)
   const [profileCompletion, setProfileCompletion] = useState(0)
   const router = useRouter()
   const { toast } = useToast()
 
+  // Add these state variables at the top of the ProfilePage component
+  const [isEditingExperiences, setIsEditingExperiences] = useState(false)
+  const [isEditingDestinations, setIsEditingDestinations] = useState(false)
+  const [isEditingSeasons, setIsEditingSeasons] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [isEditingAvailability, setIsEditingAvailability] = useState(false)
+  const [editedExperiences, setEditedExperiences] = useState<string[]>([])
+  const [editedDestinations, setEditedDestinations] = useState<string[]>([])
+  const [editedSeasons, setEditedSeasons] = useState<string[]>([])
+  const [blockedDates, setBlockedDates] = useState<Date[]>([])
+  const [travelAvailability, setTravelAvailability] = useState({
+    currentYear: true,
+    nextYear: true,
+    followingYear: true,
+  })
+
+  // Add these constants for the preferences options
+  const experiencePreferences = [
+    { value: "Beginner", label: "Principiante", icon: <Star className="h-4 w-4" /> },
+    { value: "Intermediate", label: "Intermedio", icon: <Trophy className="h-4 w-4" /> },
+    { value: "Advanced", label: "Avanzado", icon: <Award className="h-4 w-4" /> },
+  ]
+
+  const destinationPreferences = [
+    { value: "Beach", label: "Playa", icon: <Map className="h-4 w-4" /> },
+    { value: "Mountain", label: "Montaña", icon: <Compass className="h-4 w-4" /> },
+    { value: "City", label: "Ciudad", icon: <Building className="h-4 w-4" /> },
+  ]
+
+  const travelSeasons = [
+    { value: "Summer", label: "Verano", icon: <Sun className="h-4 w-4" /> },
+    { value: "Winter", label: "Invierno", icon: <Snowflake className="h-4 w-4" /> },
+    { value: "Spring", label: "Primavera", icon: <Flower className="h-4 w-4" /> },
+    { value: "Autumn", label: "Otoño", icon: <Leaf className="h-4 w-4" /> },
+  ]
+
+  // Add these utility functions
+  const toggleExperience = (value: string) => {
+    setEditedExperiences(prev => 
+      prev.includes(value) 
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    )
+  }
+
+  const toggleDestination = (value: string) => {
+    setEditedDestinations(prev => 
+      prev.includes(value) 
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    )
+  }
+
+  const toggleSeason = (value: string) => {
+    setEditedSeasons(prev => 
+      prev.includes(value) 
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    )
+  }
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+
+  const handleSaveExperiences = async () => {
+    try {
+      // Add your save logic here
+      setIsEditingExperiences(false)
+    } catch (error) {
+      console.error('Error saving experiences:', error)
+    }
+  }
+
+  const handleSaveDestinations = async () => {
+    try {
+      // Add your save logic here
+      setIsEditingDestinations(false)
+    } catch (error) {
+      console.error('Error saving destinations:', error)
+    }
+  }
+
+  const handleSaveSeasons = async () => {
+    try {
+      // Add your save logic here
+      setIsEditingSeasons(false)
+    } catch (error) {
+      console.error('Error saving seasons:', error)
+    }
+  }
+
+  const handleSaveBlockedDates = async () => {
+    try {
+      // Add your save logic here
+      setShowDatePicker(false)
+    } catch (error) {
+      console.error('Error saving blocked dates:', error)
+    }
+  }
+
+  const handleSaveAvailability = async () => {
+    try {
+      // Add your save logic here
+      setIsEditingAvailability(false)
+    } catch (error) {
+      console.error('Error saving availability:', error)
+    }
+  }
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        
+
         if (!session?.user) {
           router.push('/login')
           return
@@ -327,6 +504,18 @@ export default function ProfilePage() {
                       <div className="text-lg font-bold">3</div>
                     </div>
                   </div>
+
+                  <div className="p-2 rounded-lg bg-gradient-to-r from-indigo-950/70 to-purple-950/70 border border-indigo-500/30 mt-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-gray-400">Próximo viaje</div>
+                        <div className="text-sm font-medium text-white mt-1">No hay viajes programados</div>
+                      </div>
+                      <div className="bg-indigo-600/30 p-1.5 rounded-full">
+                        <Plane className="h-4 w-4 text-indigo-300" />
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -343,29 +532,29 @@ export default function ProfilePage() {
             {/* Columna derecha - Contenido principal */}
             <div className="lg:col-span-2">
               <Tabs defaultValue="personal" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-6 bg-transparent border border-indigo-500/30 rounded-xl overflow-hidden">
+                <TabsList className="grid w-full grid-cols-3 bg-transparent border border-indigo-500/30 rounded-xl overflow-hidden">
                   <TabsTrigger
                     value="personal"
-                    className="py-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
                   >
                     Sobre mí
                   </TabsTrigger>
                   <TabsTrigger
                     value="interests"
-                    className="py-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
                   >
                     Intereses
                   </TabsTrigger>
                   <TabsTrigger
                     value="preferences"
-                    className="py-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
                   >
                     Preferencias
                   </TabsTrigger>
                 </TabsList>
 
                 {/* Pestaña Sobre mí */}
-                <TabsContent value="personal" className="mt-0">
+                <TabsContent value="personal" className="mt-5">
                   <Card className="bg-indigo-950/30 border border-indigo-500/30 mb-4">
                     <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
                       <CardTitle className="text-lg flex items-center">
@@ -415,6 +604,14 @@ export default function ProfilePage() {
                             </div>
                           </div>
                         </div>
+
+                        <div className="flex items-center">
+                          <Plane className="h-4 w-4 text-purple-400 mr-3" />
+                          <div>
+                            <p className="text-xs text-gray-400">Aeropuerto más cercano</p>
+                            <p className="text-sm">{userProfile.nearestAirport || "No especificado"}</p>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -422,65 +619,157 @@ export default function ProfilePage() {
                   <Card className="bg-indigo-950/30 border border-indigo-500/30">
                     <CardHeader className="py-3 px-4">
                       <CardTitle className="text-lg flex items-center">
-                        <Heart className="mr-2 h-5 w-5 text-pink-400" />
-                        Rasgos de personalidad
+                        <MapPin className="mr-2 h-5 w-5 text-pink-400" />
+                        Destinos visitados recientemente
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="py-2 px-4">
-                      <div className="flex flex-wrap gap-2">
-                        {userProfile.personalityTraits?.map((trait, index) => (
-                          <Badge
-                            key={index}
-                            className="bg-purple-500/10 text-purple-200 hover:bg-purple-500/20 transition-colors"
-                          >
-                            {trait}
-                          </Badge>
-                        ))}
+                      <div className="space-y-3">
+                        <div className="relative h-[150px] w-full rounded-lg overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                          <div className="absolute bottom-2 left-2">
+                            <Badge className="bg-indigo-600 mb-1 text-xs">
+                              0 destinos
+                            </Badge>
+                            <div className="flex flex-wrap gap-1 max-w-[250px]">
+                              <Badge
+                                variant="outline"
+                                className="border-indigo-500/30 text-indigo-300 text-[10px]"
+                              >
+                                No hay destinos registrados
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-medium text-gray-300">Últimos destinos visitados</h3>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                            >
+                              <Plus size={12} className="mr-1" /> Agregar
+                            </Button>
+                          </div>
+
+                          <div className="p-2 text-center text-gray-400 text-xs">
+                            No has registrado destinos visitados
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
 
                 {/* Pestaña Intereses */}
-                <TabsContent value="interests" className="mt-0">
+                <TabsContent value="interests" className="mt-5">
                   <Card className="bg-indigo-950/30 border border-indigo-500/30 mb-4">
                     <CardHeader className="py-3 px-4">
                       <CardTitle className="text-lg flex items-center">
-                        <Star className="mr-2 h-5 w-5 text-indigo-400" />
-                        Hobbies e Intereses
+                        <Heart className="mr-2 h-5 w-5 text-indigo-400" />
+                        Intereses y hobbies
                       </CardTitle>
+                      <CardDescription className="text-xs">
+                        Estos son los intereses que seleccionaste durante tu configuración inicial
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="py-2 px-4">
-                      <div className="flex flex-wrap gap-2">
-                        {userProfile.hobbiesAndInterests?.map((hobby, index) => (
-                          <Badge
-                            key={index}
-                            className="bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20 transition-colors"
-                          >
-                            {hobby}
-                          </Badge>
-                        ))}
+                      <div className="space-y-4">
+                        <div>
+
+                          <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-4">
+                            {userProfile.hobbiesAndInterests?.map((interest) => (
+                              <div
+                                key={interest}
+                                className="flex items-center gap-1.5 p-1.5 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
+                              >
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900/60 flex items-center justify-center">
+                                  {getInterestIcon(interest)}
+                                </div>
+                                <span className="text-xs">{interest}</span>
+                              </div>
+                            ))}
+                            {(!userProfile.hobbiesAndInterests ||
+                              userProfile.hobbiesAndInterests.length === 0) && (
+                              <div className="col-span-4 p-3 text-center text-gray-400 text-xs">
+                                <p>No has seleccionado intereses todavía</p>
+                                <Button
+                                  variant="link"
+                                  className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs"
+                                  onClick={() => router.push('/profile/edit')}
+                                >
+                                  Agregar intereses
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex justify-end items-center mb-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => router.push('/profile/edit')}
+                            >
+                              <Edit2 size={12} className="mr-1" /> Editar
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-indigo-950/30 border border-indigo-500/30">
+                  <Card className="bg-indigo-950/30 border border-indigo-500/30 mb-4">
                     <CardHeader className="py-3 px-4">
                       <CardTitle className="text-lg flex items-center">
-                        <Target className="mr-2 h-5 w-5 text-purple-400" />
-                        Objetivos
+                        <User className="mr-2 h-5 w-5 text-purple-400" />
+                        Rasgos de personalidad
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="py-2 px-4">
-                      <div className="flex flex-wrap gap-2">
-                        {userProfile.goals?.map((goal, index) => (
-                          <Badge
-                            key={index}
-                            className="bg-purple-500/10 text-purple-200 hover:bg-purple-500/20 transition-colors"
-                          >
-                            {goal}
-                          </Badge>
-                        ))}
+                      <div className="space-y-4">
+                        <div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            {userProfile.personalityTraits?.map((trait) => (
+                              <div
+                                key={trait}
+                                className="flex items-center gap-1.5 p-1.5 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
+                              >
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900/60 flex items-center justify-center">
+                                  {getTraitIcon(trait)}
+                                </div>
+                                <span className="text-xs">{trait}</span>
+                              </div>
+                            ))}
+                            {(!userProfile.personalityTraits ||
+                              userProfile.personalityTraits.length === 0) && (
+                              <div className="col-span-4 p-3 text-center text-gray-400 text-xs">
+                                <p>No has seleccionado rasgos de personalidad todavía</p>
+                                <Button
+                                  variant="link"
+                                  className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs"
+                                  onClick={() => router.push('/profile/edit')}
+                                >
+                                  Agregar rasgos de personalidad
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex justify-end items-center mb-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => router.push('/profile/edit')}
+                            >
+                              <Edit2 size={12} className="mr-1" /> Editar
+                            </Button>
+                          </div>
+
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -498,81 +787,464 @@ export default function ProfilePage() {
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Experiencias preferidas</h3>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                          onClick={() => setIsEditingExperiences(true)}
+                        >
+                          <Edit2 size={12} className="mr-1" /> Editar
+                        </Button>
                       </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {eventPreferences?.preferredExperiences?.map((experience, index) => (
-                          <div
-                            key={index}
-                            className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20 text-center"
-                          >
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
-                              {getExperienceIcon(experience)}
-                            </div>
-                            <span className="text-xs">{experience}</span>
+
+                      {isEditingExperiences ? (
+                        <div className="space-y-3">
+                          <p className="text-xs text-gray-400 mb-1">Selecciona tus experiencias preferidas</p>
+                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                            {experiencePreferences.map((exp) => (
+                              <div
+                                key={exp.value}
+                                className={cn(
+                                  "flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center",
+                                  editedExperiences.includes(exp.value)
+                                    ? "border-indigo-500 bg-indigo-950/50 text-white"
+                                    : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30",
+                                )}
+                                onClick={() => toggleExperience(exp.value)}
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                  {exp.icon}
+                                </div>
+                                <span className="text-xs">{exp.label}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                          <div className="flex justify-end gap-2 mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => {
+                                setIsEditingExperiences(false)
+                                setEditedExperiences([...(eventPreferences?.preferredExperiences || [])])
+                              }}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveExperiences}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          {eventPreferences?.preferredExperiences?.length > 0 ? (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                              {eventPreferences.preferredExperiences.map((exp) => (
+                                <div
+                                  key={exp}
+                                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20 text-center"
+                                >
+                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                    {getExperienceIcon(exp)}
+                                  </div>
+                                  <span className="text-xs">{exp}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-gray-400 text-sm mb-2">No has seleccionado experiencias todavía</p>
+                              <Button
+                                variant="link"
+                                className="text-indigo-400 hover:text-indigo-300 text-xs"
+                                onClick={() => setIsEditingExperiences(true)}
+                              >
+                                Agregar experiencias
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Destinos preferidos */}
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Destinos preferidos</h3>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                          onClick={() => setIsEditingDestinations(true)}
+                        >
+                          <Edit2 size={12} className="mr-1" /> Editar
+                        </Button>
                       </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {eventPreferences?.preferredDestinations?.map((destination, index) => (
-                          <div
-                            key={index}
-                            className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20 text-center"
-                          >
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
-                              {getDestinationIcon(destination)}
-                            </div>
-                            <span className="text-xs">{destination}</span>
+
+                      {isEditingDestinations ? (
+                        <div className="space-y-3">
+                          <p className="text-xs text-gray-400 mb-1">Selecciona tus destinos preferidos</p>
+                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                            {destinationPreferences.map((dest) => (
+                              <div
+                                key={dest.value}
+                                className={cn(
+                                  "flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center",
+                                  editedDestinations.includes(dest.value)
+                                    ? "border-indigo-500 bg-indigo-950/50 text-white"
+                                    : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30",
+                                )}
+                                onClick={() => toggleDestination(dest.value)}
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                  {dest.icon}
+                                </div>
+                                <span className="text-xs">{dest.label}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                          <div className="flex justify-end gap-2 mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => {
+                                setIsEditingDestinations(false)
+                                setEditedDestinations([...(eventPreferences?.preferredDestinations || [])])
+                              }}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveDestinations}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          {eventPreferences?.preferredDestinations?.length > 0 ? (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                              {eventPreferences.preferredDestinations.map((dest) => (
+                                <div
+                                  key={dest}
+                                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20 text-center"
+                                >
+                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                    {getDestinationIcon(dest)}
+                                  </div>
+                                  <span className="text-xs">{dest}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-gray-400 text-sm mb-2">No has seleccionado destinos todavía</p>
+                              <Button
+                                variant="link"
+                                className="text-indigo-400 hover:text-indigo-300 text-xs"
+                                onClick={() => setIsEditingDestinations(true)}
+                              >
+                                Agregar destinos
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Temporadas preferidas */}
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Temporadas preferidas</h3>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                          onClick={() => setIsEditingSeasons(true)}
+                        >
+                          <Edit2 size={12} className="mr-1" /> Editar
+                        </Button>
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {eventPreferences?.seasonalPreferences?.map((season, index) => (
-                          <div
-                            key={index}
-                            className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20 text-center"
-                          >
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
-                              {getSeasonIcon(season)}
-                            </div>
-                            <span className="text-xs">{season}</span>
+
+                      {isEditingSeasons ? (
+                        <div className="space-y-3">
+                          <p className="text-xs text-gray-400 mb-1">Selecciona tus temporadas preferidas</p>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {travelSeasons.map((season) => (
+                              <div
+                                key={season.value}
+                                className={cn(
+                                  "flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center",
+                                  editedSeasons.includes(season.value)
+                                    ? "border-indigo-500 bg-indigo-950/50 text-white"
+                                    : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30",
+                                )}
+                                onClick={() => toggleSeason(season.value)}
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                  {season.icon}
+                                </div>
+                                <span className="text-xs">{season.label}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                          <div className="flex justify-end gap-2 mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => {
+                                setIsEditingSeasons(false)
+                                setEditedSeasons([...(eventPreferences?.seasonalPreferences || [])])
+                              }}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveSeasons}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          {eventPreferences?.seasonalPreferences?.length > 0 ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                              {eventPreferences.seasonalPreferences.map((season) => (
+                                <div
+                                  key={season}
+                                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20 text-center"
+                                >
+                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                    {getSeasonIcon(season)}
+                                  </div>
+                                  <span className="text-xs">{season}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-gray-400 text-sm mb-2">No has seleccionado temporadas todavía</p>
+                              <Button
+                                variant="link"
+                                className="text-indigo-400 hover:text-indigo-300 text-xs"
+                                onClick={() => setIsEditingSeasons(true)}
+                              >
+                                Agregar temporadas
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Fechas bloqueadas */}
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Fechas bloqueadas</h3>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                          onClick={() => setShowDatePicker(true)}
+                        >
+                          <Calendar size={12} className="mr-1" /> Seleccionar fechas
+                        </Button>
                       </div>
-                      <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-lg p-4">
-                        <p className="text-xs text-gray-400 mb-2">
-                          Fechas en las que no estarás disponible para viajar:
-                        </p>
-                        {eventPreferences && eventPreferences.blockedDates && eventPreferences.blockedDates.length > 0 && (
-                          <div className="space-y-2">
-                            {eventPreferences.blockedDates.map((date, index) => (
-                              <Badge key={index} variant="secondary" className="mr-2">
-                                {new Date(date).toLocaleDateString()}
+
+                      {showDatePicker ? (
+                        <div className="space-y-3">
+                          <DatePicker
+                            selected={null}
+                            onChange={(date) => {
+                              if (date && !blockedDates.some(d => d.toDateString() === date.toDateString())) {
+                                setBlockedDates([...blockedDates, date])
+                              }
+                            }}
+                            inline
+                            highlightDates={blockedDates}
+                            className="bg-indigo-950 border-indigo-500/30"
+                          />
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {blockedDates.map((date, index) => (
+                              <Badge
+                                key={index}
+                                variant="outline"
+                                className="flex items-center gap-1 border-indigo-500/30 bg-indigo-950/50"
+                              >
+                                {formatDate(date)}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-4 w-4 p-0 text-gray-400 hover:text-white hover:bg-transparent"
+                                  onClick={() => setBlockedDates(blockedDates.filter((_, i) => i !== index))}
+                                >
+                                  <X size={12} />
+                                </Button>
                               </Badge>
                             ))}
                           </div>
-                        )}
+                          <div className="flex justify-end gap-2 mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => setShowDatePicker(false)}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveBlockedDates}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar fechas
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-lg p-4">
+                          <p className="text-xs text-gray-400 mb-2">
+                            Fechas en las que no estarás disponible para viajar:
+                          </p>
+                          {blockedDates.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {blockedDates.map((date, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="outline"
+                                  className="border-indigo-500/30 bg-indigo-950/50"
+                                >
+                                  {formatDate(date)}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-center text-gray-500 text-sm py-2">
+                              No has seleccionado fechas bloqueadas
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Disponibilidad general */}
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-sm font-medium">Disponibilidad general</h3>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                          onClick={() => setIsEditingAvailability(true)}
+                        >
+                          <Edit2 size={12} className="mr-1" /> Editar
+                        </Button>
                       </div>
+
+                      {isEditingAvailability ? (
+                        <div className="space-y-3">
+                          <p className="text-xs text-gray-400 mb-3">Indica tu disponibilidad general para viajar:</p>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="currentYear" className="text-sm">
+                                {new Date().getFullYear()} (Año actual)
+                              </Label>
+                              <Switch
+                                id="currentYear"
+                                checked={travelAvailability.currentYear}
+                                onCheckedChange={(checked) =>
+                                  setTravelAvailability({ ...travelAvailability, currentYear: checked })
+                                }
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="nextYear" className="text-sm">
+                                {new Date().getFullYear() + 1} (Próximo año)
+                              </Label>
+                              <Switch
+                                id="nextYear"
+                                checked={travelAvailability.nextYear}
+                                onCheckedChange={(checked) =>
+                                  setTravelAvailability({ ...travelAvailability, nextYear: checked })
+                                }
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="followingYear" className="text-sm">
+                                {new Date().getFullYear() + 2}
+                              </Label>
+                              <Switch
+                                id="followingYear"
+                                checked={travelAvailability.followingYear}
+                                onCheckedChange={(checked) =>
+                                  setTravelAvailability({ ...travelAvailability, followingYear: checked })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-2 mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => {
+                                setIsEditingAvailability(false)
+                                setTravelAvailability({
+                                  currentYear: true,
+                                  nextYear: true,
+                                  followingYear: true,
+                                })
+                              }}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveAvailability}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-xs text-gray-400 mb-3">Indica tu disponibilidad general para viajar:</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-lg p-3 text-center">
+                              <p className="text-sm font-medium">{new Date().getFullYear()}</p>
+                              <p className="text-xs mt-1 text-indigo-300">
+                                {travelAvailability.currentYear ? "Disponible" : "No disponible"}
+                              </p>
+                            </div>
+                            <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-lg p-3 text-center">
+                              <p className="text-sm font-medium">{new Date().getFullYear() + 1}</p>
+                              <p className="text-xs mt-1 text-indigo-300">
+                                {travelAvailability.nextYear ? "Disponible" : "No disponible"}
+                              </p>
+                            </div>
+                            <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-lg p-3 text-center">
+                              <p className="text-sm font-medium">{new Date().getFullYear() + 2}</p>
+                              <p className="text-xs mt-1 text-indigo-300">
+                                {travelAvailability.followingYear ? "Disponible" : "No disponible"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </TabsContent>
