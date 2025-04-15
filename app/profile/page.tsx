@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit, User, MapPin, Globe, Languages, Heart, Target, Calendar, Star, Info, Tag, Hash, DollarSign, Compass, Users, CalendarX, Users2, Plane, Map, Clock, Trophy, Edit2, Camera, LogOut, Award, Building, Sun, Snowflake, Flower, Leaf, Plus, X, Save, Tv, Music, Palette, Laptop, BookOpen, Utensils, Flame, Flower2, Scissors, Gamepad2, Music2, Moon, Network, Rocket, Car, Trees, Flag, Paintbrush, Music4, Mountain, Film, LayoutGrid, Search, BarChart, Zap, Activity } from "lucide-react"
+import { Edit, User, MapPin, Globe, Languages, Heart, Target, Calendar, Star, Info, Tag, Hash, DollarSign, Compass, Users, CalendarX, Users2, Plane, Map, Clock, Trophy, Edit2, Camera, LogOut, Award, Building, Sun, Snowflake, Flower, Leaf, Plus, X, Save, Tv, Music, Palette, Laptop, BookOpen, Utensils, Flame, Flower2, Scissors, Gamepad2, Music2, Moon, Network, Rocket, Car, Trees, Flag, Paintbrush, Music4, Mountain, Film, LayoutGrid, Search, BarChart, Zap, Activity, Mail, Phone } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
@@ -851,7 +851,44 @@ export default function ProfilePage() {
                             <Edit2 size={14} className="mr-2" /> Editar
                           </Button>
                         </CardHeader>
+
                         <CardContent className="py-2 px-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center">
+                            <Mail className="h-4 w-4 text-indigo-400 mr-3" />
+                            <div>
+                              <p className="text-xs text-gray-400">Correo electrónico</p>
+                              <p className="text-sm">{userProfile?.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center">
+                            <Phone className="h-4 w-4 text-purple-400 mr-3" />
+                            <div>
+                              <p className="text-xs text-gray-400">Teléfono</p>
+                              <p className="text-sm">{userProfile?.phone}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 text-indigo-400 mr-3" />
+                            <div>
+                              <p className="text-xs text-gray-400">Ciudad de ubicación</p>
+                              <p className="text-sm">{userProfile?.location}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center">
+                            <Plane className="h-4 w-4 text-purple-400 mr-3" />
+                            <div>
+                              <p className="text-xs text-gray-400">Aeropuerto más cercano</p>
+                              <p className="text-sm">{userProfile?.nearestAirport || "No especificado"}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+
+                        {/* <CardContent className="py-2 px-4">
                           <div className="space-y-3">
                             <div className="flex items-center">
                               <User className="h-4 w-4 text-indigo-400 mr-3" />
@@ -894,7 +931,7 @@ export default function ProfilePage() {
                               </div>
                             </div>
                           </div>
-                        </CardContent>
+                        </CardContent> */}
                       </Card>
 
                       <Card className="bg-indigo-950/30 border border-indigo-500/30">
