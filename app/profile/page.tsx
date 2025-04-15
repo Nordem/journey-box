@@ -776,7 +776,7 @@ export default function ProfilePage() {
                 </TabsContent>
 
                 {/* Pestaña Preferencias */}
-                <TabsContent value="preferences" className="mt-0">
+                <TabsContent value="preferences" className="mt-5">
                   <div className="bg-indigo-950/30 border border-indigo-500/30 rounded-lg p-6">
                     <div className="flex items-center gap-2 mb-6">
                       <Plane className="h-5 w-5 text-indigo-400" />
