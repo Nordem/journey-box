@@ -334,6 +334,7 @@ export default function ProfilePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          name: editedData.name,
           phone: editedData.phone,
           location: editedData.location,
           nearestAirport: editedData.airport

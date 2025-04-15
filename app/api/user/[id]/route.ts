@@ -46,13 +46,14 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const { phone, location, nearestAirport } = body
+    const { name, phone, location, nearestAirport } = body
 
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {
         userProfile: {
           update: {
+            name,
             phone,
             location,
             nearestAirport

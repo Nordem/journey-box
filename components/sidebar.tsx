@@ -90,12 +90,6 @@ export default function Sidebar({
       icon: Compass,
       showBadge: false
     },
-    {
-      title: "Perfil",
-      href: "/profile",
-      icon: User,
-      showBadge: false
-    }
   ]
 
   const adminNavItems: NavItem[] = [
