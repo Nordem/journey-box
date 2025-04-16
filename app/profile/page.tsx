@@ -857,7 +857,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-gradient-to-r from-indigo-950/70 to-purple-950/70 border border-indigo-500/30 mt-2">
+                  {/* <div className="p-2 rounded-lg bg-gradient-to-r from-indigo-950/70 to-purple-950/70 border border-indigo-500/30 mt-2">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-xs text-gray-400">Próximo viaje</div>
@@ -867,7 +867,7 @@ export default function ProfilePage() {
                         <Plane className="h-4 w-4 text-indigo-300" />
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
 
@@ -1008,7 +1008,7 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <>
-                      <Card className="bg-indigo-950/30 border border-indigo-500/30 mb-4">
+                      <Card className="bg-indigo-950/30 border border-indigo-500/30 mb-4 pb-2">
                         <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
                           <CardTitle className="text-lg flex items-center">
                             <User className="mr-2 h-5 w-5 text-indigo-400" />
@@ -1123,10 +1123,9 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent className="py-2 px-4">
                           <div className="space-y-3">
-                            <div className="relative h-[150px] w-full rounded-lg overflow-hidden">
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                              <div className="absolute bottom-2 left-2">
-                                <div className="flex gap-2">
+                            <div className="relative h-[50px] w-full rounded-lg overflow-hidden">
+                              <div className="absolute">
+                                <div className="flex">
                                   <Badge className="bg-indigo-600 mb-1 text-xs">
                                     {destinations.length} {destinations.length <= 1 ? 'destino' : 'destinos'} total
                                   </Badge>
@@ -1134,7 +1133,7 @@ export default function ProfilePage() {
                                     {destinations.filter(dest => dest.isArkusTrip).length} {destinations.filter(dest => dest.isArkusTrip).length <= 1 ? 'destino' : 'destinos'} Arkus
                                   </Badge>
                                 </div>
-                                <div className="flex flex-wrap gap-1 max-w-[250px]">
+                                <div className="flex flex-wrap">
                                   <Badge
                                     variant="outline"
                                     className="border-indigo-500/30 text-indigo-300 text-[10px]"
@@ -1415,7 +1414,7 @@ export default function ProfilePage() {
                                   placeholder="Agregar interés personalizado..."
                                   value={newInterestInput}
                                   onChange={(e) => setNewInterestInput(e.target.value)}
-                                  className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs"
+                                  className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                                 />
                                 <Button
                                   onClick={handleAddCustomInterest}
@@ -1539,7 +1538,7 @@ export default function ProfilePage() {
                                   placeholder="Agregar rasgo personalizado..."
                                   value={newTraitInput}
                                   onChange={(e) => setNewTraitInput(e.target.value)}
-                                  className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs"
+                                  className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                                 />
                                 <Button
                                   onClick={handleAddCustomTrait}
@@ -1569,14 +1568,37 @@ export default function ProfilePage() {
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Experiencias preferidas</h3>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                          onClick={() => setIsEditingExperiences(true)}
-                        >
-                          <Edit2 size={12} className="mr-1" /> Editar
-                        </Button>
+                        {!isEditingExperiences ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                            onClick={() => setIsEditingExperiences(true)}
+                          >
+                            <Edit2 size={12} className="mr-1" /> Editar
+                          </Button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => {
+                                setIsEditingExperiences(false)
+                                setEditedExperiences([...(eventPreferences?.preferredExperiences || [])])
+                              }}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveExperiences}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {isEditingExperiences ? (
@@ -1606,7 +1628,7 @@ export default function ProfilePage() {
                               placeholder="Agregar experiencia personalizada..."
                               value={newExperienceInput}
                               onChange={(e) => setNewExperienceInput(e.target.value)}
-                              className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs"
+                              className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                             />
                             <Button
                               onClick={handleAddCustomExperience}
@@ -1614,26 +1636,6 @@ export default function ProfilePage() {
                               className="bg-indigo-600 hover:bg-indigo-700 rounded-l-none h-7 text-xs"
                             >
                               Agregar
-                            </Button>
-                          </div>
-                          <div className="flex justify-end gap-2 mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                              onClick={() => {
-                                setIsEditingExperiences(false)
-                                setEditedExperiences([...(eventPreferences?.preferredExperiences || [])])
-                              }}
-                            >
-                              <X size={12} className="mr-1" /> Cancelar
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                              onClick={handleSaveExperiences}
-                            >
-                              <Save size={12} className="mr-1" /> Guardar
                             </Button>
                           </div>
                         </div>
@@ -1673,14 +1675,37 @@ export default function ProfilePage() {
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Destinos preferidos</h3>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                          onClick={() => setIsEditingDestinations(true)}
-                        >
-                          <Edit2 size={12} className="mr-1" /> Editar
-                        </Button>
+                        {!isEditingDestinations ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                            onClick={() => setIsEditingDestinations(true)}
+                          >
+                            <Edit2 size={12} className="mr-1" /> Editar
+                          </Button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => {
+                                setIsEditingDestinations(false)
+                                setEditedDestinations([...(eventPreferences?.preferredDestinations || [])])
+                              }}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveDestinations}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {isEditingDestinations ? (
@@ -1710,7 +1735,7 @@ export default function ProfilePage() {
                               placeholder="Agregar destino personalizado..."
                               value={newDestinationInput}
                               onChange={(e) => setNewDestinationInput(e.target.value)}
-                              className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs"
+                              className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                             />
                             <Button
                               onClick={handleAddCustomDestination}
@@ -1718,26 +1743,6 @@ export default function ProfilePage() {
                               className="bg-indigo-600 hover:bg-indigo-700 rounded-l-none h-7 text-xs"
                             >
                               Agregar
-                            </Button>
-                          </div>
-                          <div className="flex justify-end gap-2 mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                              onClick={() => {
-                                setIsEditingDestinations(false)
-                                setEditedDestinations([...(eventPreferences?.preferredDestinations || [])])
-                              }}
-                            >
-                              <X size={12} className="mr-1" /> Cancelar
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                              onClick={handleSaveDestinations}
-                            >
-                              <Save size={12} className="mr-1" /> Guardar
                             </Button>
                           </div>
                         </div>
@@ -1777,14 +1782,37 @@ export default function ProfilePage() {
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Temporadas preferidas</h3>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                          onClick={() => setIsEditingSeasons(true)}
-                        >
-                          <Edit2 size={12} className="mr-1" /> Editar
-                        </Button>
+                        {!isEditingSeasons ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                            onClick={() => setIsEditingSeasons(true)}
+                          >
+                            <Edit2 size={12} className="mr-1" /> Editar
+                          </Button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => {
+                                setIsEditingSeasons(false)
+                                setEditedSeasons([...(eventPreferences?.seasonalPreferences || [])])
+                              }}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveSeasons}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {isEditingSeasons ? (
@@ -1808,26 +1836,6 @@ export default function ProfilePage() {
                                 <span className="text-xs">{season.label}</span>
                               </div>
                             ))}
-                          </div>
-                          <div className="flex justify-end gap-2 mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                              onClick={() => {
-                                setIsEditingSeasons(false)
-                                setEditedSeasons([...(eventPreferences?.seasonalPreferences || [])])
-                              }}
-                            >
-                              <X size={12} className="mr-1" /> Cancelar
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                              onClick={handleSaveSeasons}
-                            >
-                              <Save size={12} className="mr-1" /> Guardar
-                            </Button>
                           </div>
                         </div>
                       ) : (
@@ -1866,14 +1874,34 @@ export default function ProfilePage() {
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Fechas bloqueadas</h3>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                          onClick={() => setShowDatePicker(true)}
-                        >
-                          <Calendar size={12} className="mr-1" /> Seleccionar fechas
-                        </Button>
+                        {!showDatePicker ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                            onClick={() => setShowDatePicker(true)}
+                          >
+                            <Calendar size={12} className="mr-1" /> Seleccionar fechas
+                          </Button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => setShowDatePicker(false)}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveBlockedDates}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar fechas
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {showDatePicker ? (
@@ -1908,23 +1936,6 @@ export default function ProfilePage() {
                               </Badge>
                             ))}
                           </div>
-                          <div className="flex justify-end gap-2 mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                              onClick={() => setShowDatePicker(false)}
-                            >
-                              <X size={12} className="mr-1" /> Cancelar
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                              onClick={handleSaveBlockedDates}
-                            >
-                              <Save size={12} className="mr-1" /> Guardar fechas
-                            </Button>
-                          </div>
                         </div>
                       ) : (
                         <div className="bg-indigo-950/50 border border-indigo-500/20 rounded-lg p-4">
@@ -1956,14 +1967,41 @@ export default function ProfilePage() {
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-sm font-medium">Disponibilidad general</h3>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                          onClick={() => setIsEditingAvailability(true)}
-                        >
-                          <Edit2 size={12} className="mr-1" /> Editar
-                        </Button>
+                        {!isEditingAvailability ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                            onClick={() => setIsEditingAvailability(true)}
+                          >
+                            <Edit2 size={12} className="mr-1" /> Editar
+                          </Button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                              onClick={() => {
+                                setIsEditingAvailability(false)
+                                setTravelAvailability({
+                                  currentYear: true,
+                                  nextYear: true,
+                                  followingYear: true,
+                                })
+                              }}
+                            >
+                              <X size={12} className="mr-1" /> Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                              onClick={handleSaveAvailability}
+                            >
+                              <Save size={12} className="mr-1" /> Guardar
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {isEditingAvailability ? (
@@ -2006,30 +2044,6 @@ export default function ProfilePage() {
                                 }
                               />
                             </div>
-                          </div>
-                          <div className="flex justify-end gap-2 mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                              onClick={() => {
-                                setIsEditingAvailability(false)
-                                setTravelAvailability({
-                                  currentYear: true,
-                                  nextYear: true,
-                                  followingYear: true,
-                                })
-                              }}
-                            >
-                              <X size={12} className="mr-1" /> Cancelar
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                              onClick={handleSaveAvailability}
-                            >
-                              <Save size={12} className="mr-1" /> Guardar
-                            </Button>
                           </div>
                         </div>
                       ) : (
