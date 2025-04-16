@@ -194,6 +194,7 @@ export default function ProfilePage() {
   const [newTraitInput, setNewTraitInput] = useState("")
   const [newExperienceInput, setNewExperienceInput] = useState("")
   const [newDestinationInput, setNewDestinationInput] = useState("")
+  const [customExperiences, setCustomExperiences] = useState<string[]>([]);
 
   // Add these constants for the preferences options
   const experiencePreferences = [
@@ -563,8 +564,13 @@ export default function ProfilePage() {
 
   const handleAddCustomExperience = () => {
     if (newExperienceInput.trim()) {
-      setEditedExperiences(prev => [...prev, newExperienceInput.trim()])
-      setNewExperienceInput("")
+      const newExperience = newExperienceInput.trim();
+      // Add to editedExperiences if not already present
+      if (!editedExperiences.includes(newExperience)) {
+        setEditedExperiences(prev => [...prev, newExperience]);
+        setCustomExperiences(prev => [...prev, newExperience]);
+      }
+      setNewExperienceInput("");
     }
   }
 
@@ -1701,12 +1707,35 @@ export default function ProfilePage() {
                                 <span className="text-xs">{exp.label}</span>
                               </div>
                             ))}
+                            {/* Display custom experiences */}
+                            {customExperiences.map(customExp => (
+                              <div
+                                key={customExp}
+                                className={cn(
+                                  "flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center",
+                                  editedExperiences.includes(customExp)
+                                    ? "border-indigo-500 bg-indigo-950/50 text-white"
+                                    : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30",
+                                )}
+                                onClick={() => toggleExperience(customExp)}
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                  ⭐
+                                </div>
+                                <span className="text-xs">{customExp}</span>
+                              </div>
+                            ))}
                           </div>
                           <div className="flex mt-3">
                             <Input
                               placeholder="Agregar experiencia personalizada..."
                               value={newExperienceInput}
                               onChange={(e) => setNewExperienceInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newExperienceInput.trim()) {
+                                  handleAddCustomExperience();
+                                }
+                              }}
                               className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                             />
                             <Button
