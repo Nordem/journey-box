@@ -780,13 +780,13 @@ export default function ProfilePage() {
                   {/* Estadísticas de viaje */}
                   <div className="grid grid-cols-2 gap-3 mt-2">
                     <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
-                      <div className="text-xs text-gray-400">Viajes Totales</div>
-                      <div className="text-lg font-bold">{destinations.length}</div>
+                      <div className="text-xs text-gray-400">Viajes Arkus</div>
+                      <div className="text-lg font-bold">{destinations.filter(dest => dest.isArkusTrip).length}</div>
                     </div>
 
                     <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
-                      <div className="text-xs text-gray-400">Días de viaje</div>
-                      <div className="text-lg font-bold">45</div>
+                      <div className="text-xs text-gray-400">Viajes Totales</div>
+                      <div className="text-lg font-bold">{destinations.length}</div>
                     </div>
 
                     <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
