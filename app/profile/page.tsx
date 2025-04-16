@@ -176,6 +176,7 @@ export default function ProfilePage() {
     airport: ""
   })
   const [isAddingDestination, setIsAddingDestination] = useState(false)
+  const [editingDestinationId, setEditingDestinationId] = useState<string | null>(null)
   const [newDestination, setNewDestination] = useState<{
     country: string;
     destination: string;
@@ -385,8 +386,13 @@ export default function ProfilePage() {
         return
       }
 
-      const response = await fetch(`/api/user/${session.user.id}/recent-destinations`, {
-        method: 'POST',
+      const method = editingDestinationId ? 'PUT' : 'POST'
+      const url = editingDestinationId 
+        ? `/api/user/${session.user.id}/recent-destinations/${editingDestinationId}`
+        : `/api/user/${session.user.id}/recent-destinations`
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -398,7 +404,7 @@ export default function ProfilePage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to add destination')
+        throw new Error(`Failed to ${editingDestinationId ? 'update' : 'add'} destination`)
       }
 
       const savedDestination = await response.json()
@@ -407,23 +413,22 @@ export default function ProfilePage() {
       const destinationsResponse = await fetch(`/api/user/${session.user.id}/recent-destinations`)
       if (destinationsResponse.ok) {
         const destinations = await destinationsResponse.json()
-        // Update your state with the new destinations
-        // You'll need to add a state for destinations
         setDestinations(destinations)
       }
 
       setIsAddingDestination(false)
+      setEditingDestinationId(null)
       setNewDestination({ country: "", destination: "", isArkusTrip: false })
       
       toast({
         title: "Éxito",
-        description: "El destino ha sido agregado correctamente",
+        description: `El destino ha sido ${editingDestinationId ? 'actualizado' : 'agregado'} correctamente`,
       })
     } catch (error) {
-      console.error('Error adding destination:', error)
+      console.error('Error handling destination:', error)
       toast({
         title: "Error",
-        description: "No se pudo agregar el destino. Por favor, intenta nuevamente.",
+        description: `No se pudo ${editingDestinationId ? 'actualizar' : 'agregar'} el destino. Por favor, intenta nuevamente.`,
         variant: "destructive",
       })
     }
@@ -541,6 +546,17 @@ export default function ProfilePage() {
         variant: "destructive",
       })
     }
+  }
+
+  // Add this function with the other handlers
+  const handleEditDestination = (destination: any) => {
+    setNewDestination({
+      country: destination.country,
+      destination: destination.destination,
+      isArkusTrip: destination.isArkusTrip
+    })
+    setEditingDestinationId(destination.id)
+    setIsAddingDestination(true)
   }
 
   useEffect(() => {
@@ -791,7 +807,7 @@ export default function ProfilePage() {
 
                     <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
                       <div className="text-xs text-gray-400">Países visitados</div>
-                      <div className="text-lg font-bold">{new Set(destinations.map(dest => dest.country)).size}</div>
+                      <div className="text-lg font-bold">{new Set(destinations.map(dest => dest.country.toLowerCase())).size}</div>
                     </div>
                   </div>
 
@@ -1117,14 +1133,24 @@ export default function ProfilePage() {
                                               </Badge>
                                             )}
                                           </div>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 w-8 p-0 hover:bg-red-950/30"
-                                            onClick={() => handleDeleteDestination(dest.id)}
-                                          >
-                                            <X size={14} className="text-red-400" />
-                                          </Button>
+                                          <div className="flex gap-1">
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-8 w-8 p-0 hover:bg-indigo-950/30"
+                                              onClick={() => handleEditDestination(dest)}
+                                            >
+                                              <Edit2 size={14} className="text-indigo-400" />
+                                            </Button>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-8 w-8 p-0 hover:bg-red-950/30"
+                                              onClick={() => handleDeleteDestination(dest.id)}
+                                            >
+                                              <X size={14} className="text-red-400" />
+                                            </Button>
+                                          </div>
                                         </div>
                                       ))}
                                     </div>
