@@ -195,6 +195,7 @@ export default function ProfilePage() {
   const [newExperienceInput, setNewExperienceInput] = useState("")
   const [newDestinationInput, setNewDestinationInput] = useState("")
   const [customExperiences, setCustomExperiences] = useState<string[]>([]);
+  const [customDestinations, setCustomDestinations] = useState<string[]>([]);
 
   // Add these constants for the preferences options
   const experiencePreferences = [
@@ -576,8 +577,13 @@ export default function ProfilePage() {
 
   const handleAddCustomDestination = () => {
     if (newDestinationInput.trim()) {
-      setEditedDestinations(prev => [...prev, newDestinationInput.trim()])
-      setNewDestinationInput("")
+      const newDestination = newDestinationInput.trim();
+      // Add to editedDestinations if not already present
+      if (!editedDestinations.includes(newDestination)) {
+        setEditedDestinations(prev => [...prev, newDestination]);
+        setCustomDestinations(prev => [...prev, newDestination]);
+      }
+      setNewDestinationInput("");
     }
   }
 
@@ -1837,12 +1843,35 @@ export default function ProfilePage() {
                                 <span className="text-xs">{dest.label}</span>
                               </div>
                             ))}
+                            {/* Display custom destinations */}
+                            {customDestinations.map(customDest => (
+                              <div
+                                key={customDest}
+                                className={cn(
+                                  "flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center",
+                                  editedDestinations.includes(customDest)
+                                    ? "border-indigo-500 bg-indigo-950/50 text-white"
+                                    : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30",
+                                )}
+                                onClick={() => toggleDestination(customDest)}
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                  ⭐
+                                </div>
+                                <span className="text-xs">{customDest}</span>
+                              </div>
+                            ))}
                           </div>
                           <div className="flex mt-3">
                             <Input
                               placeholder="Agregar destino personalizado..."
                               value={newDestinationInput}
                               onChange={(e) => setNewDestinationInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newDestinationInput.trim()) {
+                                  handleAddCustomDestination();
+                                }
+                              }}
                               className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                             />
                             <Button
