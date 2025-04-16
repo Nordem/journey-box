@@ -780,13 +780,8 @@ export default function ProfilePage() {
                   {/* Estadísticas de viaje */}
                   <div className="grid grid-cols-2 gap-3 mt-2">
                     <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
-                      <div className="text-xs text-gray-400">Viajes Arkus</div>
-                      <div className="text-lg font-bold">3</div>
-                    </div>
-
-                    <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
                       <div className="text-xs text-gray-400">Viajes Totales</div>
-                      <div className="text-lg font-bold">12</div>
+                      <div className="text-lg font-bold">{destinations.length}</div>
                     </div>
 
                     <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
@@ -796,7 +791,7 @@ export default function ProfilePage() {
 
                     <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
                       <div className="text-xs text-gray-400">Países visitados</div>
-                      <div className="text-lg font-bold">3</div>
+                      <div className="text-lg font-bold">{new Set(destinations.map(dest => dest.country)).size}</div>
                     </div>
                   </div>
 
@@ -1069,9 +1064,14 @@ export default function ProfilePage() {
                             <div className="relative h-[150px] w-full rounded-lg overflow-hidden">
                               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                               <div className="absolute bottom-2 left-2">
-                                <Badge className="bg-indigo-600 mb-1 text-xs">
-                                  0 destinos
-                                </Badge>
+                                <div className="flex gap-2">
+                                  <Badge className="bg-indigo-600 mb-1 text-xs">
+                                    {destinations.length} {destinations.length <= 1 ? 'destino' : 'destinos'} total
+                                  </Badge>
+                                  <Badge className="bg-indigo-600 mb-1 text-xs">
+                                    {destinations.filter(dest => dest.isArkusTrip).length} {destinations.filter(dest => dest.isArkusTrip).length <= 1 ? 'destino' : 'destinos'} Arkus
+                                  </Badge>
+                                </div>
                                 <div className="flex flex-wrap gap-1 max-w-[250px]">
                                   <Badge
                                     variant="outline"
