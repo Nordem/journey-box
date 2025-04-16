@@ -444,8 +444,12 @@ export default function ProfilePage() {
 
   const handleAddCustomInterest = () => {
     if (newInterestInput.trim()) {
-      setEditedInterests(prev => [...prev, newInterestInput.trim()])
-      setNewInterestInput("")
+      const newInterest = newInterestInput.trim();
+      // Add to editedInterests if not already present
+      if (!editedInterests.includes(newInterest)) {
+        setEditedInterests(prev => [...prev, newInterest]);
+      }
+      setNewInterestInput("");
     }
   }
 
@@ -500,8 +504,12 @@ export default function ProfilePage() {
 
   const handleAddCustomTrait = () => {
     if (newTraitInput.trim()) {
-      setEditedTraits(prev => [...prev, newTraitInput.trim()])
-      setNewTraitInput("")
+      const newTrait = newTraitInput.trim();
+      // Add to editedTraits if not already present
+      if (!editedTraits.includes(newTrait)) {
+        setEditedTraits(prev => [...prev, newTrait]);
+      }
+      setNewTraitInput("");
     }
   }
 
@@ -1422,6 +1430,28 @@ export default function ProfilePage() {
                                     <span>{interest.name}</span>
                                   </button>
                                 ))}
+                                {/* Display custom interests */}
+                                {editedInterests
+                                  .filter(interest => ![
+                                    "Deportes por TV", "Actividades deportivas", "Música", "Arte", "Tecnología",
+                                    "Lectura", "Cocina", "Parrilladas al aire libre", "Convivencias", "Jardinería",
+                                    "Fotografía", "Manualidades", "Videojuegos", "Baile", "Yoga", "Meditación",
+                                    "Networking", "Startups", "Fórmula 1", "Naturaleza", "Ir al estadio",
+                                    "Talleres creativos", "Conciertos", "Actividades al aire libre", "Cine"
+                                  ].includes(interest))
+                                  .map((customInterest) => (
+                                    <button
+                                      key={customInterest}
+                                      onClick={() => toggleInterest(customInterest)}
+                                      className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedInterests.includes(customInterest)
+                                        ? "bg-indigo-600 text-white"
+                                        : "bg-indigo-950 border border-indigo-500/30 text-white"
+                                        }`}
+                                    >
+                                      <Heart className="h-3 w-3 text-indigo-400" />
+                                      <span>{customInterest}</span>
+                                    </button>
+                                  ))}
                               </div>
 
                               <div className="flex mt-5">
@@ -1546,9 +1576,28 @@ export default function ProfilePage() {
                                     <span>{trait.name}</span>
                                   </button>
                                 ))}
+                                {/* Display custom traits */}
+                                {editedTraits
+                                  .filter(trait => ![
+                                    "Sociable", "Introvertido", "Creativo", "Estructurado",
+                                    "Curioso", "Aventurero", "Analítico", "Energético"
+                                  ].includes(trait))
+                                  .map((customTrait) => (
+                                    <button
+                                      key={customTrait}
+                                      onClick={() => toggleTrait(customTrait)}
+                                      className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedTraits.includes(customTrait)
+                                        ? "bg-indigo-600 text-white"
+                                        : "bg-indigo-950 border border-indigo-500/30 text-white"
+                                        }`}
+                                    >
+                                      <Heart className="h-3 w-3 text-indigo-400" />
+                                      <span>{customTrait}</span>
+                                    </button>
+                                  ))}
                               </div>
 
-                              <div className="flex mt-3">
+                              <div className="flex mt-5">
                                 <Input
                                   placeholder="Agregar rasgo personalizado..."
                                   value={newTraitInput}
