@@ -448,6 +448,13 @@ export default function ProfilePage() {
       // Add to editedInterests if not already present
       if (!editedInterests.includes(newInterest)) {
         setEditedInterests(prev => [...prev, newInterest]);
+        // Update the user profile immediately to reflect the change
+        if (userProfile) {
+          setUserProfile({
+            ...userProfile,
+            hobbiesAndInterests: [...(userProfile.hobbiesAndInterests || []), newInterest]
+          });
+        }
       }
       setNewInterestInput("");
     }
@@ -1367,7 +1374,7 @@ export default function ProfilePage() {
                                     className="flex items-center gap-1.5 p-1.5 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
                                   >
                                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900/60 flex items-center justify-center">
-                                      {getInterestIcon(interest)}
+                                      {getInterestIcon(interest) || <Heart className="h-3 w-3 text-indigo-400" />}
                                     </div>
                                     <span className="text-xs">{interest}</span>
                                   </div>
@@ -1388,9 +1395,8 @@ export default function ProfilePage() {
                               </div>
                             </div>
                           ) : (
-                            <div className="space-y-3">
-                              <p className="text-xs text-gray-400 mb-1">Selecciona tus intereses principales</p>
-                              <div className="flex flex-wrap gap-1.5">
+                            <div>
+                              <div className="flex flex-wrap gap-2">
                                 {[
                                   { name: "Deportes por TV", icon: <Tv className="h-3 w-3 text-blue-400" /> },
                                   { name: "Actividades deportivas", icon: <Trophy className="h-3 w-3 text-yellow-400" /> },
@@ -1421,37 +1427,41 @@ export default function ProfilePage() {
                                   <button
                                     key={interest.name}
                                     onClick={() => toggleInterest(interest.name)}
-                                    className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedInterests.includes(interest.name)
-                                      ? "bg-indigo-600 text-white"
-                                      : "bg-indigo-950 border border-indigo-500/30 text-white"
-                                      }`}
+                                    className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${
+                                      editedInterests.includes(interest.name)
+                                        ? "bg-indigo-600 text-white"
+                                        : "bg-indigo-950 border border-indigo-500/30 text-white"
+                                    }`}
                                   >
                                     {interest.icon}
                                     <span>{interest.name}</span>
                                   </button>
                                 ))}
                                 {/* Display custom interests */}
-                                {editedInterests
-                                  .filter(interest => ![
+                                {editedInterests.map((interest) => {
+                                  // Check if this is a custom interest (not in the predefined list)
+                                  const isPredefined = [
                                     "Deportes por TV", "Actividades deportivas", "Música", "Arte", "Tecnología",
                                     "Lectura", "Cocina", "Parrilladas al aire libre", "Convivencias", "Jardinería",
                                     "Fotografía", "Manualidades", "Videojuegos", "Baile", "Yoga", "Meditación",
                                     "Networking", "Startups", "Fórmula 1", "Naturaleza", "Ir al estadio",
                                     "Talleres creativos", "Conciertos", "Actividades al aire libre", "Cine"
-                                  ].includes(interest))
-                                  .map((customInterest) => (
-                                    <button
-                                      key={customInterest}
-                                      onClick={() => toggleInterest(customInterest)}
-                                      className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedInterests.includes(customInterest)
-                                        ? "bg-indigo-600 text-white"
-                                        : "bg-indigo-950 border border-indigo-500/30 text-white"
-                                        }`}
-                                    >
-                                      <Heart className="h-3 w-3 text-indigo-400" />
-                                      <span>{customInterest}</span>
-                                    </button>
-                                  ))}
+                                  ].includes(interest);
+                                  
+                                  if (!isPredefined) {
+                                    return (
+                                      <button
+                                        key={interest}
+                                        onClick={() => toggleInterest(interest)}
+                                        className="flex items-center gap-1 py-1 px-2 rounded-full text-xs bg-indigo-600 text-white"
+                                      >
+                                        <Heart className="h-3 w-3 text-indigo-400" />
+                                        <span>{interest}</span>
+                                      </button>
+                                    );
+                                  }
+                                  return null;
+                                })}
                               </div>
 
                               <div className="flex mt-5">
@@ -1459,6 +1469,11 @@ export default function ProfilePage() {
                                   placeholder="Agregar interés personalizado..."
                                   value={newInterestInput}
                                   onChange={(e) => setNewInterestInput(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && newInterestInput.trim()) {
+                                      handleAddCustomInterest();
+                                    }
+                                  }}
                                   className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                                 />
                                 <Button
