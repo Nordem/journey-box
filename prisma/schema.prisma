@@ -21,6 +21,8 @@ model User {
   idealOutcomes    IdealOutcome[]
   calendarEvents   CalendarEvent[]
   deliverables     Deliverable[]
+  recentDestinations RecentDestination[]
+  userDestinations  UserDestinations[]
 }
 
 model UserProfile {
@@ -146,4 +148,26 @@ enum EventCategory {
   MOUNTAIN
   GASTRONOMY
   WELLNESS
+}
+
+model UserDestinations {
+  id          String   @id @default(uuid())
+  country     String
+  destination String
+  isArkusTrip Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RecentDestination {
+  id          String   @id @default(uuid())
+  country     String
+  destination String
+  isArkusTrip Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
