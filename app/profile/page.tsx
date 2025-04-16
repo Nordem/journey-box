@@ -146,6 +146,7 @@ export default function ProfilePage() {
   const [profileCompletion, setProfileCompletion] = useState(0)
   const router = useRouter()
   const { toast } = useToast()
+  const [destinations, setDestinations] = useState<any[]>([])
 
   // Add these state variables at the top of the ProfilePage component
   const [isEditingExperiences, setIsEditingExperiences] = useState(false)
@@ -377,9 +378,43 @@ export default function ProfilePage() {
 
   const handleAddDestination = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/recent-destinations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          country: newDestination.country,
+          destination: newDestination.destination,
+          isArkusTrip: newDestination.isArkusTrip
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to add destination')
+      }
+
+      const savedDestination = await response.json()
+      
+      // Refresh the destinations list
+      const destinationsResponse = await fetch(`/api/user/${session.user.id}/recent-destinations`)
+      if (destinationsResponse.ok) {
+        const destinations = await destinationsResponse.json()
+        // Update your state with the new destinations
+        // You'll need to add a state for destinations
+        setDestinations(destinations)
+      }
+
       setIsAddingDestination(false)
       setNewDestination({ country: "", destination: "", isArkusTrip: false })
+      
       toast({
         title: "Éxito",
         description: "El destino ha sido agregado correctamente",
@@ -474,6 +509,40 @@ export default function ProfilePage() {
     }
   }
 
+  const handleDeleteDestination = async (destinationId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/recent-destinations/${destinationId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete destination')
+      }
+
+      // Update the local state by removing the deleted destination
+      setDestinations(destinations.filter(dest => dest.id !== destinationId))
+      
+      toast({
+        title: "Éxito",
+        description: "El destino ha sido eliminado correctamente",
+      })
+    } catch (error) {
+      console.error('Error deleting destination:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el destino. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
+    }
+  }
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -486,6 +555,7 @@ export default function ProfilePage() {
 
         setSessionEmail(session.user.email || "")
 
+        // Fetch user profile
         const response = await fetch(`/api/user/${session.user.id}`)
         if (!response.ok) {
           throw new Error('Failed to fetch user data')
@@ -495,6 +565,13 @@ export default function ProfilePage() {
         setUserProfile(userData.userProfile)
         setEventPreferences(userData.eventPreferences)
         calculateProfileCompletion(userData.userProfile, userData.eventPreferences)
+
+        // Fetch destinations
+        const destinationsResponse = await fetch(`/api/user/${session.user.id}/recent-destinations`)
+        if (destinationsResponse.ok) {
+          const destinationsData = await destinationsResponse.json()
+          setDestinations(destinationsData)
+        }
       } catch (error) {
         console.error('Error fetching user data:', error)
         toast({
@@ -1019,7 +1096,45 @@ export default function ProfilePage() {
                                 </Button>
                               </div>
 
-                              {isAddingDestination ? (
+                              {!isAddingDestination ? (
+                                <div className="space-y-2">
+                                  {destinations.length > 0 ? (
+                                    <div className="grid grid-cols-1 gap-2">
+                                      {destinations.map((dest) => (
+                                        <div
+                                          key={dest.id}
+                                          className="flex items-center justify-between p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <MapPin className="h-4 w-4 text-indigo-400" />
+                                            <div>
+                                              <p className="text-sm">{dest.destination}</p>
+                                              <p className="text-xs text-gray-400">{dest.country}</p>
+                                            </div>
+                                            {dest.isArkusTrip && (
+                                              <Badge className="bg-indigo-500/20 text-indigo-300 text-[10px]">
+                                                Arkus
+                                              </Badge>
+                                            )}
+                                          </div>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 hover:bg-red-950/30"
+                                            onClick={() => handleDeleteDestination(dest.id)}
+                                          >
+                                            <X size={14} className="text-red-400" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="p-2 text-center text-gray-400 text-xs">
+                                      No has registrado destinos visitados
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
                                 <div className="p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20">
                                   <div className="grid grid-cols-2 gap-2 mb-2">
                                     <div>
@@ -1087,10 +1202,6 @@ export default function ProfilePage() {
                                       Guardar
                                     </Button>
                                   </div>
-                                </div>
-                              ) : (
-                                <div className="p-2 text-center text-gray-400 text-xs">
-                                  No has registrado destinos visitados
                                 </div>
                               )}
                             </div>
