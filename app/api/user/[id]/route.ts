@@ -46,7 +46,7 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const { name, phone, location, nearestAirport } = body
+    const { name, phone, location, nearestAirport, hobbiesAndInterests, personalityTraits } = body
 
     const updatedUser = await prisma.user.update({
       where: { id },
@@ -56,7 +56,9 @@ export async function PUT(
             name,
             phone,
             location,
-            nearestAirport
+            nearestAirport,
+            hobbiesAndInterests,
+            personalityTraits
           }
         }
       },
