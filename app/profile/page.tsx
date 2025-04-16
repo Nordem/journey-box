@@ -135,12 +135,26 @@ export default function ProfilePage() {
     seasonalPreferences: string[];
     blockedDates: string[];
     generalAvailability: boolean;
+    groupSizePreference: string[];
+    teamBuildingPrefs?: {
+      preferredActivities: string[];
+      location: "remote" | "in_person" | "both";
+      duration: "half_day" | "full_day" | "multi_day";
+      suggestions: string;
+    };
   }>({
     preferredExperiences: [],
     preferredDestinations: [],
     seasonalPreferences: [],
     blockedDates: [],
-    generalAvailability: true
+    generalAvailability: true,
+    groupSizePreference: [],
+    teamBuildingPrefs: {
+      preferredActivities: [],
+      location: "both",
+      duration: "half_day",
+      suggestions: ""
+    }
   })
   const [loading, setLoading] = useState(true)
   const [profileCompletion, setProfileCompletion] = useState(0)
@@ -194,6 +208,8 @@ export default function ProfilePage() {
   const [newTraitInput, setNewTraitInput] = useState("")
   const [newExperienceInput, setNewExperienceInput] = useState("")
   const [newDestinationInput, setNewDestinationInput] = useState("")
+  const [customExperiences, setCustomExperiences] = useState<string[]>([]);
+  const [customDestinations, setCustomDestinations] = useState<string[]>([]);
 
   // Add these constants for the preferences options
   const experiencePreferences = [
@@ -260,28 +276,148 @@ export default function ProfilePage() {
 
   const handleSaveExperiences = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/event-preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferredExperiences: editedExperiences,
+          preferredDestinations: eventPreferences?.preferredDestinations || [],
+          seasonalPreferences: eventPreferences?.seasonalPreferences || [],
+          groupSizePreference: eventPreferences?.groupSizePreference || [],
+          blockedDates: eventPreferences?.blockedDates || [],
+          teamBuildingPrefs: eventPreferences?.teamBuildingPrefs
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save experiences')
+      }
+
+      const updatedPreferences = await response.json()
+      setEventPreferences(prev => ({
+        ...prev,
+        preferredExperiences: updatedPreferences.preferredExperiences
+      }))
       setIsEditingExperiences(false)
+      
+      toast({
+        title: "Éxito",
+        description: "Tus experiencias preferidas han sido guardadas",
+      })
     } catch (error) {
       console.error('Error saving experiences:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar tus experiencias preferidas. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
   const handleSaveDestinations = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/event-preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferredExperiences: eventPreferences?.preferredExperiences || [],
+          preferredDestinations: editedDestinations,
+          seasonalPreferences: eventPreferences?.seasonalPreferences || [],
+          groupSizePreference: eventPreferences?.groupSizePreference || [],
+          blockedDates: eventPreferences?.blockedDates || [],
+          teamBuildingPrefs: eventPreferences?.teamBuildingPrefs
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save destinations')
+      }
+
+      const updatedPreferences = await response.json()
+      setEventPreferences(prev => ({
+        ...prev,
+        preferredDestinations: updatedPreferences.preferredDestinations
+      }))
       setIsEditingDestinations(false)
+      
+      toast({
+        title: "Éxito",
+        description: "Tus destinos preferidos han sido guardados",
+      })
     } catch (error) {
       console.error('Error saving destinations:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar tus destinos preferidos. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
   const handleSaveSeasons = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/event-preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferredExperiences: eventPreferences?.preferredExperiences || [],
+          preferredDestinations: eventPreferences?.preferredDestinations || [],
+          seasonalPreferences: editedSeasons,
+          groupSizePreference: eventPreferences?.groupSizePreference || [],
+          blockedDates: eventPreferences?.blockedDates || [],
+          teamBuildingPrefs: eventPreferences?.teamBuildingPrefs
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save seasons')
+      }
+
+      const updatedPreferences = await response.json()
+      setEventPreferences(prev => ({
+        ...prev,
+        seasonalPreferences: updatedPreferences.seasonalPreferences
+      }))
       setIsEditingSeasons(false)
+      
+      toast({
+        title: "Éxito",
+        description: "Tus temporadas preferidas han sido guardadas",
+      })
     } catch (error) {
       console.error('Error saving seasons:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar tus temporadas preferidas. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -448,6 +584,13 @@ export default function ProfilePage() {
       // Add to editedInterests if not already present
       if (!editedInterests.includes(newInterest)) {
         setEditedInterests(prev => [...prev, newInterest]);
+        // Update the user profile immediately to reflect the change
+        if (userProfile) {
+          setUserProfile({
+            ...userProfile,
+            hobbiesAndInterests: [...(userProfile.hobbiesAndInterests || []), newInterest]
+          });
+        }
       }
       setNewInterestInput("");
     }
@@ -556,15 +699,25 @@ export default function ProfilePage() {
 
   const handleAddCustomExperience = () => {
     if (newExperienceInput.trim()) {
-      setEditedExperiences(prev => [...prev, newExperienceInput.trim()])
-      setNewExperienceInput("")
+      const newExperience = newExperienceInput.trim();
+      // Add to editedExperiences if not already present
+      if (!editedExperiences.includes(newExperience)) {
+        setEditedExperiences(prev => [...prev, newExperience]);
+        setCustomExperiences(prev => [...prev, newExperience]);
+      }
+      setNewExperienceInput("");
     }
   }
 
   const handleAddCustomDestination = () => {
     if (newDestinationInput.trim()) {
-      setEditedDestinations(prev => [...prev, newDestinationInput.trim()])
-      setNewDestinationInput("")
+      const newDestination = newDestinationInput.trim();
+      // Add to editedDestinations if not already present
+      if (!editedDestinations.includes(newDestination)) {
+        setEditedDestinations(prev => [...prev, newDestination]);
+        setCustomDestinations(prev => [...prev, newDestination]);
+      }
+      setNewDestinationInput("");
     }
   }
 
@@ -1367,7 +1520,7 @@ export default function ProfilePage() {
                                     className="flex items-center gap-1.5 p-1.5 rounded-lg bg-indigo-950/50 border border-indigo-500/20"
                                   >
                                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900/60 flex items-center justify-center">
-                                      {getInterestIcon(interest)}
+                                      {getInterestIcon(interest) || <Heart className="h-3 w-3 text-indigo-400" />}
                                     </div>
                                     <span className="text-xs">{interest}</span>
                                   </div>
@@ -1388,9 +1541,8 @@ export default function ProfilePage() {
                               </div>
                             </div>
                           ) : (
-                            <div className="space-y-3">
-                              <p className="text-xs text-gray-400 mb-1">Selecciona tus intereses principales</p>
-                              <div className="flex flex-wrap gap-1.5">
+                            <div>
+                              <div className="flex flex-wrap gap-2">
                                 {[
                                   { name: "Deportes por TV", icon: <Tv className="h-3 w-3 text-blue-400" /> },
                                   { name: "Actividades deportivas", icon: <Trophy className="h-3 w-3 text-yellow-400" /> },
@@ -1421,37 +1573,41 @@ export default function ProfilePage() {
                                   <button
                                     key={interest.name}
                                     onClick={() => toggleInterest(interest.name)}
-                                    className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedInterests.includes(interest.name)
-                                      ? "bg-indigo-600 text-white"
-                                      : "bg-indigo-950 border border-indigo-500/30 text-white"
-                                      }`}
+                                    className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${
+                                      editedInterests.includes(interest.name)
+                                        ? "bg-indigo-600 text-white"
+                                        : "bg-indigo-950 border border-indigo-500/30 text-white"
+                                    }`}
                                   >
                                     {interest.icon}
                                     <span>{interest.name}</span>
                                   </button>
                                 ))}
                                 {/* Display custom interests */}
-                                {editedInterests
-                                  .filter(interest => ![
+                                {editedInterests.map((interest) => {
+                                  // Check if this is a custom interest (not in the predefined list)
+                                  const isPredefined = [
                                     "Deportes por TV", "Actividades deportivas", "Música", "Arte", "Tecnología",
                                     "Lectura", "Cocina", "Parrilladas al aire libre", "Convivencias", "Jardinería",
                                     "Fotografía", "Manualidades", "Videojuegos", "Baile", "Yoga", "Meditación",
                                     "Networking", "Startups", "Fórmula 1", "Naturaleza", "Ir al estadio",
                                     "Talleres creativos", "Conciertos", "Actividades al aire libre", "Cine"
-                                  ].includes(interest))
-                                  .map((customInterest) => (
-                                    <button
-                                      key={customInterest}
-                                      onClick={() => toggleInterest(customInterest)}
-                                      className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedInterests.includes(customInterest)
-                                        ? "bg-indigo-600 text-white"
-                                        : "bg-indigo-950 border border-indigo-500/30 text-white"
-                                        }`}
-                                    >
-                                      <Heart className="h-3 w-3 text-indigo-400" />
-                                      <span>{customInterest}</span>
-                                    </button>
-                                  ))}
+                                  ].includes(interest);
+                                  
+                                  if (!isPredefined) {
+                                    return (
+                                      <button
+                                        key={interest}
+                                        onClick={() => toggleInterest(interest)}
+                                        className="flex items-center gap-1 py-1 px-2 rounded-full text-xs bg-indigo-600 text-white"
+                                      >
+                                        <Heart className="h-3 w-3 text-indigo-400" />
+                                        <span>{interest}</span>
+                                      </button>
+                                    );
+                                  }
+                                  return null;
+                                })}
                               </div>
 
                               <div className="flex mt-5">
@@ -1459,6 +1615,11 @@ export default function ProfilePage() {
                                   placeholder="Agregar interés personalizado..."
                                   value={newInterestInput}
                                   onChange={(e) => setNewInterestInput(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && newInterestInput.trim()) {
+                                      handleAddCustomInterest();
+                                    }
+                                  }}
                                   className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                                 />
                                 <Button
@@ -1686,12 +1847,35 @@ export default function ProfilePage() {
                                 <span className="text-xs">{exp.label}</span>
                               </div>
                             ))}
+                            {/* Display custom experiences */}
+                            {customExperiences.map(customExp => (
+                              <div
+                                key={customExp}
+                                className={cn(
+                                  "flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center",
+                                  editedExperiences.includes(customExp)
+                                    ? "border-indigo-500 bg-indigo-950/50 text-white"
+                                    : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30",
+                                )}
+                                onClick={() => toggleExperience(customExp)}
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                  ⭐
+                                </div>
+                                <span className="text-xs">{customExp}</span>
+                              </div>
+                            ))}
                           </div>
                           <div className="flex mt-3">
                             <Input
                               placeholder="Agregar experiencia personalizada..."
                               value={newExperienceInput}
                               onChange={(e) => setNewExperienceInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newExperienceInput.trim()) {
+                                  handleAddCustomExperience();
+                                }
+                              }}
                               className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                             />
                             <Button
@@ -1793,12 +1977,35 @@ export default function ProfilePage() {
                                 <span className="text-xs">{dest.label}</span>
                               </div>
                             ))}
+                            {/* Display custom destinations */}
+                            {customDestinations.map(customDest => (
+                              <div
+                                key={customDest}
+                                className={cn(
+                                  "flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center",
+                                  editedDestinations.includes(customDest)
+                                    ? "border-indigo-500 bg-indigo-950/50 text-white"
+                                    : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30",
+                                )}
+                                onClick={() => toggleDestination(customDest)}
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                  ⭐
+                                </div>
+                                <span className="text-xs">{customDest}</span>
+                              </div>
+                            ))}
                           </div>
                           <div className="flex mt-3">
                             <Input
                               placeholder="Agregar destino personalizado..."
                               value={newDestinationInput}
                               onChange={(e) => setNewDestinationInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newDestinationInput.trim()) {
+                                  handleAddCustomDestination();
+                                }
+                              }}
                               className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                             />
                             <Button
