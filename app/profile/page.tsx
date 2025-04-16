@@ -504,8 +504,12 @@ export default function ProfilePage() {
 
   const handleAddCustomTrait = () => {
     if (newTraitInput.trim()) {
-      setEditedTraits(prev => [...prev, newTraitInput.trim()])
-      setNewTraitInput("")
+      const newTrait = newTraitInput.trim();
+      // Add to editedTraits if not already present
+      if (!editedTraits.includes(newTrait)) {
+        setEditedTraits(prev => [...prev, newTrait]);
+      }
+      setNewTraitInput("");
     }
   }
 
@@ -1572,9 +1576,28 @@ export default function ProfilePage() {
                                     <span>{trait.name}</span>
                                   </button>
                                 ))}
+                                {/* Display custom traits */}
+                                {editedTraits
+                                  .filter(trait => ![
+                                    "Sociable", "Introvertido", "Creativo", "Estructurado",
+                                    "Curioso", "Aventurero", "Analítico", "Energético"
+                                  ].includes(trait))
+                                  .map((customTrait) => (
+                                    <button
+                                      key={customTrait}
+                                      onClick={() => toggleTrait(customTrait)}
+                                      className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedTraits.includes(customTrait)
+                                        ? "bg-indigo-600 text-white"
+                                        : "bg-indigo-950 border border-indigo-500/30 text-white"
+                                        }`}
+                                    >
+                                      <Heart className="h-3 w-3 text-indigo-400" />
+                                      <span>{customTrait}</span>
+                                    </button>
+                                  ))}
                               </div>
 
-                              <div className="flex mt-3">
+                              <div className="flex mt-5">
                                 <Input
                                   placeholder="Agregar rasgo personalizado..."
                                   value={newTraitInput}
