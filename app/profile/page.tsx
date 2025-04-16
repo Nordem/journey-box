@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar"
+import { CircularProgressbar } from "react-circular-progressbar"
 import { ProfileSkeleton } from "@/components/skeletons/profile-skeleton"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -752,20 +752,35 @@ export default function ProfilePage() {
                     <h2 className="mt-4 text-xl font-bold">{userProfile.name}</h2>
 
                     <div className="mt-4 flex items-center justify-center gap-2">
-                      <div className="w-16 h-16 text-right">
+                      <div className="w-16 h-16 text-center">
                         <CircularProgressbar
                           value={profileCompletion}
                           text={`${Math.round(profileCompletion)}%`}
-                          styles={buildStyles({
-                            rotation: 0,
-                            strokeLinecap: "round",
-                            textSize: "24px",
-                            pathTransitionDuration: 0.5,
-                            pathColor: `rgba(129, 140, 248, ${profileCompletion / 100})`,
-                            textColor: "#8b5cf6",
-                            trailColor: "rgba(99, 102, 241, 0.1)",
-                            backgroundColor: "#3e3e3e"
-                          })}
+                          styles={{
+                            root: {},
+                            path: {
+                              stroke: `rgba(129, 140, 248, ${profileCompletion / 100})`,
+                              strokeLinecap: "round",
+                              transition: "stroke-dashoffset 0.5s ease 0s",
+                              transform: "rotate(0turn)",
+                              transformOrigin: "center center"
+                            },
+                            trail: {
+                              stroke: "rgba(99, 102, 241, 0.1)",
+                              strokeLinecap: "round",
+                              transform: "rotate(0turn)",
+                              transformOrigin: "center center"
+                            },
+                            text: {
+                              fill: "#8b5cf6",
+                              fontSize: "24px",
+                              dominantBaseline: "middle",
+                              textAnchor: "middle"
+                            },
+                            background: {
+                              fill: "#3e3e3e"
+                            }
+                          }}
                         />
                       </div>
                       <div className="text-left">
