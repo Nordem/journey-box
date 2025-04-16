@@ -451,8 +451,31 @@ export default function ProfilePage() {
 
   const handleSaveInterests = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          hobbiesAndInterests: editedInterests
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update interests')
+      }
+
+      const updatedUser = await response.json()
+      setUserProfile(updatedUser.userProfile)
       setIsEditingInterests(false)
+      
       toast({
         title: "Éxito",
         description: "Tus intereses han sido actualizados correctamente",
