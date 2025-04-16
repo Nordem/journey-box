@@ -135,12 +135,26 @@ export default function ProfilePage() {
     seasonalPreferences: string[];
     blockedDates: string[];
     generalAvailability: boolean;
+    groupSizePreference: string[];
+    teamBuildingPrefs?: {
+      preferredActivities: string[];
+      location: "remote" | "in_person" | "both";
+      duration: "half_day" | "full_day" | "multi_day";
+      suggestions: string;
+    };
   }>({
     preferredExperiences: [],
     preferredDestinations: [],
     seasonalPreferences: [],
     blockedDates: [],
-    generalAvailability: true
+    generalAvailability: true,
+    groupSizePreference: [],
+    teamBuildingPrefs: {
+      preferredActivities: [],
+      location: "both",
+      duration: "half_day",
+      suggestions: ""
+    }
   })
   const [loading, setLoading] = useState(true)
   const [profileCompletion, setProfileCompletion] = useState(0)
@@ -262,28 +276,148 @@ export default function ProfilePage() {
 
   const handleSaveExperiences = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/event-preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferredExperiences: editedExperiences,
+          preferredDestinations: eventPreferences?.preferredDestinations || [],
+          seasonalPreferences: eventPreferences?.seasonalPreferences || [],
+          groupSizePreference: eventPreferences?.groupSizePreference || [],
+          blockedDates: eventPreferences?.blockedDates || [],
+          teamBuildingPrefs: eventPreferences?.teamBuildingPrefs
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save experiences')
+      }
+
+      const updatedPreferences = await response.json()
+      setEventPreferences(prev => ({
+        ...prev,
+        preferredExperiences: updatedPreferences.preferredExperiences
+      }))
       setIsEditingExperiences(false)
+      
+      toast({
+        title: "Éxito",
+        description: "Tus experiencias preferidas han sido guardadas",
+      })
     } catch (error) {
       console.error('Error saving experiences:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar tus experiencias preferidas. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
   const handleSaveDestinations = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/event-preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferredExperiences: eventPreferences?.preferredExperiences || [],
+          preferredDestinations: editedDestinations,
+          seasonalPreferences: eventPreferences?.seasonalPreferences || [],
+          groupSizePreference: eventPreferences?.groupSizePreference || [],
+          blockedDates: eventPreferences?.blockedDates || [],
+          teamBuildingPrefs: eventPreferences?.teamBuildingPrefs
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save destinations')
+      }
+
+      const updatedPreferences = await response.json()
+      setEventPreferences(prev => ({
+        ...prev,
+        preferredDestinations: updatedPreferences.preferredDestinations
+      }))
       setIsEditingDestinations(false)
+      
+      toast({
+        title: "Éxito",
+        description: "Tus destinos preferidos han sido guardados",
+      })
     } catch (error) {
       console.error('Error saving destinations:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar tus destinos preferidos. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
   const handleSaveSeasons = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/event-preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferredExperiences: eventPreferences?.preferredExperiences || [],
+          preferredDestinations: eventPreferences?.preferredDestinations || [],
+          seasonalPreferences: editedSeasons,
+          groupSizePreference: eventPreferences?.groupSizePreference || [],
+          blockedDates: eventPreferences?.blockedDates || [],
+          teamBuildingPrefs: eventPreferences?.teamBuildingPrefs
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save seasons')
+      }
+
+      const updatedPreferences = await response.json()
+      setEventPreferences(prev => ({
+        ...prev,
+        seasonalPreferences: updatedPreferences.seasonalPreferences
+      }))
       setIsEditingSeasons(false)
+      
+      toast({
+        title: "Éxito",
+        description: "Tus temporadas preferidas han sido guardadas",
+      })
     } catch (error) {
       console.error('Error saving seasons:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar tus temporadas preferidas. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
