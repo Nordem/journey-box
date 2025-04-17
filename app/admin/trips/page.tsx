@@ -114,7 +114,7 @@ export default function AdminTripsPage() {
       employeePrice: parseFloat(formData.get('employeePrice') as string),
       regularPrice: parseFloat(formData.get('regularPrice') as string),
       description: formData.get('description') as string,
-      imageUrl: formData.get('imageUrl') as string || '/placeholder.jpg',
+      imageUrl: formData.get('imageUrl') as string,
       hasVideo: formData.get('hasVideo') === 'true',
       videoUrl: formData.get('videoUrl') as string || '',
       participants: [],
