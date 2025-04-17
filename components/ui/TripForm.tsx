@@ -236,11 +236,14 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                 title: "Imagen requerida",
                 description: "Por favor, sube una imagen antes de guardar el evento.",
             });
+
+            // Automatically clear the alert after 5 seconds
+            setTimeout(() => {
+                setAlert(null);
+            }, 3000);
+
             return;
         }
-        setTimeout(() => {
-            setAlert(null);
-        }, 3000);
         
         // Create a FormData object with the current state
         const formDataObj = new FormData();
