@@ -24,6 +24,8 @@ import {
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { Toaster } from "@/components/ui/toaster"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface TripFormProps {
     onSubmit: (formData: FormData) => void
@@ -59,9 +61,9 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
     // Add state for image preview
     const [imagePreview, setImagePreview] = useState<string>(editingTrip?.imageUrl || "");
-    
+
     // Add state for gallery images
-    const [galleryImages, setGalleryImages] = useState<Array<{id: string, url: string}>>(
+    const [galleryImages, setGalleryImages] = useState<Array<{ id: string, url: string }>>(
         editingTrip?.galleryImages?.map((url: string, index: number) => ({
             id: `gallery-${index}`,
             url
@@ -69,8 +71,8 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     );
 
     // Add state to track additional days
-    const [additionalDays, setAdditionalDays] = useState<Array<{day: number, title: string, activities: string}>>(
-        editingTrip?.itinerary && editingTrip.itinerary.length > 2 
+    const [additionalDays, setAdditionalDays] = useState<Array<{ day: number, title: string, activities: string }>>(
+        editingTrip?.itinerary && editingTrip.itinerary.length > 2
             ? editingTrip.itinerary.slice(2).map((day: any, index: number) => ({
                 day: index + 3,
                 title: day.title || `Día ${index + 3}`,
@@ -121,7 +123,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Handle input changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value, type } = e.target;
-        
+
         if (type === 'checkbox') {
             const checkbox = e.target as HTMLInputElement;
             setFormData(prev => ({ ...prev, [id]: checkbox.checked }));
@@ -142,11 +144,11 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Add a new day
     const addNewDay = () => {
         setAdditionalDays(prev => [
-            ...prev, 
-            { 
-                day: prev.length + 3, 
-                title: `Día ${prev.length + 3}`, 
-                activities: "" 
+            ...prev,
+            {
+                day: prev.length + 3,
+                title: `Día ${prev.length + 3}`,
+                activities: ""
             }
         ]);
     };
@@ -222,31 +224,85 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         setGalleryImages(prev => prev.filter(img => img.id !== id));
     };
 
+    const [alert, setAlert] = useState<{ title: string; description: string } | null>(null);
+
     // Handle form submission
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
+        // Check if all required fields are filled
+        const requiredFields = [
+            { id: "title", value: formData.title, label: "Título del Evento" },
+            { id: "location", value: formData.location, label: "Ubicación" },
+            { id: "dates", value: formData.dates, label: "Fechas" },
+            { id: "availability", value: formData.availability, label: "Disponibilidad" },
+            { id: "employeePrice", value: formData.employeePrice, label: "Precio Empleado" },
+            { id: "regularPrice", value: formData.regularPrice, label: "Precio Regular" },
+            { id: "description", value: formData.description, label: "Descripción" },
+            { id: "tripManager", value: formData.tripManager, label: "Gerente del Evento" },
+            { id: "hotelName", value: formData.hotelName, label: "Nombre del Hotel" },
+            { id: "hotelDescription", value: formData.hotelDescription, label: "Descripción del Hotel" },
+            { id: "hotelAmenities", value: formData.hotelAmenities, label: "Amenidades del Hotel" },
+            { id: "includes", value: formData.includes, label: "Incluye" },
+            { id: "excludes", value: formData.excludes, label: "No Incluye" },
+            { id: "day1Title", value: formData.day1Title, label: "Título del Día 1" },
+            { id: "day1Activities", value: formData.day1Activities, label: "Actividades del Día 1" },
+            { id: "day2Title", value: formData.day2Title, label: "Título del Día 2" },
+            { id: "day2Activities", value: formData.day2Activities, label: "Actividades del Día 2" },
+        ];
+
+        // Check for empty fields
+        const emptyField = requiredFields.find(field => !field.value.trim());
+        if (emptyField) {
+            setAlert({
+                title: "Campo requerido",
+                description: `Por favor, completa todos los campos para poder guardar el evento.`,
+            });
+
+            // Automatically clear the alert after 5 seconds
+            setTimeout(() => {
+                setAlert(null);
+            }, 3000);
+
+            return;
+        }
+
+        // Check if an image has been uploaded
+        if (!imagePreview) {
+            setAlert({
+                title: "Imagen requerida",
+                description: "Por favor, sube una imagen antes de guardar el evento.",
+            });
+
+            // Automatically clear the alert after 5 seconds
+            setTimeout(() => {
+                setAlert(null);
+            }, 3000);
+
+            return;
+        }
+
         // Create a FormData object with the current state
         const formDataObj = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
             formDataObj.append(key, value.toString());
         });
-        
+
         // Add gallery images to FormData
-        formDataObj.append('galleryImagesCount', galleryImages.length.toString());
+        formDataObj.append("galleryImagesCount", galleryImages.length.toString());
         galleryImages.forEach((img, index) => {
             formDataObj.append(`galleryImage${index}`, img.url);
         });
-        
+
         // Add additional days to FormData
         additionalDays.forEach((day, index) => {
             formDataObj.append(`additionalDay${index}Title`, day.title);
             formDataObj.append(`additionalDay${index}Activities`, day.activities);
         });
-        
+
         // Add the count of additional days
-        formDataObj.append('additionalDaysCount', additionalDays.length.toString());
-        
+        formDataObj.append("additionalDaysCount", additionalDays.length.toString());
+
         // Call the original onSubmit with the FormData
         onSubmit(formDataObj);
     };
@@ -264,29 +320,36 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                 </CardDescription>
             </CardHeader>
             <CardContent>
+                {/* Render the Alert component if alert state is set */}
+                {alert && (
+                    <Alert variant="destructive" className="mb-4">
+                        <AlertTitle>{alert.title}</AlertTitle>
+                        <AlertDescription>{alert.description}</AlertDescription>
+                    </Alert>
+                )}
                 <form onSubmit={handleFormSubmit} className="space-y-6">
                     <Tabs defaultValue="basic" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 mb-6 bg-transparent border border-indigo-500/30 rounded-xl p-2">
-                            <TabsTrigger 
-                                value="basic" 
+                            <TabsTrigger
+                                value="basic"
                                 className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
                             >
                                 Información Básica
                             </TabsTrigger>
-                            <TabsTrigger 
-                                value="media" 
+                            <TabsTrigger
+                                value="media"
                                 className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
                             >
                                 Imágenes y Videos
                             </TabsTrigger>
-                            <TabsTrigger 
-                                value="details" 
+                            <TabsTrigger
+                                value="details"
                                 className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
                             >
                                 Detalles
                             </TabsTrigger>
-                            <TabsTrigger 
-                                value="itinerary" 
+                            <TabsTrigger
+                                value="itinerary"
                                 className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
                             >
                                 Itinerario
@@ -454,6 +517,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                         accept="image/*"
                                                         className="hidden"
                                                         onChange={handleImageUpload}
+
                                                     />
                                                     <Button
                                                         type="button"
@@ -745,7 +809,10 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                         </Button>
                     </div>
                 </form>
+                <Toaster />
             </CardContent>
+
+
         </Card>
     )
 }
