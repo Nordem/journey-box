@@ -230,6 +230,43 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        // Check if all required fields are filled
+        const requiredFields = [
+            { id: "title", value: formData.title, label: "Título del Evento" },
+            { id: "location", value: formData.location, label: "Ubicación" },
+            { id: "dates", value: formData.dates, label: "Fechas" },
+            { id: "availability", value: formData.availability, label: "Disponibilidad" },
+            { id: "employeePrice", value: formData.employeePrice, label: "Precio Empleado" },
+            { id: "regularPrice", value: formData.regularPrice, label: "Precio Regular" },
+            { id: "description", value: formData.description, label: "Descripción" },
+            { id: "tripManager", value: formData.tripManager, label: "Gerente del Evento" },
+            { id: "hotelName", value: formData.hotelName, label: "Nombre del Hotel" },
+            { id: "hotelDescription", value: formData.hotelDescription, label: "Descripción del Hotel" },
+            { id: "hotelAmenities", value: formData.hotelAmenities, label: "Amenidades del Hotel" },
+            { id: "includes", value: formData.includes, label: "Incluye" },
+            { id: "excludes", value: formData.excludes, label: "No Incluye" },
+            { id: "day1Title", value: formData.day1Title, label: "Título del Día 1" },
+            { id: "day1Activities", value: formData.day1Activities, label: "Actividades del Día 1" },
+            { id: "day2Title", value: formData.day2Title, label: "Título del Día 2" },
+            { id: "day2Activities", value: formData.day2Activities, label: "Actividades del Día 2" },
+        ];
+
+        // Check for empty fields
+        const emptyField = requiredFields.find(field => !field.value.trim());
+        if (emptyField) {
+            setAlert({
+                title: "Campo requerido",
+                description: `Por favor, completa todos los campos para poder guardar el evento.`,
+            });
+
+            // Automatically clear the alert after 5 seconds
+            setTimeout(() => {
+                setAlert(null);
+            }, 3000);
+
+            return;
+        }
+
         // Check if an image has been uploaded
         if (!imagePreview) {
             setAlert({
@@ -244,7 +281,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
             return;
         }
-        
+
         // Create a FormData object with the current state
         const formDataObj = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
