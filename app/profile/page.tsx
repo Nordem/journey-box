@@ -1053,10 +1053,19 @@ export default function ProfilePage() {
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm text-gray-400">Nivel de viajero</span>
-                      <span className="text-sm text-indigo-300">Plata</span>
+                      <span className="text-sm text-indigo-300">
+                        {destinations.length <= 3 ? 'Bronce' : 
+                         destinations.length <= 8 ? 'Plata' : 
+                         destinations.length <= 15 ? 'Oro' : 'Platino'}
+                      </span>
                     </div>
                     <Progress
-                      value={45}
+                      value={
+                        destinations.length <= 3 ? (destinations.length / 3) * 25 :
+                        destinations.length <= 8 ? 25 + ((destinations.length - 3) / 5) * 25 :
+                        destinations.length <= 15 ? 50 + ((destinations.length - 8) / 7) * 25 :
+                        100
+                      }
                       className="h-3 bg-indigo-950/50 rounded-full"
                       style={{
                         backgroundColor: 'rgb(31, 41, 55)',
