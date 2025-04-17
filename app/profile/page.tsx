@@ -480,10 +480,31 @@ export default function ProfilePage() {
 
   const handleSaveAvailability = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        throw new Error('No session found')
+      }
+
+      const response = await fetch(`/api/user/${session.user.id}/travel-availability`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(travelAvailability),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update travel availability')
+      }
+
       setIsEditingAvailability(false)
     } catch (error) {
       console.error('Error saving availability:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo guardar la disponibilidad. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
