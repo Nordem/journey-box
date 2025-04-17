@@ -423,10 +423,58 @@ export default function ProfilePage() {
 
   const handleSaveBlockedDates = async () => {
     try {
-      // Add your save logic here
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        router.push('/login')
+        return
+      }
+
+      // Convert Date objects to ISO strings and ensure they're unique
+      const blockedDatesISO = [...new Set(blockedDates.map(date => date.toISOString()))]
+
+      const response = await fetch(`/api/user/${session.user.id}/event-preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferredExperiences: eventPreferences?.preferredExperiences || [],
+          preferredDestinations: eventPreferences?.preferredDestinations || [],
+          seasonalPreferences: eventPreferences?.seasonalPreferences || [],
+          groupSizePreference: eventPreferences?.groupSizePreference || [],
+          blockedDates: blockedDatesISO,
+          teamBuildingPrefs: eventPreferences?.teamBuildingPrefs
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save blocked dates')
+      }
+
+      const updatedPreferences = await response.json()
+      setEventPreferences(prev => ({
+        ...prev,
+        blockedDates: updatedPreferences.blockedDates
+      }))
+      
+      // Update the blockedDates state with the saved dates
+      const savedBlockedDates = updatedPreferences.blockedDates.map((dateStr: string) => new Date(dateStr))
+      setBlockedDates(savedBlockedDates)
+      
       setShowDatePicker(false)
+      
+      toast({
+        title: "Éxito",
+        description: "Tus fechas bloqueadas han sido guardadas",
+      })
     } catch (error) {
       console.error('Error saving blocked dates:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar tus fechas bloqueadas. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -787,6 +835,13 @@ export default function ProfilePage() {
         const userData = await response.json()
         setUserProfile(userData.userProfile)
         setEventPreferences(userData.eventPreferences)
+        
+        // Convert blocked dates from strings to Date objects
+        if (userData.eventPreferences?.blockedDates) {
+          const blockedDates = userData.eventPreferences.blockedDates.map((dateStr: string) => new Date(dateStr))
+          setBlockedDates(blockedDates)
+        }
+        
         calculateProfileCompletion(userData.userProfile, userData.eventPreferences)
 
         // Fetch destinations
@@ -2180,8 +2235,17 @@ export default function ProfilePage() {
                           <DatePicker
                             selected={null}
                             onChange={(date) => {
-                              if (date && !blockedDates.some(d => d.toDateString() === date.toDateString())) {
-                                setBlockedDates([...blockedDates, date])
+                              if (date) {
+                                const dateString = date.toDateString();
+                                const existingDateIndex = blockedDates.findIndex(d => d.toDateString() === dateString);
+                                
+                                if (existingDateIndex === -1) {
+                                  // Add new date if not already selected
+                                  setBlockedDates([...blockedDates, date]);
+                                } else {
+                                  // Remove date if already selected (double-click)
+                                  setBlockedDates(blockedDates.filter((_, index) => index !== existingDateIndex));
+                                }
                               }
                             }}
                             inline
