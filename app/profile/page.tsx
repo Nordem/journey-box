@@ -36,15 +36,14 @@ interface UserProfile {
 }
 
 interface EventPreferences {
-  seasonalPreferences: string[];
-  categories: string[];
-  vibeKeywords: string[];
-  budget: string;
   preferredExperiences: string[];
   preferredDestinations: string[];
-  groupSizePreference: string[];
+  seasonalPreferences: string[];
   blockedDates: string[];
-  teamBuildingPrefs: {
+  generalAvailability: boolean;
+  groupSizePreference: string[];
+  categories: string[];
+  teamBuildingPrefs?: {
     preferredActivities: string[];
     location: "remote" | "in_person" | "both";
     duration: "half_day" | "full_day" | "multi_day";
@@ -52,103 +51,17 @@ interface EventPreferences {
   };
 }
 
-// Add these utility functions before the ProfilePage component
-const getExperienceIcon = (level: string) => {
-  switch (level) {
-    case 'Beginner': return <Star className="h-4 w-4" />
-    case 'Intermediate': return <Trophy className="h-4 w-4" />
-    case 'Advanced': return <Award className="h-4 w-4" />
-    default: return <Star className="h-4 w-4" />
-  }
-}
-
-const getDestinationIcon = (type: string) => {
-  switch (type) {
-    case 'Beach': return <Map className="h-4 w-4" />
-    case 'Mountain': return <Compass className="h-4 w-4" />
-    case 'City': return <Building className="h-4 w-4" />
-    default: return <Map className="h-4 w-4" />
-  }
-}
-
-const getSeasonIcon = (season: string) => {
-  switch (season) {
-    case 'Summer': return <Sun className="h-4 w-4" />
-    case 'Winter': return <Snowflake className="h-4 w-4" />
-    case 'Spring': return <Flower className="h-4 w-4" />
-    case 'Autumn': return <Leaf className="h-4 w-4" />
-    default: return <Calendar className="h-4 w-4" />
-  }
-}
-
-const getInterestIcon = (interest: string) => {
-  switch (interest) {
-    case 'Deportes por TV': return <Tv className="h-3 w-3 text-blue-400" />
-    case 'Actividades deportivas': return <Trophy className="h-3 w-3 text-yellow-400" />
-    case 'Música': return <Music className="h-3 w-3 text-purple-400" />
-    case 'Arte': return <Palette className="h-3 w-3 text-pink-400" />
-    case 'Tecnología': return <Laptop className="h-3 w-3 text-blue-400" />
-    case 'Lectura': return <BookOpen className="h-3 w-3 text-green-400" />
-    case 'Cocina': return <Utensils className="h-3 w-3 text-orange-400" />
-    case 'Parrilladas al aire libre': return <Flame className="h-3 w-3 text-red-400" />
-    case 'Convivencias': return <Users className="h-3 w-3 text-yellow-400" />
-    case 'Jardinería': return <Flower2 className="h-3 w-3 text-green-400" />
-    case 'Fotografía': return <Camera className="h-3 w-3 text-purple-400" />
-    case 'Manualidades': return <Scissors className="h-3 w-3 text-red-400" />
-    case 'Videojuegos': return <Gamepad2 className="h-3 w-3 text-indigo-400" />
-    case 'Baile': return <Music2 className="h-3 w-3 text-pink-400" />
-    case 'Yoga': return <Activity className="h-3 w-3 text-purple-400" />
-    case 'Meditación': return <Moon className="h-3 w-3 text-blue-400" />
-    case 'Networking': return <Network className="h-3 w-3 text-blue-400" />
-    case 'Startups': return <Rocket className="h-3 w-3 text-orange-400" />
-    case 'Fórmula 1': return <Car className="h-3 w-3 text-red-400" />
-    case 'Naturaleza': return <Trees className="h-3 w-3 text-green-400" />
-    case 'Ir al estadio': return <Flag className="h-3 w-3 text-yellow-400" />
-    case 'Talleres creativos': return <Paintbrush className="h-3 w-3 text-pink-400" />
-    case 'Conciertos': return <Music4 className="h-3 w-3 text-purple-400" />
-    case 'Actividades al aire libre': return <Mountain className="h-3 w-3 text-green-400" />
-    case 'Cine': return <Film className="h-3 w-3 text-indigo-400" />
-    default: return <Heart className="h-3 w-3 text-indigo-400" />
-  }
-}
-
-const getTraitIcon = (trait: string) => {
-  switch (trait) {
-    case 'Sociable': return <Users className="h-3 w-3 text-yellow-400" />
-    case 'Introvertido': return <User className="h-3 w-3 text-orange-400" />
-    case 'Creativo': return <Paintbrush className="h-3 w-3 text-pink-400" />
-    case 'Estructurado': return <LayoutGrid className="h-3 w-3 text-red-400" />
-    case 'Curioso': return <Search className="h-3 w-3 text-blue-400" />
-    case 'Aventurero': return <Compass className="h-3 w-3 text-indigo-400" />
-    case 'Analítico': return <BarChart className="h-3 w-3 text-purple-400" />
-    case 'Energético': return <Zap className="h-3 w-3 text-yellow-400" />
-    default: return <User className="h-3 w-3 text-indigo-400" />
-  }
-}
-
 export default function ProfilePage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [sessionEmail, setSessionEmail] = useState<string>("")
-  const [eventPreferences, setEventPreferences] = useState<{
-    preferredExperiences: string[];
-    preferredDestinations: string[];
-    seasonalPreferences: string[];
-    blockedDates: string[];
-    generalAvailability: boolean;
-    groupSizePreference: string[];
-    teamBuildingPrefs?: {
-      preferredActivities: string[];
-      location: "remote" | "in_person" | "both";
-      duration: "half_day" | "full_day" | "multi_day";
-      suggestions: string;
-    };
-  }>({
+  const [eventPreferences, setEventPreferences] = useState<EventPreferences>({
     preferredExperiences: [],
     preferredDestinations: [],
     seasonalPreferences: [],
     blockedDates: [],
     generalAvailability: true,
     groupSizePreference: [],
+    categories: [],
     teamBuildingPrefs: {
       preferredActivities: [],
       location: "both",
@@ -241,7 +154,71 @@ export default function ProfilePage() {
     { value: "Autumn", label: "Otoño", icon: <Leaf className="h-4 w-4" /> },
   ]
 
-  // Add these utility functions
+  const getExperienceIcon = (value: string) => {
+    const experience = experiencePreferences.find(exp => exp.value === value);
+    return experience ? experience.icon : "⭐";
+  }
+
+  const getDestinationIcon = (value: string) => {
+    const destination = destinationPreferences.find(dest => dest.value === value);
+    return destination ? destination.icon : "📍";
+  }
+
+  const getSeasonIcon = (season: string) => {
+    switch (season) {
+      case 'Summer': return <Sun className="h-4 w-4" />
+      case 'Winter': return <Snowflake className="h-4 w-4" />
+      case 'Spring': return <Flower className="h-4 w-4" />
+      case 'Autumn': return <Leaf className="h-4 w-4" />
+      default: return <Calendar className="h-4 w-4" />
+    }
+  }
+
+  const getInterestIcon = (interest: string) => {
+    switch (interest) {
+      case 'Deportes por TV': return <Tv className="h-3 w-3 text-blue-400" />
+      case 'Actividades deportivas': return <Trophy className="h-3 w-3 text-yellow-400" />
+      case 'Música': return <Music className="h-3 w-3 text-purple-400" />
+      case 'Arte': return <Palette className="h-3 w-3 text-pink-400" />
+      case 'Tecnología': return <Laptop className="h-3 w-3 text-blue-400" />
+      case 'Lectura': return <BookOpen className="h-3 w-3 text-green-400" />
+      case 'Cocina': return <Utensils className="h-3 w-3 text-orange-400" />
+      case 'Parrilladas al aire libre': return <Flame className="h-3 w-3 text-red-400" />
+      case 'Convivencias': return <Users className="h-3 w-3 text-yellow-400" />
+      case 'Jardinería': return <Flower2 className="h-3 w-3 text-green-400" />
+      case 'Fotografía': return <Camera className="h-3 w-3 text-purple-400" />
+      case 'Manualidades': return <Scissors className="h-3 w-3 text-red-400" />
+      case 'Videojuegos': return <Gamepad2 className="h-3 w-3 text-indigo-400" />
+      case 'Baile': return <Music2 className="h-3 w-3 text-pink-400" />
+      case 'Yoga': return <Activity className="h-3 w-3 text-purple-400" />
+      case 'Meditación': return <Moon className="h-3 w-3 text-blue-400" />
+      case 'Networking': return <Network className="h-3 w-3 text-blue-400" />
+      case 'Startups': return <Rocket className="h-3 w-3 text-orange-400" />
+      case 'Fórmula 1': return <Car className="h-3 w-3 text-red-400" />
+      case 'Naturaleza': return <Trees className="h-3 w-3 text-green-400" />
+      case 'Ir al estadio': return <Flag className="h-3 w-3 text-yellow-400" />
+      case 'Talleres creativos': return <Paintbrush className="h-3 w-3 text-pink-400" />
+      case 'Conciertos': return <Music4 className="h-3 w-3 text-purple-400" />
+      case 'Actividades al aire libre': return <Mountain className="h-3 w-3 text-green-400" />
+      case 'Cine': return <Film className="h-3 w-3 text-indigo-400" />
+      default: return <Heart className="h-3 w-3 text-indigo-400" />
+    }
+  }
+
+  const getTraitIcon = (trait: string) => {
+    switch (trait) {
+      case 'Sociable': return <Users className="h-3 w-3 text-yellow-400" />
+      case 'Introvertido': return <User className="h-3 w-3 text-orange-400" />
+      case 'Creativo': return <Paintbrush className="h-3 w-3 text-pink-400" />
+      case 'Estructurado': return <LayoutGrid className="h-3 w-3 text-red-400" />
+      case 'Curioso': return <Search className="h-3 w-3 text-blue-400" />
+      case 'Aventurero': return <Compass className="h-3 w-3 text-indigo-400" />
+      case 'Analítico': return <BarChart className="h-3 w-3 text-purple-400" />
+      case 'Energético': return <Zap className="h-3 w-3 text-yellow-400" />
+      default: return <User className="h-3 w-3 text-indigo-400" />
+    }
+  }
+
   const toggleExperience = (value: string) => {
     setEditedExperiences(prev =>
       prev.includes(value)
