@@ -1168,106 +1168,135 @@ export default function ProfilePage() {
 
                 {/* Pestaña Sobre mí */}
                 <TabsContent value="personal" className="mt-5">
-                  {isEditing ? (
+                    {isEditing ? (
                     <div className="space-y-6">
                       <Card className="bg-indigo-950/30 border border-indigo-500/30">
-                        <CardHeader className="py-3 px-4">
-                          <CardTitle className="text-lg flex items-center">
-                            <Edit2 className="mr-2 h-5 w-5 text-indigo-400" />
-                            Editar información personal
-                          </CardTitle>
-                          <CardDescription>Actualiza tu información básica</CardDescription>
-                        </CardHeader>
-                        <CardContent className="py-3 px-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="name">Nombre completo</Label>
-                              <Input
-                                id="name"
-                                name="name"
-                                value={editedData?.name || ""}
-                                onChange={handleInputChange}
-                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
-                              />
-                            </div>
+                      <CardHeader className="py-3 px-4">
+                        <CardTitle className="text-lg flex items-center">
+                        <Edit2 className="mr-2 h-5 w-5 text-indigo-400" />
+                        Editar información personal
+                        </CardTitle>
+                        <CardDescription>Actualiza tu información básica</CardDescription>
+                      </CardHeader>
+                      <CardContent className="py-3 px-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Nombre completo</Label>
+                          <Input
+                          id="name"
+                          name="name"
+                          value={editedData?.name || ""}
+                          onChange={handleInputChange}
+                          className={cn(
+                            "bg-indigo-950/20 border-indigo-500/30 text-white",
+                            !editedData?.name && "border-red-500"
+                          )}
+                          />
+                          {!editedData?.name && (
+                          <p className="text-xs text-red-500">
+                            Este campo es obligatorio
+                          </p>
+                          )}
+                        </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="email">Correo electrónico</Label>
-                              <Input
-                                id="email"
-                                name="email"
-                                value={sessionEmail}
-                                className="bg-indigo-950/20 border-indigo-500/30 text-white opacity-70"
-                                readOnly
-                                disabled
-                              />
-                            </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Correo electrónico</Label>
+                          <Input
+                          id="email"
+                          name="email"
+                          value={sessionEmail}
+                          className="bg-indigo-950/20 border-indigo-500/30 text-white opacity-70"
+                          readOnly
+                          disabled
+                          />
+                        </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="phone">Teléfono</Label>
-                              <Input
-                                id="phone"
-                                name="phone"
-                                type="tel"
-                                value={editedData?.phone || ""}
-                                onChange={handleInputChange}
-                                className={cn(
-                                  "bg-indigo-950/20 border-indigo-500/30 text-white",
-                                  editedData?.phone && (editedData.phone.length < 8 || editedData.phone.length > 10) && "border-red-500"
-                                )}
-                                placeholder="Ingresa tu número de teléfono"
-                              />
-                              {editedData?.phone && (editedData.phone.length < 8 || editedData.phone.length > 10) && (
-                                <p className="text-xs text-red-500">
-                                  El número de teléfono debe tener entre 8 y 10 dígitos
-                                </p>
-                              )}
-                            </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">Teléfono</Label>
+                          <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          value={editedData?.phone || ""}
+                          onChange={handleInputChange}
+                          className={cn(
+                            "bg-indigo-950/20 border-indigo-500/30 text-white",
+                            editedData?.phone && (editedData.phone.length < 8 || editedData.phone.length > 10) && "border-red-500"
+                          )}
+                          placeholder="Ingresa tu número de teléfono"
+                          />
+                          {editedData?.phone && (editedData.phone.length < 8 || editedData.phone.length > 10) && (
+                          <p className="text-xs text-red-500">
+                            El número de teléfono debe tener entre 8 y 10 dígitos
+                          </p>
+                          )}
+                        </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="location">Ciudad de ubicación</Label>
-                              <Input
-                                id="location"
-                                name="location"
-                                placeholder="Ej: Tijuana, B.C., México"
-                                value={editedData?.location || ""}
-                                onChange={handleInputChange}
-                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
-                              />
-                            </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="location">Ciudad de ubicación</Label>
+                          <Input
+                          id="location"
+                          name="location"
+                          placeholder="Ej: Tijuana, B.C., México"
+                          value={editedData?.location || ""}
+                          onChange={handleInputChange}
+                          className={cn(
+                            "bg-indigo-950/20 border-indigo-500/30 text-white",
+                            !editedData?.location && "border-red-500"
+                          )}
+                          />
+                          {!editedData?.location && (
+                          <p className="text-xs text-red-500">
+                            Este campo es obligatorio
+                          </p>
+                          )}
+                        </div>
 
-                            <div className="space-y-2">
-                              <Label htmlFor="airport">Aeropuerto más cercano</Label>
-                              <Input
-                                id="airport"
-                                name="airport"
-                                placeholder="Opcional - Ej: Tijuana, B.C., México"
-                                value={editedData?.airport || ""}
-                                onChange={handleInputChange}
-                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
+                        <div className="space-y-2">
+                          <Label htmlFor="airport">Aeropuerto más cercano</Label>
+                          <Input
+                          id="airport"
+                          name="airport"
+                          placeholder="Opcional - Ej: Tijuana, B.C., México"
+                          value={editedData?.airport || ""}
+                          onChange={handleInputChange}
+                          className={cn(
+                            "bg-indigo-950/20 border-indigo-500/30 text-white",
+                            !editedData?.airport && "border-red-500"
+                          )}
+                          />
+                          {!editedData?.airport && (
+                          <p className="text-xs text-red-500">
+                            Este campo es obligatorio
+                          </p>
+                          )}
+                        </div>
+                        </div>
+                      </CardContent>
                       </Card>
 
                       <div className="flex justify-end gap-3">
-                        <Button
-                          variant="outline"
-                          className="border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                          onClick={handleCancelEdit}
-                        >
-                          <X size={16} className="mr-2" /> Cancelar
-                        </Button>
-                        <Button
-                          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                          onClick={handleSaveProfile}
-                        >
-                          <Save size={16} className="mr-2" /> Guardar cambios
-                        </Button>
+                      <Button
+                        variant="outline"
+                        className="border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
+                        onClick={handleCancelEdit}
+                      >
+                        <X size={16} className="mr-2" /> Cancelar
+                      </Button>
+                      <Button
+                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                        onClick={handleSaveProfile}
+                        disabled={
+                        !editedData?.name ||
+                        !editedData?.location ||
+                        !editedData?.airport
+                        }
+                      >
+                        <Save size={16} className="mr-2" /> Guardar cambios
+                      </Button>
                       </div>
                     </div>
-                  ) : (
+                    ) : (
                     <>
                       <Card className="bg-indigo-950/30 border border-indigo-500/30 mb-4 pb-2">
                         <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
