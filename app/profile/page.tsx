@@ -1054,15 +1054,15 @@ export default function ProfilePage() {
                       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                         <div className="absolute" style={{ left: '25%' }}>
                           <div className="w-1 h-3 bg-indigo-400 rounded-full" />
-                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300">3</div>
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300"></div>
                         </div>
                         <div className="absolute" style={{ left: '50%' }}>
                           <div className="w-1 h-3 bg-indigo-400 rounded-full" />
-                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300">8</div>
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300"></div>
                         </div>
                         <div className="absolute" style={{ left: '75%' }}>
                           <div className="w-1 h-3 bg-indigo-400 rounded-full" />
-                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300">15</div>
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300"></div>
                         </div>
                       </div>
                     </div>
