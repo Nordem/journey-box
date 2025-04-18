@@ -174,7 +174,7 @@ export default function Sidebar({
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col items-center">
-          <p className="text-base font-medium text-white">{userProfile?.name || 'Usuario'}</p>
+            {!isCollapsed && <p className="text-base font-medium text-white">{userProfile?.name || 'Usuario'}</p>}
           <Button
             variant="ghost"
             size="sm"
