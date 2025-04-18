@@ -1678,15 +1678,19 @@ export default function ProfilePage() {
                                 })}
                               </div>
 
-                              <div className="flex mt-5">
+                                <div className="flex mt-5">
                                 <Input
-                                  placeholder="Agregar interés personalizado..."
+                                  placeholder="Agregar interés personalizados..."
                                   value={newInterestInput}
-                                  onChange={(e) => setNewInterestInput(e.target.value)}
+                                  onChange={(e) => {
+                                  if (e.target.value.length <= 20) {
+                                    setNewInterestInput(e.target.value);
+                                  }
+                                  }}
                                   onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && newInterestInput.trim()) {
-                                      handleAddCustomInterest();
-                                    }
+                                  if (e.key === 'Enter' && newInterestInput.trim()) {
+                                    handleAddCustomInterest();
+                                  }
                                   }}
                                   className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                                 />
@@ -1697,7 +1701,7 @@ export default function ProfilePage() {
                                 >
                                   Agregar
                                 </Button>
-                              </div>
+                                </div>
                             </div>
                           )}
                         </div>
@@ -1826,11 +1830,15 @@ export default function ProfilePage() {
                                   ))}
                               </div>
 
-                              <div className="flex mt-5">
+                                <div className="flex mt-5">
                                 <Input
                                   placeholder="Agregar rasgo personalizado..."
                                   value={newTraitInput}
-                                  onChange={(e) => setNewTraitInput(e.target.value)}
+                                  onChange={(e) => {
+                                  if (e.target.value.length <= 20) {
+                                    setNewTraitInput(e.target.value);
+                                  }
+                                  }}
                                   className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                                 />
                                 <Button
@@ -1840,7 +1848,7 @@ export default function ProfilePage() {
                                 >
                                   Agregar
                                 </Button>
-                              </div>
+                                </div>
                             </div>
                           )}
                         </div>
@@ -1934,15 +1942,19 @@ export default function ProfilePage() {
                               </div>
                             ))}
                           </div>
-                          <div className="flex mt-3">
+                            <div className="flex mt-3">
                             <Input
                               placeholder="Agregar experiencia personalizada..."
                               value={newExperienceInput}
-                              onChange={(e) => setNewExperienceInput(e.target.value)}
+                              onChange={(e) => {
+                              if (e.target.value.length <= 20) {
+                                setNewExperienceInput(e.target.value);
+                              }
+                              }}
                               onKeyDown={(e) => {
-                                if (e.key === 'Enter' && newExperienceInput.trim()) {
-                                  handleAddCustomExperience();
-                                }
+                              if (e.key === 'Enter' && newExperienceInput.trim()) {
+                                handleAddCustomExperience();
+                              }
                               }}
                               className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                             />
@@ -1953,7 +1965,7 @@ export default function ProfilePage() {
                             >
                               Agregar
                             </Button>
-                          </div>
+                            </div>
                         </div>
                       ) : (
                         <div className="text-center py-6">
@@ -2064,15 +2076,19 @@ export default function ProfilePage() {
                               </div>
                             ))}
                           </div>
-                          <div className="flex mt-3">
+                            <div className="flex mt-3">
                             <Input
                               placeholder="Agregar destino personalizado..."
                               value={newDestinationInput}
-                              onChange={(e) => setNewDestinationInput(e.target.value)}
+                              onChange={(e) => {
+                              if (e.target.value.length <= 20) {
+                                setNewDestinationInput(e.target.value);
+                              }
+                              }}
                               onKeyDown={(e) => {
-                                if (e.key === 'Enter' && newDestinationInput.trim()) {
-                                  handleAddCustomDestination();
-                                }
+                              if (e.key === 'Enter' && newDestinationInput.trim()) {
+                                handleAddCustomDestination();
+                              }
                               }}
                               className="bg-indigo-950 border-indigo-500/30 text-white rounded-r-none h-7 text-xs mr-1"
                             />
@@ -2083,7 +2099,7 @@ export default function ProfilePage() {
                             >
                               Agregar
                             </Button>
-                          </div>
+                            </div>
                         </div>
                       ) : (
                         <div className="text-center py-6">
