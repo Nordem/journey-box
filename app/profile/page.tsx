@@ -1051,7 +1051,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="py-2 px-4 space-y-4">
                   <div>
-                    <div className="flex justify-between mb-1">
+                    <div className="flex justify-between mb-4">
                       <span className="text-sm text-gray-400">Nivel de viajero</span>
                       <span className="text-sm text-indigo-300">
                         {destinations.length <= 3 ? 'Bronce' :
@@ -1059,19 +1059,36 @@ export default function ProfilePage() {
                             destinations.length <= 15 ? 'Oro' : 'Platino'}
                       </span>
                     </div>
-                    <Progress
-                      value={
-                        destinations.length <= 3 ? (destinations.length / 3) * 25 :
-                          destinations.length <= 8 ? 25 + ((destinations.length - 3) / 5) * 25 :
-                            destinations.length <= 15 ? 50 + ((destinations.length - 8) / 7) * 25 :
-                              100
-                      }
-                      className="h-3 bg-indigo-950/50 rounded-full"
-                      style={{
-                        backgroundColor: 'rgb(31, 41, 55)',
-                        '--progress-indicator-color': 'linear-gradient(to right, rgb(168, 85, 247), rgb(236, 72, 153))'
-                      } as React.CSSProperties}
-                    />
+                    <div className="relative">
+                      <Progress
+                        value={
+                          destinations.length <= 3 ? (destinations.length / 3) * 25 :
+                            destinations.length <= 8 ? 25 + ((destinations.length - 3) / 5) * 25 :
+                              destinations.length <= 15 ? 50 + ((destinations.length - 8) / 7) * 25 :
+                                100
+                        }
+                        className="h-3 bg-indigo-950/50 rounded-full"
+                        style={{
+                          backgroundColor: 'rgb(31, 41, 55)',
+                          '--progress-indicator-color': 'linear-gradient(to right, rgb(168, 85, 247), rgb(236, 72, 153))'
+                        } as React.CSSProperties}
+                      />
+                      {/* Milestone markers */}
+                      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                        <div className="absolute" style={{ left: '25%' }}>
+                          <div className="w-1 h-3 bg-indigo-400 rounded-full" />
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300">3</div>
+                        </div>
+                        <div className="absolute" style={{ left: '50%' }}>
+                          <div className="w-1 h-3 bg-indigo-400 rounded-full" />
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300">8</div>
+                        </div>
+                        <div className="absolute" style={{ left: '75%' }}>
+                          <div className="w-1 h-3 bg-indigo-400 rounded-full" />
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] text-indigo-300">15</div>
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex justify-between mt-1 text-xs text-gray-500">
                       <span>Bronce</span>
                       <span>Plata</span>
