@@ -1868,7 +1868,10 @@ export default function ProfilePage() {
                             variant="outline"
                             size="sm"
                             className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                            onClick={() => setIsEditingExperiences(true)}
+                            onClick={() => {
+                              setIsEditingExperiences(true)
+                              setEditedExperiences([...(eventPreferences?.preferredExperiences || [])])
+                            }}
                           >
                             <Edit2 size={12} className="mr-1" /> Editar
                           </Button>
@@ -2002,7 +2005,10 @@ export default function ProfilePage() {
                             variant="outline"
                             size="sm"
                             className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                            onClick={() => setIsEditingDestinations(true)}
+                            onClick={() => {
+                              setIsEditingDestinations(true)
+                              setEditedDestinations([...(eventPreferences?.preferredDestinations || [])])
+                            }}
                           >
                             <Edit2 size={12} className="mr-1" /> Editar
                           </Button>
@@ -2136,7 +2142,10 @@ export default function ProfilePage() {
                             variant="outline"
                             size="sm"
                             className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
-                            onClick={() => setIsEditingSeasons(true)}
+                            onClick={() => {
+                              setIsEditingSeasons(true)
+                              setEditedSeasons([...(eventPreferences?.seasonalPreferences || [])])
+                            }}
                           >
                             <Edit2 size={12} className="mr-1" /> Editar
                           </Button>
