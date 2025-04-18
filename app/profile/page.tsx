@@ -1145,22 +1145,22 @@ export default function ProfilePage() {
             {/* Columna derecha - Contenido principal */}
             <div className="lg:col-span-2">
               <Tabs defaultValue="personal" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-transparent border border-indigo-500/30 rounded-xl overflow-hidden">
-                  <TabsTrigger
+                <TabsList className="grid w-full grid-cols-3 bg-transparent border border-indigo-500/30 rounded-xl overflow-hidden pl-0 pr-0">
+                    <TabsTrigger
                     value="personal"
-                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
-                  >
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-l-xl h-full"
+                    >
                     Sobre mí
-                  </TabsTrigger>
+                    </TabsTrigger>
                   <TabsTrigger
                     value="interests"
-                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none h-full"
                   >
                     Intereses
                   </TabsTrigger>
                   <TabsTrigger
                     value="preferences"
-                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-r-lg h-full"
                   >
                     Preferencias
                   </TabsTrigger>
