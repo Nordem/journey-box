@@ -886,26 +886,93 @@ export default function ProfilePage() {
   }, [router, toast])
 
   const calculateProfileCompletion = (profile: UserProfile | null, preferences: EventPreferences | null) => {
-    if (!profile || !preferences) return 0
+    console.log('=== Profile Completion Debug ===')
+    console.log('Profile:', JSON.stringify(profile, null, 2))
+    console.log('Preferences:', JSON.stringify(preferences, null, 2))
+    
+    if (!profile || !preferences) {
+      console.log('Profile or preferences is null')
+      return 0
+    }
 
-    const totalFields = 10 // Total number of fields to check
-    let completedFields = 0
+    let completion = 0
 
-    // Check profile fields
-    if (profile.name) completedFields++
-    if (profile.location) completedFields++
-    if (profile.languages?.length > 0) completedFields++
-    if (profile.personalityTraits?.length > 0) completedFields++
-    if (profile.hobbiesAndInterests?.length > 0) completedFields++
-    if (profile.goals?.length > 0) completedFields++
+    // Basic Information (25%)
+    const basicInfoFields = [
+      { field: profile.name, label: 'name' },
+      { field: profile.phone, label: 'phone' },
+      { field: profile.location, label: 'location' },
+      { field: profile.nearestAirport, label: 'nearestAirport' }
+    ]
+    console.log('Basic info fields:', basicInfoFields)
+    
+    const validFields = basicInfoFields.filter(field => field.field && field.field.trim() !== '')
+    console.log('Valid fields:', validFields.map(f => f.label))
+    
+    // Award 25 points divided by number of valid fields
+    const basicInfoPoints = validFields.length > 0 ? 25 : 0
+    console.log('Basic info points:', basicInfoPoints)
+    completion += basicInfoPoints
 
-    // Check preferences fields
-    if (preferences.seasonalPreferences?.length > 0) completedFields++
-    if (preferences.categories?.length > 0) completedFields++
-    if (preferences.preferredExperiences?.length > 0) completedFields++
-    if (preferences.groupSizePreference?.length > 0) completedFields++
+    // Personality Traits (15%)
+    console.log('Personality traits:', profile.personalityTraits)
+    const hasEnoughTraits = profile.personalityTraits?.length >= 3
+    console.log('Has enough traits:', hasEnoughTraits)
+    if (hasEnoughTraits) {
+      completion += 15
+    }
 
-    setProfileCompletion((completedFields / totalFields) * 100)
+    // Interests (10%)
+    console.log('Interests:', profile.hobbiesAndInterests)
+    const hasEnoughInterests = profile.hobbiesAndInterests?.length >= 3
+    console.log('Has enough interests:', hasEnoughInterests)
+    if (hasEnoughInterests) {
+      completion += 10
+    }
+
+    // Preferred Experiences (10%)
+    console.log('Preferred experiences:', preferences.preferredExperiences)
+    const hasExperiences = preferences.preferredExperiences?.length >= 1
+    console.log('Has experiences:', hasExperiences)
+    if (hasExperiences) {
+      completion += 10
+    }
+
+    // Preferred Destinations (10%)
+    console.log('Preferred destinations:', preferences.preferredDestinations)
+    const hasDestinations = preferences.preferredDestinations?.length >= 1
+    console.log('Has destinations:', hasDestinations)
+    if (hasDestinations) {
+      completion += 10
+    }
+
+    // Preferred Travel Seasons (10%)
+    console.log('Seasonal preferences:', preferences.seasonalPreferences)
+    const hasSeasons = preferences.seasonalPreferences?.length >= 1
+    console.log('Has seasons:', hasSeasons)
+    if (hasSeasons) {
+      completion += 10
+    }
+
+    // Yearly Availability (10%)
+    console.log('Travel availability:', travelAvailability)
+    const hasAvailability = travelAvailability.currentYear || travelAvailability.nextYear || travelAvailability.followingYear
+    console.log('Has availability:', hasAvailability)
+    if (hasAvailability) {
+      completion += 10
+    }
+
+    console.log('=== Final Score Breakdown ===')
+    console.log('Basic Info (25%):', basicInfoPoints)
+    console.log('Personality Traits (15%):', hasEnoughTraits ? 15 : 0)
+    console.log('Interests (10%):', hasEnoughInterests ? 10 : 0)
+    console.log('Preferred Experiences (10%):', hasExperiences ? 10 : 0)
+    console.log('Preferred Destinations (10%):', hasDestinations ? 10 : 0)
+    console.log('Seasonal Preferences (10%):', hasSeasons ? 10 : 0)
+    console.log('Yearly Availability (10%):', hasAvailability ? 10 : 0)
+    console.log('Final completion score:', completion)
+    
+    setProfileCompletion(completion)
   }
 
   if (loading) {
@@ -1893,6 +1960,10 @@ export default function ProfilePage() {
                             onClick={() => {
                               setIsEditingExperiences(true)
                               setEditedExperiences([...(eventPreferences?.preferredExperiences || [])])
+                              // Initialize custom experiences with any non-predefined experiences
+                              const customExps = (eventPreferences?.preferredExperiences || [])
+                                .filter(exp => !experiencePreferences.some(pref => pref.value === exp))
+                              setCustomExperiences(customExps)
                             }}
                           >
                             <Edit2 size={12} className="mr-1" /> Editar
