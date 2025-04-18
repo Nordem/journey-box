@@ -1757,7 +1757,7 @@ export default function ProfilePage() {
                           </div>
 
                           {!isEditingTraits ? (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
                               {userProfile?.personalityTraits?.map((trait) => (
                                 <div
                                   key={trait}
