@@ -1340,11 +1340,19 @@ export default function ProfilePage() {
                               <Input
                               id="airport"
                               name="airport"
-                              placeholder="Opcional - Ej: Tijuana, B.C., México"
+                              placeholder="Ej: Tijuana, B.C., México"
                               value={editedData?.airport || ""}
                               onChange={handleInputChange}
-                              className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                              className={cn(
+                                "bg-indigo-950/20 border-indigo-500/30 text-white",
+                                !editedData?.airport && "border-red-500"
+                              )}
                               />
+                              {!editedData?.airport && (
+                              <p className="text-xs text-red-500">
+                                Este campo es obligatorio
+                              </p>
+                              )}
                             </div>
                           </div>
                         </CardContent>
@@ -1363,7 +1371,8 @@ export default function ProfilePage() {
                           onClick={handleSaveProfile}
                           disabled={
                             !editedData?.name ||
-                            !editedData?.location
+                            !editedData?.location ||
+                            !editedData?.airport
                           }
                         >
                           <Save size={16} className="mr-2" /> Guardar cambios
