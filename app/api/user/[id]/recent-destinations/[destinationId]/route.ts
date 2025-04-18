@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 type RouteContext = {
-  params: Promise<{ id: string; destinationId: string }> | { id: string; destinationId: string }
+  params: { id: string; destinationId: string }
 }
 
 export async function PUT(
