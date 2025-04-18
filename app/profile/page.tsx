@@ -474,7 +474,18 @@ export default function ProfilePage() {
         throw new Error('Failed to update travel availability')
       }
 
+      const updatedAvailability = await response.json()
+      setTravelAvailability({
+        currentYear: updatedAvailability.currentYear,
+        nextYear: updatedAvailability.nextYear,
+        followingYear: updatedAvailability.followingYear
+      })
       setIsEditingAvailability(false)
+
+      toast({
+        title: "Éxito",
+        description: "Tu disponibilidad ha sido actualizada correctamente",
+      })
     } catch (error) {
       console.error('Error saving availability:', error)
       toast({
@@ -838,6 +849,17 @@ export default function ProfilePage() {
         if (userData.eventPreferences?.blockedDates) {
           const blockedDates = userData.eventPreferences.blockedDates.map((dateStr: string) => new Date(dateStr))
           setBlockedDates(blockedDates)
+        }
+
+        // Fetch travel availability
+        const availabilityResponse = await fetch(`/api/user/${session.user.id}/travel-availability`)
+        if (availabilityResponse.ok) {
+          const availabilityData = await availabilityResponse.json()
+          setTravelAvailability({
+            currentYear: availabilityData.currentYear,
+            nextYear: availabilityData.nextYear,
+            followingYear: availabilityData.followingYear
+          })
         }
 
         calculateProfileCompletion(userData.userProfile, userData.eventPreferences)
