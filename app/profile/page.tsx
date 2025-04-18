@@ -277,7 +277,7 @@ export default function ProfilePage() {
   const handleSaveExperiences = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
@@ -308,7 +308,7 @@ export default function ProfilePage() {
         preferredExperiences: updatedPreferences.preferredExperiences
       }))
       setIsEditingExperiences(false)
-      
+
       toast({
         title: "Éxito",
         description: "Tus experiencias preferidas han sido guardadas",
@@ -326,7 +326,7 @@ export default function ProfilePage() {
   const handleSaveDestinations = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
@@ -357,7 +357,7 @@ export default function ProfilePage() {
         preferredDestinations: updatedPreferences.preferredDestinations
       }))
       setIsEditingDestinations(false)
-      
+
       toast({
         title: "Éxito",
         description: "Tus destinos preferidos han sido guardados",
@@ -375,7 +375,7 @@ export default function ProfilePage() {
   const handleSaveSeasons = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
@@ -406,7 +406,7 @@ export default function ProfilePage() {
         seasonalPreferences: updatedPreferences.seasonalPreferences
       }))
       setIsEditingSeasons(false)
-      
+
       toast({
         title: "Éxito",
         description: "Tus temporadas preferidas han sido guardadas",
@@ -424,7 +424,7 @@ export default function ProfilePage() {
   const handleSaveBlockedDates = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
@@ -457,13 +457,13 @@ export default function ProfilePage() {
         ...prev,
         blockedDates: updatedPreferences.blockedDates
       }))
-      
+
       // Update the blockedDates state with the saved dates
       const savedBlockedDates = updatedPreferences.blockedDates.map((dateStr: string) => new Date(dateStr))
       setBlockedDates(savedBlockedDates)
-      
+
       setShowDatePicker(false)
-      
+
       toast({
         title: "Éxito",
         description: "Tus fechas bloqueadas han sido guardadas",
@@ -510,7 +510,7 @@ export default function ProfilePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    
+
     if (name === 'phone') {
       // Only allow numbers
       const numericValue = value.replace(/\D/g, '')
@@ -541,7 +541,7 @@ export default function ProfilePage() {
   const handleSaveProfile = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
@@ -585,14 +585,14 @@ export default function ProfilePage() {
   const handleAddDestination = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
       }
 
       const method = editingDestinationId ? 'PUT' : 'POST'
-      const url = editingDestinationId 
+      const url = editingDestinationId
         ? `/api/user/${session.user.id}/recent-destinations/${editingDestinationId}`
         : `/api/user/${session.user.id}/recent-destinations`
 
@@ -613,7 +613,7 @@ export default function ProfilePage() {
       }
 
       const savedDestination = await response.json()
-      
+
       // Refresh the destinations list
       const destinationsResponse = await fetch(`/api/user/${session.user.id}/recent-destinations`)
       if (destinationsResponse.ok) {
@@ -624,7 +624,7 @@ export default function ProfilePage() {
       setIsAddingDestination(false)
       setEditingDestinationId(null)
       setNewDestination({ country: "", destination: "", isArkusTrip: false })
-      
+
       toast({
         title: "Éxito",
         description: `El destino ha sido ${editingDestinationId ? 'actualizado' : 'agregado'} correctamente`,
@@ -668,7 +668,7 @@ export default function ProfilePage() {
   const handleSaveInterests = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
@@ -691,7 +691,7 @@ export default function ProfilePage() {
       const updatedUser = await response.json()
       setUserProfile(updatedUser.userProfile)
       setIsEditingInterests(false)
-      
+
       toast({
         title: "Éxito",
         description: "Tus intereses han sido actualizados correctamente",
@@ -728,7 +728,7 @@ export default function ProfilePage() {
   const handleSaveTraits = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
@@ -751,7 +751,7 @@ export default function ProfilePage() {
       const updatedUser = await response.json()
       setUserProfile(updatedUser.userProfile)
       setIsEditingTraits(false)
-      
+
       toast({
         title: "Éxito",
         description: "Tus rasgos de personalidad han sido actualizados correctamente",
@@ -793,7 +793,7 @@ export default function ProfilePage() {
   const handleDeleteDestination = async (destinationId: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session?.user) {
         router.push('/login')
         return
@@ -809,7 +809,7 @@ export default function ProfilePage() {
 
       // Update the local state by removing the deleted destination
       setDestinations(destinations.filter(dest => dest.id !== destinationId))
-      
+
       toast({
         title: "Éxito",
         description: "El destino ha sido eliminado correctamente",
@@ -856,13 +856,13 @@ export default function ProfilePage() {
         const userData = await response.json()
         setUserProfile(userData.userProfile)
         setEventPreferences(userData.eventPreferences)
-        
+
         // Convert blocked dates from strings to Date objects
         if (userData.eventPreferences?.blockedDates) {
           const blockedDates = userData.eventPreferences.blockedDates.map((dateStr: string) => new Date(dateStr))
           setBlockedDates(blockedDates)
         }
-        
+
         calculateProfileCompletion(userData.userProfile, userData.eventPreferences)
 
         // Fetch destinations
@@ -1054,17 +1054,17 @@ export default function ProfilePage() {
                     <div className="flex justify-between mb-1">
                       <span className="text-sm text-gray-400">Nivel de viajero</span>
                       <span className="text-sm text-indigo-300">
-                        {destinations.length <= 3 ? 'Bronce' : 
-                         destinations.length <= 8 ? 'Plata' : 
-                         destinations.length <= 15 ? 'Oro' : 'Platino'}
+                        {destinations.length <= 3 ? 'Bronce' :
+                          destinations.length <= 8 ? 'Plata' :
+                            destinations.length <= 15 ? 'Oro' : 'Platino'}
                       </span>
                     </div>
                     <Progress
                       value={
                         destinations.length <= 3 ? (destinations.length / 3) * 25 :
-                        destinations.length <= 8 ? 25 + ((destinations.length - 3) / 5) * 25 :
-                        destinations.length <= 15 ? 50 + ((destinations.length - 8) / 7) * 25 :
-                        100
+                          destinations.length <= 8 ? 25 + ((destinations.length - 3) / 5) * 25 :
+                            destinations.length <= 15 ? 50 + ((destinations.length - 8) / 7) * 25 :
+                              100
                       }
                       className="h-3 bg-indigo-950/50 rounded-full"
                       style={{
@@ -1145,22 +1145,22 @@ export default function ProfilePage() {
             {/* Columna derecha - Contenido principal */}
             <div className="lg:col-span-2">
               <Tabs defaultValue="personal" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-transparent border border-indigo-500/30 rounded-xl overflow-hidden">
+                <TabsList className="grid w-full grid-cols-3 bg-transparent border border-indigo-500/30 rounded-xl overflow-hidden pl-0 pr-0">
                   <TabsTrigger
                     value="personal"
-                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-l-xl h-full"
                   >
                     Sobre mí
                   </TabsTrigger>
                   <TabsTrigger
                     value="interests"
-                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none h-full"
                   >
                     Intereses
                   </TabsTrigger>
                   <TabsTrigger
                     value="preferences"
-                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-none"
+                    className="mb-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600/40 data-[state=active]:to-purple-600/40 data-[state=active]:text-white data-[state=active]:shadow-none rounded-r-lg h-full"
                   >
                     Preferencias
                   </TabsTrigger>
@@ -1187,8 +1187,16 @@ export default function ProfilePage() {
                                 name="name"
                                 value={editedData?.name || ""}
                                 onChange={handleInputChange}
-                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                                className={cn(
+                                  "bg-indigo-950/20 border-indigo-500/30 text-white",
+                                  !editedData?.name && "border-red-500"
+                                )}
                               />
+                              {!editedData?.name && (
+                                <p className="text-xs text-red-500">
+                                  Este campo es obligatorio
+                                </p>
+                              )}
                             </div>
 
                             <div className="space-y-2">
@@ -1232,8 +1240,16 @@ export default function ProfilePage() {
                                 placeholder="Ej: Tijuana, B.C., México"
                                 value={editedData?.location || ""}
                                 onChange={handleInputChange}
-                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                                className={cn(
+                                  "bg-indigo-950/20 border-indigo-500/30 text-white",
+                                  !editedData?.location && "border-red-500"
+                                )}
                               />
+                              {!editedData?.location && (
+                                <p className="text-xs text-red-500">
+                                  Este campo es obligatorio
+                                </p>
+                              )}
                             </div>
 
                             <div className="space-y-2">
@@ -1244,8 +1260,16 @@ export default function ProfilePage() {
                                 placeholder="Opcional - Ej: Tijuana, B.C., México"
                                 value={editedData?.airport || ""}
                                 onChange={handleInputChange}
-                                className="bg-indigo-950/20 border-indigo-500/30 text-white"
+                                className={cn(
+                                  "bg-indigo-950/20 border-indigo-500/30 text-white",
+                                  !editedData?.airport && "border-red-500"
+                                )}
                               />
+                              {!editedData?.airport && (
+                                <p className="text-xs text-red-500">
+                                  Este campo es obligatorio
+                                </p>
+                              )}
                             </div>
                           </div>
                         </CardContent>
@@ -1262,6 +1286,11 @@ export default function ProfilePage() {
                         <Button
                           className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                           onClick={handleSaveProfile}
+                          disabled={
+                            !editedData?.name ||
+                            !editedData?.location ||
+                            !editedData?.airport
+                          }
                         >
                           <Save size={16} className="mr-2" /> Guardar cambios
                         </Button>
@@ -1294,73 +1323,28 @@ export default function ProfilePage() {
                         </CardHeader>
 
                         <CardContent className="py-2 px-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center">
-                            <Mail className="h-4 w-4 text-indigo-400 mr-3" />
-                            <div>
-                              <p className="text-xs text-gray-400">Correo electrónico</p>
-                              <p className="text-sm">{sessionEmail}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center">
-                            <Phone className="h-4 w-4 text-purple-400 mr-3" />
-                            <div>
-                              <p className="text-xs text-gray-400">Teléfono</p>
-                              <p className="text-sm">{userProfile?.phone}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center">
-                            <MapPin className="h-4 w-4 text-indigo-400 mr-3" />
-                            <div>
-                              <p className="text-xs text-gray-400">Ciudad de ubicación</p>
-                              <p className="text-sm">{userProfile?.location}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center">
-                            <Plane className="h-4 w-4 text-purple-400 mr-3" />
-                            <div>
-                              <p className="text-xs text-gray-400">Aeropuerto más cercano</p>
-                              <p className="text-sm">{userProfile?.nearestAirport || "No especificado"}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-
-                        {/* <CardContent className="py-2 px-4">
                           <div className="space-y-3">
                             <div className="flex items-center">
-                              <User className="h-4 w-4 text-indigo-400 mr-3" />
+                              <Mail className="h-4 w-4 text-indigo-400 mr-3" />
                               <div>
-                                <p className="text-xs text-gray-400">Nombre</p>
-                                <p className="text-sm">{userProfile?.name}</p>
+                                <p className="text-xs text-gray-400">Correo electrónico</p>
+                                <p className="text-sm">{sessionEmail}</p>
                               </div>
                             </div>
 
                             <div className="flex items-center">
-                              <MapPin className="h-4 w-4 text-purple-400 mr-3" />
+                              <Phone className="h-4 w-4 text-purple-400 mr-3" />
                               <div>
-                                <p className="text-xs text-gray-400">Ubicación</p>
+                                <p className="text-xs text-gray-400">Teléfono</p>
+                                <p className="text-sm">{userProfile?.phone}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 text-indigo-400 mr-3" />
+                              <div>
+                                <p className="text-xs text-gray-400">Ciudad de ubicación</p>
                                 <p className="text-sm">{userProfile?.location}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center">
-                              <Globe className="h-4 w-4 text-indigo-400 mr-3" />
-                              <div>
-                                <p className="text-xs text-gray-400">Idiomas</p>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {userProfile?.languages?.map((language, index) => (
-                                    <Badge
-                                      key={index}
-                                      className="bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20 transition-colors"
-                                    >
-                                      {language}
-                                    </Badge>
-                                  ))}
-                                </div>
                               </div>
                             </div>
 
@@ -1372,7 +1356,7 @@ export default function ProfilePage() {
                               </div>
                             </div>
                           </div>
-                        </CardContent> */}
+                        </CardContent>
                       </Card>
 
                       <Card className="bg-indigo-950/30 border border-indigo-500/30">
@@ -1658,11 +1642,10 @@ export default function ProfilePage() {
                                   <button
                                     key={interest.name}
                                     onClick={() => toggleInterest(interest.name)}
-                                    className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${
-                                      editedInterests.includes(interest.name)
+                                    className={`flex items-center gap-1 py-1 px-2 rounded-full text-xs ${editedInterests.includes(interest.name)
                                         ? "bg-indigo-600 text-white"
                                         : "bg-indigo-950 border border-indigo-500/30 text-white"
-                                    }`}
+                                      }`}
                                   >
                                     {interest.icon}
                                     <span>{interest.name}</span>
@@ -1678,7 +1661,7 @@ export default function ProfilePage() {
                                     "Networking", "Startups", "Fórmula 1", "Naturaleza", "Ir al estadio",
                                     "Talleres creativos", "Conciertos", "Actividades al aire libre", "Cine"
                                   ].includes(interest);
-                                  
+
                                   if (!isPredefined) {
                                     return (
                                       <button
@@ -2268,7 +2251,7 @@ export default function ProfilePage() {
                               if (date) {
                                 const dateString = date.toDateString();
                                 const existingDateIndex = blockedDates.findIndex(d => d.toDateString() === dateString);
-                                
+
                                 if (existingDateIndex === -1) {
                                   // Add new date if not already selected
                                   setBlockedDates([...blockedDates, date]);
