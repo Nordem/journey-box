@@ -2101,6 +2101,10 @@ export default function ProfilePage() {
                             onClick={() => {
                               setIsEditingDestinations(true)
                               setEditedDestinations([...(eventPreferences?.preferredDestinations || [])])
+                              // Initialize custom destinations with any non-predefined destinations
+                              const customDests = (eventPreferences?.preferredDestinations || [])
+                                .filter(dest => !destinationPreferences.some(pref => pref.value === dest))
+                              setCustomDestinations(customDests)
                             }}
                           >
                             <Edit2 size={12} className="mr-1" /> Editar
