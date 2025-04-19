@@ -285,6 +285,7 @@ export default function ProfilePage() {
         preferredExperiences: updatedPreferences.preferredExperiences
       }))
       setIsEditingExperiences(false)
+      calculateProfileCompletion(userProfile, updatedPreferences)
 
       toast({
         title: "Éxito",
@@ -334,6 +335,7 @@ export default function ProfilePage() {
         preferredDestinations: updatedPreferences.preferredDestinations
       }))
       setIsEditingDestinations(false)
+      calculateProfileCompletion(userProfile, updatedPreferences)
 
       toast({
         title: "Éxito",
@@ -383,6 +385,7 @@ export default function ProfilePage() {
         seasonalPreferences: updatedPreferences.seasonalPreferences
       }))
       setIsEditingSeasons(false)
+      calculateProfileCompletion(userProfile, updatedPreferences)
 
       toast({
         title: "Éxito",
@@ -481,6 +484,7 @@ export default function ProfilePage() {
         followingYear: updatedAvailability.followingYear
       })
       setIsEditingAvailability(false)
+      calculateProfileCompletion(userProfile, eventPreferences)
 
       toast({
         title: "Éxito",
@@ -555,6 +559,7 @@ export default function ProfilePage() {
       const updatedUser = await response.json()
       setUserProfile(updatedUser.userProfile)
       setIsEditing(false)
+      calculateProfileCompletion(updatedUser.userProfile, eventPreferences)
 
       toast({
         title: "Éxito",
@@ -679,6 +684,7 @@ export default function ProfilePage() {
       const updatedUser = await response.json()
       setUserProfile(updatedUser.userProfile)
       setIsEditingInterests(false)
+      calculateProfileCompletion(updatedUser.userProfile, eventPreferences)
 
       toast({
         title: "Éxito",
@@ -739,6 +745,7 @@ export default function ProfilePage() {
       const updatedUser = await response.json()
       setUserProfile(updatedUser.userProfile)
       setIsEditingTraits(false)
+      calculateProfileCompletion(updatedUser.userProfile, eventPreferences)
 
       toast({
         title: "Éxito",
@@ -897,7 +904,7 @@ export default function ProfilePage() {
 
     let completion = 0
 
-    // Basic Information (25%)
+    // Basic Information (35%)
     const basicInfoFields = [
       { field: profile.name, label: 'name' },
       { field: profile.phone, label: 'phone' },
@@ -909,8 +916,8 @@ export default function ProfilePage() {
     const validFields = basicInfoFields.filter(field => field.field && field.field.trim() !== '')
     console.log('Valid fields:', validFields.map(f => f.label))
     
-    // Award 25 points divided by number of valid fields
-    const basicInfoPoints = validFields.length > 0 ? 25 : 0
+    // Award 35 points divided by number of valid fields
+    const basicInfoPoints = validFields.length > 0 ? (validFields.length * (35/4)) : 0
     console.log('Basic info points:', basicInfoPoints)
     completion += basicInfoPoints
 
@@ -963,7 +970,7 @@ export default function ProfilePage() {
     }
 
     console.log('=== Final Score Breakdown ===')
-    console.log('Basic Info (25%):', basicInfoPoints)
+    console.log('Basic Info (35%):', basicInfoPoints)
     console.log('Personality Traits (15%):', hasEnoughTraits ? 15 : 0)
     console.log('Interests (10%):', hasEnoughInterests ? 10 : 0)
     console.log('Preferred Experiences (10%):', hasExperiences ? 10 : 0)
