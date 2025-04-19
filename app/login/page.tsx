@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -42,10 +43,13 @@ export default function LoginPage() {
       }
       
       if (data.user) {
+        setSuccessMessage("Login successful")
+
         toast({
-          title: "Success!",
-          description: "You've successfully logged in.",
+          title: "Inicio de sesión exitoso",
+          description: "Has iniciado sesión correctamente.",
           variant: "default",
+          duration: 3000
         })
         
         router.push("/discover")
@@ -74,11 +78,19 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             {errorMessage && (
-              <Alert variant="destructive" className="mb-4">
+              <Alert variant="default" className="mb-4">
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{errorMessage}</AlertDescription>
               </Alert>
             )}
+            {successMessage && (
+              <Alert variant="default" className="mb-4">
+                <AlertTitle>Éxito</AlertTitle>
+                <AlertDescription>{successMessage}</AlertDescription>
+              </Alert>
+            )}
+            
+            {/* Form */}
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-indigo-200">Correo electrónico</Label>
