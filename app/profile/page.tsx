@@ -285,13 +285,13 @@ export default function ProfilePage() {
         preferredExperiences: updatedPreferences.preferredExperiences
       }))
       setIsEditingExperiences(false)
+      calculateProfileCompletion(userProfile, updatedPreferences)
 
       toast({
         title: "Éxito",
         description: "Tus experiencias preferidas han sido guardadas",
       })
     } catch (error) {
-      console.error('Error saving experiences:', error)
       toast({
         title: "Error",
         description: "No se pudieron guardar tus experiencias preferidas. Por favor, intenta nuevamente.",
@@ -334,13 +334,13 @@ export default function ProfilePage() {
         preferredDestinations: updatedPreferences.preferredDestinations
       }))
       setIsEditingDestinations(false)
+      calculateProfileCompletion(userProfile, updatedPreferences)
 
       toast({
         title: "Éxito",
         description: "Tus destinos preferidos han sido guardados",
       })
     } catch (error) {
-      console.error('Error saving destinations:', error)
       toast({
         title: "Error",
         description: "No se pudieron guardar tus destinos preferidos. Por favor, intenta nuevamente.",
@@ -383,13 +383,13 @@ export default function ProfilePage() {
         seasonalPreferences: updatedPreferences.seasonalPreferences
       }))
       setIsEditingSeasons(false)
+      calculateProfileCompletion(userProfile, updatedPreferences)
 
       toast({
         title: "Éxito",
         description: "Tus temporadas preferidas han sido guardadas",
       })
     } catch (error) {
-      console.error('Error saving seasons:', error)
       toast({
         title: "Error",
         description: "No se pudieron guardar tus temporadas preferidas. Por favor, intenta nuevamente.",
@@ -446,7 +446,6 @@ export default function ProfilePage() {
         description: "Tus fechas bloqueadas han sido guardadas",
       })
     } catch (error) {
-      console.error('Error saving blocked dates:', error)
       toast({
         title: "Error",
         description: "No se pudieron guardar tus fechas bloqueadas. Por favor, intenta nuevamente.",
@@ -481,13 +480,13 @@ export default function ProfilePage() {
         followingYear: updatedAvailability.followingYear
       })
       setIsEditingAvailability(false)
+      calculateProfileCompletion(userProfile, eventPreferences)
 
       toast({
         title: "Éxito",
         description: "Tu disponibilidad ha sido actualizada correctamente",
       })
     } catch (error) {
-      console.error('Error saving availability:', error)
       toast({
         title: "Error",
         description: "No se pudo guardar la disponibilidad. Por favor, intenta nuevamente.",
@@ -555,13 +554,13 @@ export default function ProfilePage() {
       const updatedUser = await response.json()
       setUserProfile(updatedUser.userProfile)
       setIsEditing(false)
+      calculateProfileCompletion(updatedUser.userProfile, eventPreferences)
 
       toast({
         title: "Éxito",
         description: "Tu perfil ha sido actualizado correctamente",
       })
     } catch (error) {
-      console.error('Error saving profile:', error)
       toast({
         title: "Error",
         description: "No se pudo actualizar tu perfil. Por favor, intenta nuevamente.",
@@ -618,7 +617,6 @@ export default function ProfilePage() {
         description: `El destino ha sido ${editingDestinationId ? 'actualizado' : 'agregado'} correctamente`,
       })
     } catch (error) {
-      console.error('Error handling destination:', error)
       toast({
         title: "Error",
         description: `No se pudo ${editingDestinationId ? 'actualizar' : 'agregar'} el destino. Por favor, intenta nuevamente.`,
@@ -679,13 +677,13 @@ export default function ProfilePage() {
       const updatedUser = await response.json()
       setUserProfile(updatedUser.userProfile)
       setIsEditingInterests(false)
+      calculateProfileCompletion(updatedUser.userProfile, eventPreferences)
 
       toast({
         title: "Éxito",
         description: "Tus intereses han sido actualizados correctamente",
       })
     } catch (error) {
-      console.error('Error saving interests:', error)
       toast({
         title: "Error",
         description: "No se pudieron actualizar tus intereses. Por favor, intenta nuevamente.",
@@ -739,13 +737,13 @@ export default function ProfilePage() {
       const updatedUser = await response.json()
       setUserProfile(updatedUser.userProfile)
       setIsEditingTraits(false)
+      calculateProfileCompletion(updatedUser.userProfile, eventPreferences)
 
       toast({
         title: "Éxito",
         description: "Tus rasgos de personalidad han sido actualizados correctamente",
       })
     } catch (error) {
-      console.error('Error saving traits:', error)
       toast({
         title: "Error",
         description: "No se pudieron actualizar tus rasgos de personalidad. Por favor, intenta nuevamente.",
@@ -803,7 +801,6 @@ export default function ProfilePage() {
         description: "El destino ha sido eliminado correctamente",
       })
     } catch (error) {
-      console.error('Error deleting destination:', error)
       toast({
         title: "Error",
         description: "No se pudo eliminar el destino. Por favor, intenta nuevamente.",
@@ -871,7 +868,6 @@ export default function ProfilePage() {
           setDestinations(destinationsData)
         }
       } catch (error) {
-        console.error('Error fetching user data:', error)
         toast({
           title: "Error",
           description: "Failed to fetch your profile data. Please try again.",
@@ -897,7 +893,7 @@ export default function ProfilePage() {
 
     let completion = 0
 
-    // Basic Information (25%)
+    // Basic Information (35%)
     const basicInfoFields = [
       { field: profile.name, label: 'name' },
       { field: profile.phone, label: 'phone' },
@@ -909,8 +905,8 @@ export default function ProfilePage() {
     const validFields = basicInfoFields.filter(field => field.field && field.field.trim() !== '')
     console.log('Valid fields:', validFields.map(f => f.label))
     
-    // Award 25 points divided by number of valid fields
-    const basicInfoPoints = validFields.length > 0 ? 25 : 0
+    // Award 35 points divided by number of valid fields
+    const basicInfoPoints = validFields.length > 0 ? (validFields.length * (35/4)) : 0
     console.log('Basic info points:', basicInfoPoints)
     completion += basicInfoPoints
 
@@ -963,7 +959,7 @@ export default function ProfilePage() {
     }
 
     console.log('=== Final Score Breakdown ===')
-    console.log('Basic Info (25%):', basicInfoPoints)
+    console.log('Basic Info (35%):', basicInfoPoints)
     console.log('Personality Traits (15%):', hasEnoughTraits ? 15 : 0)
     console.log('Interests (10%):', hasEnoughInterests ? 10 : 0)
     console.log('Preferred Experiences (10%):', hasExperiences ? 10 : 0)
@@ -2101,6 +2097,10 @@ export default function ProfilePage() {
                             onClick={() => {
                               setIsEditingDestinations(true)
                               setEditedDestinations([...(eventPreferences?.preferredDestinations || [])])
+                              // Initialize custom destinations with any non-predefined destinations
+                              const customDests = (eventPreferences?.preferredDestinations || [])
+                                .filter(dest => !destinationPreferences.some(pref => pref.value === dest))
+                              setCustomDestinations(customDests)
                             }}
                           >
                             <Edit2 size={12} className="mr-1" /> Editar
