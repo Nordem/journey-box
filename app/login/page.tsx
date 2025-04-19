@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
@@ -15,6 +16,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -23,6 +26,7 @@ export default function LoginPage() {
     
     try {
       setLoading(true)
+      setErrorMessage(null)
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -30,24 +34,21 @@ export default function LoginPage() {
       })
       
       if (error) {
+        setErrorMessage('Invalid email or password.')
+        
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 3000)
         throw new Error(error.message)
       }
       
       if (data.user) {
-        toast({
-          title: "Success!",
-          description: "You've successfully logged in.",
-          variant: "default",
-        })
+        setSuccessMessage("Login successful")
         
         router.push("/discover")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to log in.",
-        variant: "destructive",
-      })
+      setErrorMessage(error instanceof Error ? error.message : "Failed to log in.")
     } finally {
       setLoading(false)
     }
@@ -69,6 +70,20 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {errorMessage && (
+              <Alert variant="default" className="mb-4">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            {successMessage && (
+              <Alert variant="default" className="mb-4">
+                <AlertTitle>Éxito</AlertTitle>
+                <AlertDescription>{successMessage}</AlertDescription>
+              </Alert>
+            )}
+            
+            {/* Form */}
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-indigo-200">Correo electrónico</Label>
@@ -119,4 +134,4 @@ export default function LoginPage() {
       </motion.div>
     </div>
   )
-} 
+}
