@@ -292,7 +292,6 @@ export default function ProfilePage() {
         description: "Tus experiencias preferidas han sido guardadas",
       })
     } catch (error) {
-      console.error('Error saving experiences:', error)
       toast({
         title: "Error",
         description: "No se pudieron guardar tus experiencias preferidas. Por favor, intenta nuevamente.",
@@ -342,7 +341,6 @@ export default function ProfilePage() {
         description: "Tus destinos preferidos han sido guardados",
       })
     } catch (error) {
-      console.error('Error saving destinations:', error)
       toast({
         title: "Error",
         description: "No se pudieron guardar tus destinos preferidos. Por favor, intenta nuevamente.",
@@ -392,7 +390,6 @@ export default function ProfilePage() {
         description: "Tus temporadas preferidas han sido guardadas",
       })
     } catch (error) {
-      console.error('Error saving seasons:', error)
       toast({
         title: "Error",
         description: "No se pudieron guardar tus temporadas preferidas. Por favor, intenta nuevamente.",
@@ -449,7 +446,6 @@ export default function ProfilePage() {
         description: "Tus fechas bloqueadas han sido guardadas",
       })
     } catch (error) {
-      console.error('Error saving blocked dates:', error)
       toast({
         title: "Error",
         description: "No se pudieron guardar tus fechas bloqueadas. Por favor, intenta nuevamente.",
@@ -491,7 +487,6 @@ export default function ProfilePage() {
         description: "Tu disponibilidad ha sido actualizada correctamente",
       })
     } catch (error) {
-      console.error('Error saving availability:', error)
       toast({
         title: "Error",
         description: "No se pudo guardar la disponibilidad. Por favor, intenta nuevamente.",
@@ -566,7 +561,6 @@ export default function ProfilePage() {
         description: "Tu perfil ha sido actualizado correctamente",
       })
     } catch (error) {
-      console.error('Error saving profile:', error)
       toast({
         title: "Error",
         description: "No se pudo actualizar tu perfil. Por favor, intenta nuevamente.",
@@ -623,7 +617,6 @@ export default function ProfilePage() {
         description: `El destino ha sido ${editingDestinationId ? 'actualizado' : 'agregado'} correctamente`,
       })
     } catch (error) {
-      console.error('Error handling destination:', error)
       toast({
         title: "Error",
         description: `No se pudo ${editingDestinationId ? 'actualizar' : 'agregar'} el destino. Por favor, intenta nuevamente.`,
@@ -691,7 +684,6 @@ export default function ProfilePage() {
         description: "Tus intereses han sido actualizados correctamente",
       })
     } catch (error) {
-      console.error('Error saving interests:', error)
       toast({
         title: "Error",
         description: "No se pudieron actualizar tus intereses. Por favor, intenta nuevamente.",
@@ -752,7 +744,6 @@ export default function ProfilePage() {
         description: "Tus rasgos de personalidad han sido actualizados correctamente",
       })
     } catch (error) {
-      console.error('Error saving traits:', error)
       toast({
         title: "Error",
         description: "No se pudieron actualizar tus rasgos de personalidad. Por favor, intenta nuevamente.",
@@ -810,7 +801,6 @@ export default function ProfilePage() {
         description: "El destino ha sido eliminado correctamente",
       })
     } catch (error) {
-      console.error('Error deleting destination:', error)
       toast({
         title: "Error",
         description: "No se pudo eliminar el destino. Por favor, intenta nuevamente.",
@@ -878,7 +868,6 @@ export default function ProfilePage() {
           setDestinations(destinationsData)
         }
       } catch (error) {
-        console.error('Error fetching user data:', error)
         toast({
           title: "Error",
           description: "Failed to fetch your profile data. Please try again.",
