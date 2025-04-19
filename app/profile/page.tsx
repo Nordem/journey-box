@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import { useUserProfile } from "@/lib/context/user-profile-context"
 
 interface UserProfile {
   name: string;
@@ -53,6 +54,7 @@ interface EventPreferences {
 
 export default function ProfilePage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const { refreshUserProfile } = useUserProfile()
   const [sessionEmail, setSessionEmail] = useState<string>("")
   const [eventPreferences, setEventPreferences] = useState<EventPreferences>({
     preferredExperiences: [],
@@ -555,6 +557,7 @@ export default function ProfilePage() {
       setUserProfile(updatedUser.userProfile)
       setIsEditing(false)
       calculateProfileCompletion(updatedUser.userProfile, eventPreferences)
+      await refreshUserProfile() // Refresh the shared profile state
 
       toast({
         title: "Éxito",
@@ -2591,4 +2594,4 @@ export default function ProfilePage() {
       `}</style>
     </main>
   )
-} 
+}

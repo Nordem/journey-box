@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
+import { UserProfileProvider } from '@/lib/context/user-profile-context'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -27,8 +28,10 @@ export default function RootLayout({
           disableTransitionOnChange
           storageKey="journeybox-theme"
         >
-          {children}
-          <Toaster />
+          <UserProfileProvider>
+            {children}
+            <Toaster />
+          </UserProfileProvider>
         </ThemeProvider>
       </body>
     </html>

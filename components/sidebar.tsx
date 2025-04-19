@@ -20,6 +20,7 @@ import NotificationBadge from "@/components/ui/notification-badge"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/components/ui/use-toast"
+import { useUserProfile } from "@/lib/context/user-profile-context"
 
 interface SidebarProps {
   isAdmin?: boolean
@@ -42,7 +43,7 @@ export default function Sidebar({
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
-  const [userProfile, setUserProfile] = useState<{ name: string; avatar?: string } | null>(null)
+  const { userProfile } = useUserProfile()
   const pathname = usePathname()
   const router = useRouter()
   const { toast } = useToast()
@@ -55,28 +56,6 @@ export default function Sidebar({
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          const response = await fetch(`/api/user/${session.user.id}`)
-          if (response.ok) {
-            const userData = await response.json()
-            setUserProfile({
-              name: userData.userProfile?.name || 'Usuario',
-              avatar: userData.userProfile?.avatar
-            })
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error)
-      }
-    }
-
-    fetchUserProfile()
   }, [])
 
   const toggleSidebar = () => {
@@ -315,4 +294,4 @@ export default function Sidebar({
       <SidebarContent />
     </div>
   )
-} 
+}
