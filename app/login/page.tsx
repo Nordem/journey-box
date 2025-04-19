@@ -44,13 +44,6 @@ export default function LoginPage() {
       
       if (data.user) {
         setSuccessMessage("Login successful")
-
-        toast({
-          title: "Inicio de sesión exitoso",
-          description: "Has iniciado sesión correctamente.",
-          variant: "default",
-          duration: 3000
-        })
         
         router.push("/discover")
       }
