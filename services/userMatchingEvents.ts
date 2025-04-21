@@ -149,61 +149,71 @@ export async function getRecommendedEvents(userProfile: UserProfile): Promise<Re
     // Format events list with more details
     const eventsList = events.map((event: Event) => `
 Event: ${event.name}
-Location: ${event.city}, ${event.state || event.country}
+Location: ${event.city}, ${event.state || ''}, ${event.country}
 Dates: ${event.startDate} - ${event.endDate}
-Category: ${event.category}
 Description: ${event.description}
-Activities: ${event.activities.join(", ")}
-Max Participants: ${event.maxParticipants}
-Normal Price: (${event.originalPrice} MXN)
-Final Price: (${event.finalPrice} MXN)
+Highlights: ${event.highlights?.join(", ") || "None"}
+Is Highlight: ${event.isHighlight ? "Yes" : "No"}
+Original Price: ${event.originalPrice || "Not specified"}
+Final Price: ${event.finalPrice || "Not specified"}
 ---`).join("\n");
 
-    const prompt = `Analyze evnets list and select which ones are best fit for the user profile provided. Only recommend events that truly match the user's preferences.
+    const prompt = `As a travel guru, your task is to analyze the following events and match them with the user's profile. Consider the following criteria for matching:
+
+1. Location and Accessibility:
+   - Proximity to user's location (${userProfile.userProfile.location || "Not specified"})
+   - Access from nearest airport (${userProfile.userProfile.nearestAirport || "Not specified"})
+
+2. User Preferences:
+   - Personality: ${userProfile.userProfile.personalityTraits?.join(", ") || "Not specified"}
+   - Interests: ${userProfile.userProfile.hobbiesAndInterests?.join(", ") || "Not specified"}
+   - Preferred Experiences: ${userProfile.eventPreferences.preferredExperiences?.join(", ") || "Not specified"}
+   - Preferred Destinations: ${userProfile.eventPreferences.preferredDestinations?.join(", ") || "Not specified"}
+   - Seasonal Preferences: ${userProfile.eventPreferences.seasonalPreferences?.join(", ") || "Not specified"}
+   - Additional Info: ${userProfile.userProfile.additionalInfo || "None"}
+
+3. Event Details:
+   - Dates (avoiding blocked dates: ${userProfile.eventPreferences.blockedDates?.join(", ") || "No blocked dates"})
+   - Activities and highlights
 
 Available Events:
 ${eventsList}
 
-User Profile:
-- Name: ${userProfile.userProfile.name || "Not specified"}
-- Location: ${userProfile.userProfile.location || "Not specified"}
-- Current Travel Location: ${userProfile.userProfile.currentTravelLocation || "Not specified"}
-- Languages: ${userProfile.userProfile.languages?.join(", ") || "Not specified"}
-- Personality Traits: ${userProfile.userProfile.personalityTraits?.join(", ") || "Not specified"}
-- Hobbies and Interests: ${userProfile.userProfile.hobbiesAndInterests?.join(", ") || "Not specified"}
-- Goals: ${userProfile.userProfile.goals?.join(", ") || "Not specified"}
-- Additional Info: ${userProfile.userProfile.additionalInfo || "None"}
-- Nearest Airport: ${userProfile.userProfile.nearestAirport || "Not specified"}
+For each event, analyze how well it matches the user's profile and provide:
+1. A match score (0-100) based on:
+   - Location compatibility (20 points)
+   - Experience match (20 points)
+   - Destination type match (20 points)
+   - Personality fit (20 points)
+   - Price and accessibility (20 points)
+2. Specific reasons in Spanish explaining why it matches or doesn't match
+3. Whether it's a recommended event (isMatch: true/false)
 
-Event Preferences:
-- Preferred Experiences: ${userProfile.eventPreferences.preferredExperiences?.join(", ") || "Not specified"}
-- Preferred Destinations: ${userProfile.eventPreferences.preferredDestinations?.join(", ") || "Not specified"}
-- Seasonal Preferences: ${userProfile.eventPreferences.seasonalPreferences?.join(", ") || "Not specified"}
-- Group Size Preference: ${userProfile.eventPreferences.groupSizePreference?.join(", ") || "Not specified"}
-- Blocked Dates: ${userProfile.eventPreferences.blockedDates?.join(", ") || "None"}
-- Categories: ${userProfile.eventPreferences.categories?.join(", ") || "Not specified"}
-- Vibe Keywords: ${userProfile.eventPreferences.vibeKeywords?.join(", ") || "Not specified"}
-- Budget: ${userProfile.eventPreferences.budget || "Not specified"}
+Format your response as JSON:
+{
+  "matches": [
+    {
+      "eventName": "Event Name",
+      "isMatch": true/false,
+      "score": number (0-100),
+      "reasons": [
+        "Reason 1 in Spanish",
+        "Reason 2 in Spanish"
+      ]
+    }
+  ]
+}
 
-Team Building Preferences:
-- Preferred Activities: ${userProfile.eventPreferences.teamBuildingPrefs?.preferredActivities?.join(", ") || "None"}
-- Location Preference: ${userProfile.eventPreferences.teamBuildingPrefs?.location || "Not specified"}
-- Duration Preference: ${userProfile.eventPreferences.teamBuildingPrefs?.duration || "Not specified"}
-- Additional Suggestions: ${userProfile.eventPreferences.teamBuildingPrefs?.suggestions || "None"}
+IMPORTANT:
+- Consider events with a score of 50 or higher as potential matches
+- All reasons must be written in Spanish
+- Focus on the user's personality traits and interests
+- Consider the user's preferred experiences and destinations
+- Take into account the blocked dates when calculating the match score`;
 
-Other Information:
-- Calendar Availability: ${userProfile.calendarAvailability ? Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ") : "None"}
-
-For each event, provide a match score (0-100) and specific reasons why it matches or doesn't match. Only recommend events that:
-1. Match at least 3 key preferences
-2. Don't violate any restrictions
-3. Have a match score of 75 or higher
-4. Are within the user's budget range
-5. Match the user's preferred group size
-
-Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }
-
-IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language to explain why the event matches the user's profile.`;
+    console.log('=== OpenAI Prompt Content ===');
+    console.log(prompt);
+    console.log('=== End of Prompt ===');
 
     try {
       const openaiData = await makeOpenAIRequest(prompt);
@@ -213,10 +223,10 @@ IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language 
         try {
           // Clean the response to ensure it's valid JSON
           const cleanContent = content.replace(/^[^{]*({.*})[^}]*$/, '$1');
-          const matchResults = JSON.parse(cleanContent);
+          const matchResults = JSON.parse(cleanContent);          
           if (matchResults.matches) {
             matchResults.matches.forEach((match: any) => {
-              if (match.isMatch && match.score >= 75) {
+              if (match.isMatch && match.score >= 55) {
                 const event = events.find((e: Event) => e.name === match.eventName);
                 if (event) {
                   // Additional validation
@@ -245,7 +255,7 @@ IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language 
       console.warn("OpenAI API unavailable, falling back to advanced recommendations");
       events.forEach((event: Event) => {
         const score = calculateMatchScore(event, userProfile);
-        if (score >= 75) {
+        if (score >= 55) {
           recommendedEvents.push({
             ...event,
             matchScore: score,
@@ -256,9 +266,12 @@ IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language 
     }
 
     // Sort by match score and limit to top 5 recommendations
-    return recommendedEvents
+    const sortedEvents = recommendedEvents
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, 5);
+    
+    console.log('Final recommended events:', sortedEvents);
+    return sortedEvents;
   } catch (error) {
     console.error("Error in getRecommendedEvents:", error);
     return [];
