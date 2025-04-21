@@ -59,6 +59,7 @@ export default function DiscoverPage() {
   // Function to fetch user profile data
   const fetchUserData = async (userId: string) => {
     try {
+      setLoadingRecommendedEvents(true); // Set loading state at the start
       const response = await fetch(`/api/user/${userId}`, {
         method: 'GET',
         headers: {
@@ -88,7 +89,7 @@ export default function DiscoverPage() {
           });
           router.push('/register');
         } else {
-          // Fetch recommended events using the user profile data
+          // Keep loading state true while fetching recommendations
           const recommendedEvents = await getRecommendedEvents({
             userProfile: {
               name: data.userProfile.name,
@@ -166,7 +167,7 @@ export default function DiscoverPage() {
     checkUser();
   }, [router]);
 
-  if (loadingAllEvents || loadingRecommendedEvents) {
+  if (loadingAllEvents) {
     return (
       <div className="flex flex-col gap-8">
         <div className="flex justify-between items-center">
@@ -219,8 +220,18 @@ export default function DiscoverPage() {
                 <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
                 </div>
+                <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-600/50 border-t-transparent"></div>
+                </div>
               </div>
-              <p className="text-indigo-200 text-sm animate-pulse">Cargando eventos recomendados...</p>
+              <div className="flex flex-col items-center space-y-2">
+                <p className="text-indigo-200 text-sm animate-pulse">Cargando eventos recomendados...</p>
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
+                </div>
+              </div>
             </div>
           ) : recommendedEvents.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
