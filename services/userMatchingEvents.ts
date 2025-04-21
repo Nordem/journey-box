@@ -124,6 +124,8 @@ async function makeOpenAIRequest(prompt: string, retryCount = 0): Promise<OpenAI
 
 export async function getRecommendedEvents(userProfile: UserProfile): Promise<RecommendedEvent[]> {
   try {
+    console.log('Starting getRecommendedEvents with profile:', userProfile);
+    
     const eventsResponse = await fetch('/api/events', {
       method: 'GET',
       headers: {
@@ -158,23 +160,17 @@ Original Price: ${event.originalPrice || "Not specified"}
 Final Price: ${event.finalPrice || "Not specified"}
 ---`).join("\n");
 
-    const prompt = `As a travel guru, your task is to analyze the following events and match them with the user's profile. Consider the following criteria for matching:
+    const prompt = `As a travel guru, your task is to analyze the following events and match them with the user's profile. Your goal is to find the best matches based on the user's preferences and the event details.
 
-1. Location and Accessibility:
-   - Proximity to user's location (${userProfile.userProfile.location || "Not specified"})
-   - Access from nearest airport (${userProfile.userProfile.nearestAirport || "Not specified"})
-
-2. User Preferences:
-   - Personality: ${userProfile.userProfile.personalityTraits?.join(", ") || "Not specified"}
-   - Interests: ${userProfile.userProfile.hobbiesAndInterests?.join(", ") || "Not specified"}
-   - Preferred Experiences: ${userProfile.eventPreferences.preferredExperiences?.join(", ") || "Not specified"}
-   - Preferred Destinations: ${userProfile.eventPreferences.preferredDestinations?.join(", ") || "Not specified"}
-   - Seasonal Preferences: ${userProfile.eventPreferences.seasonalPreferences?.join(", ") || "Not specified"}
-   - Additional Info: ${userProfile.userProfile.additionalInfo || "None"}
-
-3. Event Details:
-   - Dates (avoiding blocked dates: ${userProfile.eventPreferences.blockedDates?.join(", ") || "No blocked dates"})
-   - Activities and highlights
+User Profile:
+- Location: ${userProfile.userProfile.location || "Not specified"}
+- Nearest Airport: ${userProfile.userProfile.nearestAirport || "Not specified"}
+- Personality Traits: ${userProfile.userProfile.personalityTraits?.join(", ") || "Not specified"}
+- Hobbies and Interests: ${userProfile.userProfile.hobbiesAndInterests?.join(", ") || "Not specified"}
+- Preferred Experiences: ${userProfile.eventPreferences.preferredExperiences?.join(", ") || "Not specified"}
+- Preferred Destinations: ${userProfile.eventPreferences.preferredDestinations?.join(", ") || "Not specified"}
+- Seasonal Preferences: ${userProfile.eventPreferences.seasonalPreferences?.join(", ") || "Not specified"}
+- Blocked Dates: ${userProfile.eventPreferences.blockedDates?.join(", ") || "No blocked dates"}
 
 Available Events:
 ${eventsList}
@@ -186,8 +182,16 @@ For each event, analyze how well it matches the user's profile and provide:
    - Destination type match (20 points)
    - Personality fit (20 points)
    - Price and accessibility (20 points)
+
 2. Specific reasons in Spanish explaining why it matches or doesn't match
+
 3. Whether it's a recommended event (isMatch: true/false)
+
+Scoring Guidelines:
+- Give points for any matching aspect, even if it's not a perfect match
+- Consider partial matches (e.g., if an event matches 2 out of 3 preferred experiences, give partial points)
+- Don't penalize too heavily for non-matching aspects
+- Consider the overall value of the event, not just individual criteria
 
 Format your response as JSON:
 {
@@ -205,11 +209,12 @@ Format your response as JSON:
 }
 
 IMPORTANT:
-- Consider events with a score of 50 or higher as potential matches
+- Consider events with a score of 40 or higher as potential matches
 - All reasons must be written in Spanish
-- Focus on the user's personality traits and interests
-- Consider the user's preferred experiences and destinations
-- Take into account the blocked dates when calculating the match score`;
+- Focus on positive matches rather than negative ones
+- Consider the user's personality traits and interests
+- Take into account the user's preferred experiences and destinations
+- Don't be too strict with the scoring - partial matches are acceptable`;
 
     console.log('=== OpenAI Prompt Content ===');
     console.log(prompt);
@@ -226,7 +231,7 @@ IMPORTANT:
           const matchResults = JSON.parse(cleanContent);          
           if (matchResults.matches) {
             matchResults.matches.forEach((match: any) => {
-              if (match.isMatch && match.score >= 55) {
+              if (match.isMatch && match.score >= 40) {
                 const event = events.find((e: Event) => e.name === match.eventName);
                 if (event) {
                   // Additional validation
@@ -240,10 +245,25 @@ IMPORTANT:
                       matchScore: match.score,
                       matchReasons: match.reasons
                     });
+                  } else {
+                    console.log('Event failed validations:', {
+                      isWithinBudget,
+                      matchesGroupSize,
+                      matchesRestrictions
+                    });
                   }
+                } else {
+                  console.log('Event not found in database:', match.eventName);
                 }
+              } else {
+                console.log('Match did not meet criteria:', {
+                  isMatch: match.isMatch,
+                  score: match.score
+                });
               }
             });
+          } else {
+            console.log('No matches found in OpenAI response');
           }
         } catch (parseError) {
           console.error("Error parsing OpenAI response:", parseError);
@@ -251,11 +271,12 @@ IMPORTANT:
         }
       }
     } catch (error) {
+      console.error("OpenAI API error:", error);
       // If OpenAI API fails, implement a more sophisticated fallback mechanism
       console.warn("OpenAI API unavailable, falling back to advanced recommendations");
       events.forEach((event: Event) => {
         const score = calculateMatchScore(event, userProfile);
-        if (score >= 55) {
+        if (score >= 40) {
           recommendedEvents.push({
             ...event,
             matchScore: score,
@@ -298,16 +319,22 @@ function validateGroupSize(event: Event, groupSizePreference: string[] | undefin
   if (!groupSizePreference || !event.maxParticipants) return true;
   
   const maxParticipants = event.maxParticipants;
-  return groupSizePreference.some(pref => {
-    switch (pref.toLowerCase()) {
+  const preferences = groupSizePreference.map(pref => pref.toLowerCase());
+  
+  // If no specific preferences, allow all group sizes
+  if (preferences.length === 0) return true;
+  
+  // Check if any preference matches the event's group size
+  return preferences.some(pref => {
+    switch (pref) {
       case 'individual':
-        return maxParticipants <= 2;
+        return maxParticipants <= 5; // More lenient for individual
       case 'small group':
-        return maxParticipants > 2 && maxParticipants <= 10;
+        return maxParticipants > 5 && maxParticipants <= 15; // More lenient for small groups
       case 'large group':
-        return maxParticipants > 10;
+        return maxParticipants > 15; // More lenient for large groups
       default:
-        return true;
+        return true; // Allow any group size for unknown preferences
     }
   });
 }
