@@ -149,61 +149,74 @@ export async function getRecommendedEvents(userProfile: UserProfile): Promise<Re
     // Format events list with more details
     const eventsList = events.map((event: Event) => `
 Event: ${event.name}
-Location: ${event.city}, ${event.state || event.country}
+Location: ${event.city}, ${event.state || ''}, ${event.country}
 Dates: ${event.startDate} - ${event.endDate}
-Category: ${event.category}
 Description: ${event.description}
-Activities: ${event.activities.join(", ")}
-Max Participants: ${event.maxParticipants}
-Normal Price: (${event.originalPrice} MXN)
-Final Price: (${event.finalPrice} MXN)
+Highlights: ${event.highlights?.join(", ") || "None"}
+Is Highlight: ${event.isHighlight ? "Yes" : "No"}
+Original Price: ${event.originalPrice || "Not specified"}
+Final Price: ${event.finalPrice || "Not specified"}
 ---`).join("\n");
 
-    const prompt = `Analyze evnets list and select which ones are best fit for the user profile provided. Only recommend events that truly match the user's preferences.
+    const prompt = `As a travel guru, your task is to analyze the following events and match them with the user's profile. Your goal is to find the best matches based on the user's preferences and the event details.
+
+User Profile:
+- Location: ${userProfile.userProfile.location || "Not specified"}
+- Nearest Airport: ${userProfile.userProfile.nearestAirport || "Not specified"}
+- Personality Traits: ${userProfile.userProfile.personalityTraits?.join(", ") || "Not specified"}
+- Hobbies and Interests: ${userProfile.userProfile.hobbiesAndInterests?.join(", ") || "Not specified"}
+- Preferred Experiences: ${userProfile.eventPreferences.preferredExperiences?.join(", ") || "Not specified"}
+- Preferred Destinations: ${userProfile.eventPreferences.preferredDestinations?.join(", ") || "Not specified"}
+- Seasonal Preferences: ${userProfile.eventPreferences.seasonalPreferences?.join(", ") || "Not specified"}
+- Blocked Dates: ${userProfile.eventPreferences.blockedDates?.join(", ") || "No blocked dates"}
 
 Available Events:
 ${eventsList}
 
-User Profile:
-- Name: ${userProfile.userProfile.name || "Not specified"}
-- Location: ${userProfile.userProfile.location || "Not specified"}
-- Current Travel Location: ${userProfile.userProfile.currentTravelLocation || "Not specified"}
-- Languages: ${userProfile.userProfile.languages?.join(", ") || "Not specified"}
-- Personality Traits: ${userProfile.userProfile.personalityTraits?.join(", ") || "Not specified"}
-- Hobbies and Interests: ${userProfile.userProfile.hobbiesAndInterests?.join(", ") || "Not specified"}
-- Goals: ${userProfile.userProfile.goals?.join(", ") || "Not specified"}
-- Additional Info: ${userProfile.userProfile.additionalInfo || "None"}
-- Nearest Airport: ${userProfile.userProfile.nearestAirport || "Not specified"}
+For each event, analyze how well it matches the user's profile and provide:
+1. A match score (0-100) based on:
+   - Location compatibility (20 points)
+   - Experience match (20 points)
+   - Destination type match (20 points)
+   - Personality fit (20 points)
+   - Price and accessibility (20 points)
 
-Event Preferences:
-- Preferred Experiences: ${userProfile.eventPreferences.preferredExperiences?.join(", ") || "Not specified"}
-- Preferred Destinations: ${userProfile.eventPreferences.preferredDestinations?.join(", ") || "Not specified"}
-- Seasonal Preferences: ${userProfile.eventPreferences.seasonalPreferences?.join(", ") || "Not specified"}
-- Group Size Preference: ${userProfile.eventPreferences.groupSizePreference?.join(", ") || "Not specified"}
-- Blocked Dates: ${userProfile.eventPreferences.blockedDates?.join(", ") || "None"}
-- Categories: ${userProfile.eventPreferences.categories?.join(", ") || "Not specified"}
-- Vibe Keywords: ${userProfile.eventPreferences.vibeKeywords?.join(", ") || "Not specified"}
-- Budget: ${userProfile.eventPreferences.budget || "Not specified"}
+2. Specific reasons in Spanish explaining why it matches or doesn't match
 
-Team Building Preferences:
-- Preferred Activities: ${userProfile.eventPreferences.teamBuildingPrefs?.preferredActivities?.join(", ") || "None"}
-- Location Preference: ${userProfile.eventPreferences.teamBuildingPrefs?.location || "Not specified"}
-- Duration Preference: ${userProfile.eventPreferences.teamBuildingPrefs?.duration || "Not specified"}
-- Additional Suggestions: ${userProfile.eventPreferences.teamBuildingPrefs?.suggestions || "None"}
+3. Whether it's a recommended event (isMatch: true/false)
 
-Other Information:
-- Calendar Availability: ${userProfile.calendarAvailability ? Object.entries(userProfile.calendarAvailability).map(([date, status]) => `${date}: ${status}`).join(", ") : "None"}
+Scoring Guidelines:
+- Give points for any matching aspect, even if it's not a perfect match
+- Consider partial matches (e.g., if an event matches 2 out of 3 preferred experiences, give partial points)
+- Don't penalize too heavily for non-matching aspects
+- Consider the overall value of the event, not just individual criteria
 
-For each event, provide a match score (0-100) and specific reasons why it matches or doesn't match. Only recommend events that:
-1. Match at least 3 key preferences
-2. Don't violate any restrictions
-3. Have a match score of 75 or higher
-4. Are within the user's budget range
-5. Match the user's preferred group size
+Format your response as JSON:
+{
+  "matches": [
+    {
+      "eventName": "Event Name",
+      "isMatch": true/false,
+      "score": number (0-100),
+      "reasons": [
+        "Reason 1 in Spanish",
+        "Reason 2 in Spanish"
+      ]
+    }
+  ]
+}
 
-Format your response as JSON: { "matches": [{ "eventName": string, "isMatch": boolean, "score": number, "reasons": string[] }] }
+IMPORTANT:
+- Consider events with a score of 40 or higher as potential matches
+- All reasons must be written in Spanish
+- Focus on positive matches rather than negative ones
+- Consider the user's personality traits and interests
+- Take into account the user's preferred experiences and destinations
+- Don't be too strict with the scoring - partial matches are acceptable`;
 
-IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language to explain why the event matches the user's profile.`;
+    console.log('=== OpenAI Prompt Content ===');
+    console.log(prompt);
+    console.log('=== End of Prompt ===');
 
     try {
       const openaiData = await makeOpenAIRequest(prompt);
@@ -214,23 +227,17 @@ IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language 
           // Clean the response to ensure it's valid JSON
           const cleanContent = content.replace(/^[^{]*({.*})[^}]*$/, '$1');
           const matchResults = JSON.parse(cleanContent);
+          
           if (matchResults.matches) {
             matchResults.matches.forEach((match: any) => {
-              if (match.isMatch && match.score >= 75) {
+              if (match.isMatch && match.score >= 40) {
                 const event = events.find((e: Event) => e.name === match.eventName);
                 if (event) {
-                  // Additional validation
-                  const isWithinBudget = validateBudget(event, userProfile.eventPreferences.budget);
-                  const matchesGroupSize = validateGroupSize(event, userProfile.eventPreferences.groupSizePreference);
-                  const matchesRestrictions = validateRestrictions(event, userProfile.restrictions);
-                  
-                  if (isWithinBudget && matchesGroupSize && matchesRestrictions) {
-                    recommendedEvents.push({
-                      ...event,
-                      matchScore: match.score,
-                      matchReasons: match.reasons
-                    });
-                  }
+                  recommendedEvents.push({
+                    ...event,
+                    matchScore: match.score,
+                    matchReasons: match.reasons
+                  });
                 }
               }
             });
@@ -241,11 +248,12 @@ IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language 
         }
       }
     } catch (error) {
+      console.error("OpenAI API error:", error);
       // If OpenAI API fails, implement a more sophisticated fallback mechanism
       console.warn("OpenAI API unavailable, falling back to advanced recommendations");
       events.forEach((event: Event) => {
         const score = calculateMatchScore(event, userProfile);
-        if (score >= 75) {
+        if (score >= 40) {
           recommendedEvents.push({
             ...event,
             matchScore: score,
@@ -256,75 +264,16 @@ IMPORTANT: All reasons must be written in Spanish. Use natural Spanish language 
     }
 
     // Sort by match score and limit to top 5 recommendations
-    return recommendedEvents
+    const sortedEvents = recommendedEvents
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, 5);
+    
+    console.log('Final recommended events:', sortedEvents);
+    return sortedEvents;
   } catch (error) {
     console.error("Error in getRecommendedEvents:", error);
     return [];
   }
-}
-
-function validateBudget(event: Event, budgetPreference: string | undefined): boolean {
-  if (!budgetPreference || !event.finalPrice) return true;
-  
-  const price = event.finalPrice;
-  switch (budgetPreference.toLowerCase()) {
-    case 'low':
-      return price <= 1000;
-    case 'medium':
-      return price > 1000 && price <= 3000;
-    case 'high':
-      return price > 3000;
-    default:
-      return true;
-  }
-}
-
-function validateGroupSize(event: Event, groupSizePreference: string[] | undefined): boolean {
-  if (!groupSizePreference || !event.maxParticipants) return true;
-  
-  const maxParticipants = event.maxParticipants;
-  return groupSizePreference.some(pref => {
-    switch (pref.toLowerCase()) {
-      case 'individual':
-        return maxParticipants <= 2;
-      case 'small group':
-        return maxParticipants > 2 && maxParticipants <= 10;
-      case 'large group':
-        return maxParticipants > 10;
-      default:
-        return true;
-    }
-  });
-}
-
-function validateRestrictions(event: Event, restrictions: any | undefined): boolean {
-  if (!restrictions) return true;
-  
-  const eventName = event.name.toLowerCase();
-  const eventDescription = event.description.toLowerCase();
-  
-  if (restrictions.avoidCrowdedDaytimeConferences) {
-    if (eventName.includes('conference') || eventDescription.includes('conference')) {
-      return false;
-    }
-  }
-  
-  if (restrictions.avoidOverlyFormalNetworking) {
-    if (eventName.includes('networking') || eventDescription.includes('networking')) {
-      return false;
-    }
-  }
-  
-  if (restrictions.avoidFamilyKidsEvents) {
-    if (eventName.includes('family') || eventName.includes('kids') || 
-        eventDescription.includes('family') || eventDescription.includes('kids')) {
-      return false;
-    }
-  }
-  
-  return true;
 }
 
 function calculateMatchScore(event: Event, userProfile: UserProfile): number {
@@ -357,15 +306,6 @@ function calculateMatchScore(event: Event, userProfile: UserProfile): number {
     score += weights.location;
   }
 
-  // Group size match
-  if (validateGroupSize(event, userProfile.eventPreferences.groupSizePreference)) {
-    score += weights.groupSize;
-  }
-
-  // Budget match
-  if (validateBudget(event, userProfile.eventPreferences.budget)) {
-    score += weights.budget;
-  }
 
   // Additional preferences match
   const matchingPreferences = [
@@ -399,14 +339,6 @@ function generateMatchReasons(event: Event, userProfile: UserProfile): string[] 
     event.location?.toLowerCase().includes(dest.toLowerCase())
   )) {
     reasons.push(`Location matches preferred destinations`);
-  }
-
-  if (validateGroupSize(event, userProfile.eventPreferences.groupSizePreference)) {
-    reasons.push(`Group size matches user preferences`);
-  }
-
-  if (validateBudget(event, userProfile.eventPreferences.budget)) {
-    reasons.push(`Price is within user's budget range`);
   }
 
   return reasons;
