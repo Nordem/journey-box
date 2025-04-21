@@ -124,8 +124,6 @@ async function makeOpenAIRequest(prompt: string, retryCount = 0): Promise<OpenAI
 
 export async function getRecommendedEvents(userProfile: UserProfile): Promise<RecommendedEvent[]> {
   try {
-    console.log('Starting getRecommendedEvents with profile:', userProfile);
-    
     const eventsResponse = await fetch('/api/events', {
       method: 'GET',
       headers: {
@@ -228,42 +226,21 @@ IMPORTANT:
         try {
           // Clean the response to ensure it's valid JSON
           const cleanContent = content.replace(/^[^{]*({.*})[^}]*$/, '$1');
-          const matchResults = JSON.parse(cleanContent);          
+          const matchResults = JSON.parse(cleanContent);
+          
           if (matchResults.matches) {
             matchResults.matches.forEach((match: any) => {
               if (match.isMatch && match.score >= 40) {
                 const event = events.find((e: Event) => e.name === match.eventName);
                 if (event) {
-                  // Additional validation
-                  const isWithinBudget = validateBudget(event, userProfile.eventPreferences.budget);
-                  const matchesGroupSize = validateGroupSize(event, userProfile.eventPreferences.groupSizePreference);
-                  const matchesRestrictions = validateRestrictions(event, userProfile.restrictions);
-                  
-                  if (isWithinBudget && matchesGroupSize && matchesRestrictions) {
-                    recommendedEvents.push({
-                      ...event,
-                      matchScore: match.score,
-                      matchReasons: match.reasons
-                    });
-                  } else {
-                    console.log('Event failed validations:', {
-                      isWithinBudget,
-                      matchesGroupSize,
-                      matchesRestrictions
-                    });
-                  }
-                } else {
-                  console.log('Event not found in database:', match.eventName);
+                  recommendedEvents.push({
+                    ...event,
+                    matchScore: match.score,
+                    matchReasons: match.reasons
+                  });
                 }
-              } else {
-                console.log('Match did not meet criteria:', {
-                  isMatch: match.isMatch,
-                  score: match.score
-                });
               }
             });
-          } else {
-            console.log('No matches found in OpenAI response');
           }
         } catch (parseError) {
           console.error("Error parsing OpenAI response:", parseError);
@@ -299,74 +276,6 @@ IMPORTANT:
   }
 }
 
-function validateBudget(event: Event, budgetPreference: string | undefined): boolean {
-  if (!budgetPreference || !event.finalPrice) return true;
-  
-  const price = event.finalPrice;
-  switch (budgetPreference.toLowerCase()) {
-    case 'low':
-      return price <= 1000;
-    case 'medium':
-      return price > 1000 && price <= 3000;
-    case 'high':
-      return price > 3000;
-    default:
-      return true;
-  }
-}
-
-function validateGroupSize(event: Event, groupSizePreference: string[] | undefined): boolean {
-  if (!groupSizePreference || !event.maxParticipants) return true;
-  
-  const maxParticipants = event.maxParticipants;
-  const preferences = groupSizePreference.map(pref => pref.toLowerCase());
-  
-  // If no specific preferences, allow all group sizes
-  if (preferences.length === 0) return true;
-  
-  // Check if any preference matches the event's group size
-  return preferences.some(pref => {
-    switch (pref) {
-      case 'individual':
-        return maxParticipants <= 5; // More lenient for individual
-      case 'small group':
-        return maxParticipants > 5 && maxParticipants <= 15; // More lenient for small groups
-      case 'large group':
-        return maxParticipants > 15; // More lenient for large groups
-      default:
-        return true; // Allow any group size for unknown preferences
-    }
-  });
-}
-
-function validateRestrictions(event: Event, restrictions: any | undefined): boolean {
-  if (!restrictions) return true;
-  
-  const eventName = event.name.toLowerCase();
-  const eventDescription = event.description.toLowerCase();
-  
-  if (restrictions.avoidCrowdedDaytimeConferences) {
-    if (eventName.includes('conference') || eventDescription.includes('conference')) {
-      return false;
-    }
-  }
-  
-  if (restrictions.avoidOverlyFormalNetworking) {
-    if (eventName.includes('networking') || eventDescription.includes('networking')) {
-      return false;
-    }
-  }
-  
-  if (restrictions.avoidFamilyKidsEvents) {
-    if (eventName.includes('family') || eventName.includes('kids') || 
-        eventDescription.includes('family') || eventDescription.includes('kids')) {
-      return false;
-    }
-  }
-  
-  return true;
-}
-
 function calculateMatchScore(event: Event, userProfile: UserProfile): number {
   let score = 0;
   const maxScore = 100;
@@ -397,15 +306,6 @@ function calculateMatchScore(event: Event, userProfile: UserProfile): number {
     score += weights.location;
   }
 
-  // Group size match
-  if (validateGroupSize(event, userProfile.eventPreferences.groupSizePreference)) {
-    score += weights.groupSize;
-  }
-
-  // Budget match
-  if (validateBudget(event, userProfile.eventPreferences.budget)) {
-    score += weights.budget;
-  }
 
   // Additional preferences match
   const matchingPreferences = [
@@ -439,14 +339,6 @@ function generateMatchReasons(event: Event, userProfile: UserProfile): string[] 
     event.location?.toLowerCase().includes(dest.toLowerCase())
   )) {
     reasons.push(`Location matches preferred destinations`);
-  }
-
-  if (validateGroupSize(event, userProfile.eventPreferences.groupSizePreference)) {
-    reasons.push(`Group size matches user preferences`);
-  }
-
-  if (validateBudget(event, userProfile.eventPreferences.budget)) {
-    reasons.push(`Price is within user's budget range`);
   }
 
   return reasons;
