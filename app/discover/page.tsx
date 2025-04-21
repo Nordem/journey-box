@@ -257,24 +257,9 @@ export default function DiscoverPage() {
                             <span className="text-sm text-indigo-200">Coincidencia</span>
                             <span className="text-white font-medium">{event.matchScore}%</span>
                           </div>
-                          {event.matchReasons && event.matchReasons.length > 0 && (
-                            <div className="mt-2 space-y-1">
-                              <span className="text-xs text-indigo-200">Razones de la recomendación:</span>
-                              <ul className="list-disc list-inside space-y-1">
-                                {event.matchReasons.map((reason, idx) => (
-                                  <li key={idx} className="text-xs text-indigo-200/80">{reason}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>
-                    <Button 
-                      className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
-                    >
-                      Ver Detalles
-                    </Button>
                   </CardContent>
                 </Card>
               ))}
