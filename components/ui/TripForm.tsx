@@ -21,42 +21,90 @@ import {
     Camera,
     User,
     X,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { cn } from "@/lib/utils"
+import { DateRange, DayPicker } from "react-day-picker"
+import { SelectRangeEventHandler } from "react-day-picker"
+import { Calendar as CalendarIcon } from "lucide-react"
+import "react-day-picker/dist/style.css"
 
 interface TripFormProps {
-    onSubmit: (formData: FormData) => void
+    onSubmit: (formData: any) => void
     onCancel: () => void
     editingTrip?: any
 }
 
+interface FormData {
+    name: string
+    location: string
+    description: string
+    startDate: string
+    endDate: string
+    maxParticipants: string
+    originalPrice: string
+    finalPrice: string
+    tripManager: string
+    hotelName: string
+    hotelDescription: string
+    hotelAmenities: string
+    hotelIncludes: string
+    hotelExcludes: string
+    imageUrl: string
+    galleryImages: string[]
+}
+
+interface SubmitData {
+    name: string
+    location: string
+    description: string
+    startDate: string
+    endDate: string
+    maxParticipants: number
+    originalPrice: number
+    finalPrice: number
+    tripManager: string
+    hotelName: string
+    hotelDescription: string
+    hotelAmenities: string[]
+    hotelIncludes: string[]
+    hotelExcludes: string[]
+    imageUrl: string
+    galleryImages: string[]
+}
+
+interface CompleteDateRange {
+    from: Date;
+    to: Date;
+}
+
 export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormProps) {
     const { toast } = useToast();
-    // Add state to track form data
-    const [formData, setFormData] = useState({
-        title: editingTrip?.title || "",
+    const [formData, setFormData] = useState<FormData>({
+        name: editingTrip?.title || "",
         location: editingTrip?.location || "",
-        dates: editingTrip?.dates || "",
-        availability: editingTrip?.availability || "",
-        employeePrice: editingTrip?.employeePrice || "",
-        regularPrice: editingTrip?.regularPrice || "",
         description: editingTrip?.description || "",
+        startDate: editingTrip?.startDate || "",
+        endDate: editingTrip?.endDate || "",
+        maxParticipants: editingTrip?.availability?.toString() || "",
+        originalPrice: editingTrip?.regularPrice?.toString() || "",
+        finalPrice: editingTrip?.employeePrice?.toString() || "",
         tripManager: editingTrip?.tripManager || "",
-        hasVideo: editingTrip?.hasVideo || false,
-        videoUrl: editingTrip?.videoUrl || "",
         hotelName: editingTrip?.hotel?.name || "",
         hotelDescription: editingTrip?.hotel?.description || "",
         hotelAmenities: editingTrip?.hotel?.amenities?.join(", ") || "",
-        includes: editingTrip?.includes?.join("\n") || "",
-        excludes: editingTrip?.excludes?.join("\n") || "",
-        day1Title: editingTrip?.itinerary?.[0]?.title || "Llegada y bienvenida",
-        day1Activities: editingTrip?.itinerary?.[0]?.activities?.join("\n") || "",
-        day2Title: editingTrip?.itinerary?.[1]?.title || "Exploración",
-        day2Activities: editingTrip?.itinerary?.[1]?.activities?.join("\n") || "",
+        hotelIncludes: editingTrip?.includes?.join("\n") || "",
+        hotelExcludes: editingTrip?.excludes?.join("\n") || "",
         imageUrl: editingTrip?.imageUrl || "",
+        galleryImages: editingTrip?.galleryImages || [],
     });
 
     // Add state for image preview
@@ -70,55 +118,51 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         })) || []
     );
 
-    // Add state to track additional days
-    const [additionalDays, setAdditionalDays] = useState<Array<{ day: number, title: string, activities: string }>>(
-        editingTrip?.itinerary && editingTrip.itinerary.length > 2
-            ? editingTrip.itinerary.slice(2).map((day: any, index: number) => ({
-                day: index + 3,
-                title: day.title || `Día ${index + 3}`,
-                activities: day.activities?.join("\n") || ""
-            }))
-            : []
-    );
+    // Add state for date range
+    const [date, setDate] = useState<DateRange | undefined>({
+        from: editingTrip?.startDate ? new Date(editingTrip.startDate) : undefined,
+        to: editingTrip?.endDate ? new Date(editingTrip.endDate) : undefined,
+    });
 
     // Update form data when editingTrip changes
     useEffect(() => {
         if (editingTrip) {
             setFormData({
-                title: editingTrip.title || "",
+                name: editingTrip.title || "",
                 location: editingTrip.location || "",
-                dates: editingTrip.dates || "",
-                availability: editingTrip.availability || "",
-                employeePrice: editingTrip.employeePrice || "",
-                regularPrice: editingTrip.regularPrice || "",
                 description: editingTrip.description || "",
+                startDate: editingTrip.startDate || "",
+                endDate: editingTrip.endDate || "",
+                maxParticipants: editingTrip.availability?.toString() || "",
+                originalPrice: editingTrip.regularPrice?.toString() || "",
+                finalPrice: editingTrip.employeePrice?.toString() || "",
                 tripManager: editingTrip.tripManager || "",
-                hasVideo: editingTrip.hasVideo || false,
-                videoUrl: editingTrip.videoUrl || "",
                 hotelName: editingTrip.hotel?.name || "",
                 hotelDescription: editingTrip.hotel?.description || "",
                 hotelAmenities: editingTrip.hotel?.amenities?.join(", ") || "",
-                includes: editingTrip.includes?.join("\n") || "",
-                excludes: editingTrip.excludes?.join("\n") || "",
-                day1Title: editingTrip.itinerary?.[0]?.title || "Llegada y bienvenida",
-                day1Activities: editingTrip.itinerary?.[0]?.activities?.join("\n") || "",
-                day2Title: editingTrip.itinerary?.[1]?.title || "Exploración",
-                day2Activities: editingTrip.itinerary?.[1]?.activities?.join("\n") || "",
+                hotelIncludes: editingTrip.includes?.join("\n") || "",
+                hotelExcludes: editingTrip.excludes?.join("\n") || "",
                 imageUrl: editingTrip.imageUrl || "",
+                galleryImages: editingTrip.galleryImages || [],
             });
-
-            // Set additional days
-            if (editingTrip.itinerary && editingTrip.itinerary.length > 2) {
-                setAdditionalDays(
-                    editingTrip.itinerary.slice(2).map((day: any, index: number) => ({
-                        day: index + 3,
-                        title: day.title || `Día ${index + 3}`,
-                        activities: day.activities?.join("\n") || ""
-                    }))
-                );
-            }
         }
     }, [editingTrip]);
+
+    // Type guard function to check if date range is complete
+    const isCompleteDateRange = (range: DateRange | undefined): range is CompleteDateRange => {
+        return !!range && !!range.from && !!range.to;
+    };
+
+    // Update form data when date range changes
+    useEffect(() => {
+        if (isCompleteDateRange(date)) {
+            setFormData(prev => ({
+                ...prev,
+                startDate: date.from.toISOString(),
+                endDate: date.to.toISOString(),
+            }));
+        }
+    }, [date]);
 
     // Handle input changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -130,41 +174,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         } else {
             setFormData(prev => ({ ...prev, [id]: value }));
         }
-    };
-
-    // Handle additional day input changes
-    const handleAdditionalDayChange = (index: number, field: 'title' | 'activities', value: string) => {
-        setAdditionalDays(prev => {
-            const updated = [...prev];
-            updated[index] = { ...updated[index], [field]: value };
-            return updated;
-        });
-    };
-
-    // Add a new day
-    const addNewDay = () => {
-        setAdditionalDays(prev => [
-            ...prev,
-            {
-                day: prev.length + 3,
-                title: `Día ${prev.length + 3}`,
-                activities: ""
-            }
-        ]);
-    };
-
-    // Remove a day
-    const removeDay = (index: number) => {
-        setAdditionalDays(prev => {
-            const updated = [...prev];
-            updated.splice(index, 1);
-            // Update day numbers
-            return updated.map((day, i) => ({
-                ...day,
-                day: i + 3,
-                title: day.title.includes("Día") ? `Día ${i + 3}` : day.title
-            }));
-        });
     };
 
     // Handle image upload
@@ -232,79 +241,84 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
         // Check if all required fields are filled
         const requiredFields = [
-            { id: "title", value: formData.title, label: "Título del Evento" },
+            { id: "name", value: formData.name, label: "Título del Evento" },
             { id: "location", value: formData.location, label: "Ubicación" },
-            { id: "dates", value: formData.dates, label: "Fechas" },
-            { id: "availability", value: formData.availability, label: "Disponibilidad" },
-            { id: "employeePrice", value: formData.employeePrice, label: "Precio Empleado" },
-            { id: "regularPrice", value: formData.regularPrice, label: "Precio Regular" },
+            { id: "startDate", value: formData.startDate, label: "Fecha de inicio" },
+            { id: "endDate", value: formData.endDate, label: "Fecha de fin" },
+            { id: "maxParticipants", value: formData.maxParticipants, label: "Disponibilidad" },
+            { id: "originalPrice", value: formData.originalPrice, label: "Precio Original" },
+            { id: "finalPrice", value: formData.finalPrice, label: "Precio Final" },
             { id: "description", value: formData.description, label: "Descripción" },
             { id: "tripManager", value: formData.tripManager, label: "Gerente del Evento" },
             { id: "hotelName", value: formData.hotelName, label: "Nombre del Hotel" },
             { id: "hotelDescription", value: formData.hotelDescription, label: "Descripción del Hotel" },
             { id: "hotelAmenities", value: formData.hotelAmenities, label: "Amenidades del Hotel" },
-            { id: "includes", value: formData.includes, label: "Incluye" },
-            { id: "excludes", value: formData.excludes, label: "No Incluye" },
-            { id: "day1Title", value: formData.day1Title, label: "Título del Día 1" },
-            { id: "day1Activities", value: formData.day1Activities, label: "Actividades del Día 1" },
-            { id: "day2Title", value: formData.day2Title, label: "Título del Día 2" },
-            { id: "day2Activities", value: formData.day2Activities, label: "Actividades del Día 2" },
+            { id: "hotelIncludes", value: formData.hotelIncludes, label: "Incluye" },
+            { id: "hotelExcludes", value: formData.hotelExcludes, label: "No Incluye" },
         ];
 
-        // Check for empty fields
-        const emptyField = requiredFields.find(field => !field.value.trim());
-        if (emptyField) {
+        const missingFields = requiredFields.filter(field => !field.value);
+        if (missingFields.length > 0) {
             setAlert({
-                title: "Campo requerido",
-                description: `Por favor, completa todos los campos para poder guardar el evento.`,
+                title: "Campos requeridos",
+                description: `Por favor completa los siguientes campos: ${missingFields.map(f => f.label).join(", ")}`,
             });
-
-            // Automatically clear the alert after 5 seconds
-            setTimeout(() => {
-                setAlert(null);
-            }, 3000);
-
             return;
         }
 
-        // Check if an image has been uploaded
-        if (!imagePreview) {
+        // Check if date range is selected
+        if (!isCompleteDateRange(date)) {
             setAlert({
-                title: "Imagen requerida",
-                description: "Por favor, sube una imagen antes de guardar el evento.",
+                title: "Fechas requeridas",
+                description: "Por favor selecciona un rango de fechas para el evento",
             });
-
-            // Automatically clear the alert after 5 seconds
-            setTimeout(() => {
-                setAlert(null);
-            }, 3000);
-
             return;
         }
 
-        // Create a FormData object with the current state
-        const formDataObj = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-            formDataObj.append(key, value.toString());
-        });
+        // Validate price fields
+        const originalPrice = parseFloat(formData.originalPrice);
+        const finalPrice = parseFloat(formData.finalPrice);
 
-        // Add gallery images to FormData
-        formDataObj.append("galleryImagesCount", galleryImages.length.toString());
-        galleryImages.forEach((img, index) => {
-            formDataObj.append(`galleryImage${index}`, img.url);
-        });
+        if (isNaN(originalPrice) || isNaN(finalPrice)) {
+            setAlert({
+                title: "Precios inválidos",
+                description: "Por favor ingresa valores numéricos válidos para los precios",
+            });
+            return;
+        }
 
-        // Add additional days to FormData
-        additionalDays.forEach((day, index) => {
-            formDataObj.append(`additionalDay${index}Title`, day.title);
-            formDataObj.append(`additionalDay${index}Activities`, day.activities);
-        });
+        if (originalPrice <= 0 || finalPrice <= 0) {
+            setAlert({
+                title: "Precios inválidos",
+                description: "Los precios deben ser mayores a 0",
+            });
+            return;
+        }
 
-        // Add the count of additional days
-        formDataObj.append("additionalDaysCount", additionalDays.length.toString());
+        if (finalPrice > originalPrice) {
+            setAlert({
+                title: "Precios inválidos",
+                description: "El precio final no puede ser mayor al precio original",
+            });
+            return;
+        }
 
-        // Call the original onSubmit with the FormData
-        onSubmit(formDataObj);
+        // Prepare data for submission
+        const submitData: SubmitData = {
+            ...formData,
+            maxParticipants: parseInt(formData.maxParticipants),
+            originalPrice: originalPrice,
+            finalPrice: finalPrice,
+            startDate: date.from.toISOString(),
+            endDate: date.to.toISOString(),
+            hotelAmenities: formData.hotelAmenities.split(",").map(item => item.trim()),
+            hotelIncludes: formData.hotelIncludes.split("\n").filter(item => item.trim()),
+            hotelExcludes: formData.hotelExcludes.split("\n").filter(item => item.trim()),
+            imageUrl: formData.imageUrl,
+            galleryImages: galleryImages.map(img => img.url),
+        };
+
+        onSubmit(submitData);
     };
 
     return (
@@ -327,7 +341,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                         <AlertDescription>{alert.description}</AlertDescription>
                     </Alert>
                 )}
-                <form onSubmit={handleFormSubmit} className="space-y-6">
+                <form onSubmit={handleFormSubmit} className="space-y-8">
                     <Tabs defaultValue="basic" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 mb-6 bg-transparent border border-indigo-500/30 rounded-xl p-2">
                             <TabsTrigger
@@ -348,12 +362,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                             >
                                 Detalles
                             </TabsTrigger>
-                            <TabsTrigger
-                                value="itinerary"
-                                className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
-                            >
-                                Itinerario
-                            </TabsTrigger>
                         </TabsList>
 
                         <ScrollArea className="h-[calc(100vh-300px)] md:h-[calc(100vh-250px)] pr-4">
@@ -362,9 +370,9 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label>Título del Evento</Label>
                                         <Input
-                                            id="title"
+                                            id="name"
                                             placeholder="e.g., Summer Conference 2024"
-                                            value={formData.title}
+                                            value={formData.name}
                                             onChange={handleInputChange}
                                             required
                                         />
@@ -385,33 +393,107 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     </div>
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label>Fechas del Evento</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-full justify-start text-left font-normal",
+                                                    !date && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {date?.from ? (
+                                                    date.to ? (
+                                                        <>
+                                                            {format(date.from, "PPP", { locale: es })} -{" "}
+                                                            {format(date.to, "PPP", { locale: es })}
+                                                        </>
+                                                    ) : (
+                                                        format(date.from, "PPP", { locale: es })
+                                                    )
+                                                ) : (
+                                                    <span>Selecciona un rango de fechas</span>
+                                                )}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <DayPicker
+                                                mode="range"
+                                                defaultMonth={date?.from}
+                                                selected={date}
+                                                onSelect={setDate}
+                                                numberOfMonths={2}
+                                                locale={es}
+                                                className="p-3"
+                                                classNames={{
+                                                    months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                                                    month: "space-y-4",
+                                                    caption: "flex justify-center pt-1 relative items-center",
+                                                    caption_label: "text-sm font-medium",
+                                                    nav: "space-x-1 flex items-center",
+                                                    nav_button: cn(
+                                                        "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+                                                    ),
+                                                    nav_button_previous: "absolute left-1",
+                                                    nav_button_next: "absolute right-1",
+                                                    table: "w-full border-collapse space-y-1",
+                                                    head_row: "flex",
+                                                    head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                                                    row: "flex w-full mt-2",
+                                                    cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                                                    day: cn(
+                                                        "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+                                                    ),
+                                                    day_range_end: "day-range-end",
+                                                    day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                                                    day_today: "bg-accent text-accent-foreground",
+                                                    day_outside: "text-muted-foreground opacity-50",
+                                                    day_disabled: "text-muted-foreground opacity-50",
+                                                    day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                                                    day_hidden: "invisible",
+                                                }}
+                                                components={{
+                                                    IconLeft: () => <ChevronLeft className="h-4 w-4" />,
+                                                    IconRight: () => <ChevronRight className="h-4 w-4" />,
+                                                }}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Fechas</Label>
+                                        <Label>Disponibilidad (%)</Label>
                                         <div className="relative">
-                                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
-                                                id="dates"
-                                                placeholder="e.g., June 15-18, 2024"
+                                                id="maxParticipants"
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                placeholder="e.g., 75"
                                                 className="pl-10"
-                                                value={formData.dates}
+                                                value={formData.maxParticipants}
                                                 onChange={handleInputChange}
                                                 required
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Disponibilidad (%)</Label>
+                                        <Label>Precio Original</Label>
                                         <div className="relative">
-                                            <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
-                                                id="availability"
+                                                id="originalPrice"
                                                 type="number"
                                                 min="0"
-                                                max="100"
-                                                placeholder="e.g., 75"
+                                                step="0.01"
+                                                placeholder="e.g., 1500.00"
                                                 className="pl-10"
-                                                value={formData.availability}
+                                                value={formData.originalPrice}
                                                 onChange={handleInputChange}
                                                 required
                                             />
@@ -421,32 +503,17 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Precio Regular (USD)</Label>
+                                        <Label>Precio Final</Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
-                                                id="regularPrice"
+                                                id="finalPrice"
                                                 type="number"
                                                 min="0"
-                                                placeholder="e.g., 1200"
+                                                step="0.01"
+                                                placeholder="e.g., 1200.00"
                                                 className="pl-10"
-                                                value={formData.regularPrice}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Precio Empleado (USD)</Label>
-                                        <div className="relative">
-                                            <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                id="employeePrice"
-                                                type="number"
-                                                min="0"
-                                                placeholder="e.g., 300"
-                                                className="pl-10"
-                                                value={formData.employeePrice}
+                                                value={formData.finalPrice}
                                                 onChange={handleInputChange}
                                                 required
                                             />
@@ -534,36 +601,8 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                     <div className="space-y-2">
                                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                                            <Label htmlFor="videoUrl">URL del Video (opcional)</Label>
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    id="hasVideo"
-                                                    className="mr-2"
-                                                    checked={formData.hasVideo}
-                                                    onChange={handleInputChange}
-                                                />
-                                                <Label htmlFor="hasVideo" className="text-sm">
-                                                    Tiene video
-                                                </Label>
-                                            </div>
+                                            <Label htmlFor="galleryImages">Galería de Imágenes</Label>
                                         </div>
-                                        <Input
-                                            id="videoUrl"
-                                            placeholder="e.g., https://example.com/video.mp4"
-                                            value={formData.videoUrl}
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-
-                                    <Separator />
-
-                                    <div>
-                                        <h3 className="font-medium mb-2">Galería de Imágenes</h3>
-                                        <p className="text-sm text-muted-foreground mb-4">
-                                            Agrega más imágenes para mostrar en la galería del evento.
-                                        </p>
-
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                             {galleryImages.map((img) => (
                                                 <div key={img.id} className="relative group">
@@ -661,135 +700,28 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <h3 className="text-md font-medium">Incluye y No Incluye</h3>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="includes">Incluye (un elemento por línea)</Label>
+                                        <Label htmlFor="hotelIncludes">Incluye (un elemento por línea)</Label>
                                         <Textarea
-                                            id="includes"
+                                            id="hotelIncludes"
                                             placeholder="Ej: Vuelos redondos Ciudad de México - Cancún&#10;Traslados aeropuerto - hotel - aeropuerto&#10;3 noches de alojamiento en hotel 5 estrellas"
                                             className="min-h-[120px]"
-                                            value={formData.includes}
+                                            value={formData.hotelIncludes}
                                             onChange={handleInputChange}
                                             required
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="excludes">No Incluye (un elemento por línea)</Label>
+                                        <Label htmlFor="hotelExcludes">No Incluye (un elemento por línea)</Label>
                                         <Textarea
-                                            id="excludes"
+                                            id="hotelExcludes"
                                             placeholder="Ej: Gastos personales y propinas&#10;Actividades no mencionadas en el itinerario&#10;Tratamientos de spa"
                                             className="min-h-[120px]"
-                                            value={formData.excludes}
+                                            value={formData.hotelExcludes}
                                             onChange={handleInputChange}
                                             required
                                         />
                                     </div>
-                                </div>
-                            </TabsContent>
-
-                            <TabsContent value="itinerary" className="mt-0 space-y-4">
-                                <div className="space-y-6">
-                                    <div className="p-4 rounded-lg border">
-                                        <h4 className="text-md font-medium mb-3 flex items-center">
-                                            <Plane size={18} className="text-muted-foreground mr-2" />
-                                            Día 1: Llegada y bienvenida
-                                        </h4>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="day1Title">Título del Día</Label>
-                                            <Input
-                                                id="day1Title"
-                                                value={formData.day1Title}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-2 mt-3">
-                                            <Label htmlFor="day1Activities">Actividades (una por línea)</Label>
-                                            <Textarea
-                                                id="day1Activities"
-                                                placeholder="Ej: Vuelo Ciudad de México - Cancún&#10;Traslado al hotel y check-in&#10;Cena de bienvenida en el restaurante principal"
-                                                className="min-h-[100px]"
-                                                value={formData.day1Activities}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="p-4 rounded-lg border">
-                                        <h4 className="text-md font-medium mb-3 flex items-center">
-                                            <Camera size={18} className="text-muted-foreground mr-2" />
-                                            Día 2: Exploración
-                                        </h4>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="day2Title">Título del Día</Label>
-                                            <Input
-                                                id="day2Title"
-                                                value={formData.day2Title}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-2 mt-3">
-                                            <Label htmlFor="day2Activities">Actividades (una por línea)</Label>
-                                            <Textarea
-                                                id="day2Activities"
-                                                placeholder="Ej: Desayuno buffet en el hotel&#10;Excursión a las ruinas arqueológicas&#10;Almuerzo en restaurante local con vista al mar"
-                                                className="min-h-[100px]"
-                                                value={formData.day2Activities}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Additional Days */}
-                                    {additionalDays.map((day, index) => (
-                                        <div key={index} className="p-4 rounded-lg border">
-                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3">
-                                                <h4 className="text-md font-medium flex items-center">
-                                                    <Plane size={18} className="text-muted-foreground mr-2" />
-                                                    Día {day.day}: {day.title}
-                                                </h4>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => removeDay(index)}
-                                                >
-                                                    <X size={16} />
-                                                </Button>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor={`additionalDay${index}Title`}>Título del Día</Label>
-                                                <Input
-                                                    id={`additionalDay${index}Title`}
-                                                    value={day.title}
-                                                    onChange={(e) => handleAdditionalDayChange(index, 'title', e.target.value)}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="space-y-2 mt-3">
-                                                <Label htmlFor={`additionalDay${index}Activities`}>Actividades (una por línea)</Label>
-                                                <Textarea
-                                                    id={`additionalDay${index}Activities`}
-                                                    placeholder="Ej: Desayuno buffet en el hotel&#10;Excursión a las ruinas arqueológicas&#10;Almuerzo en restaurante local con vista al mar"
-                                                    className="min-h-[100px]"
-                                                    value={day.activities}
-                                                    onChange={(e) => handleAdditionalDayChange(index, 'activities', e.target.value)}
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="w-full"
-                                        onClick={addNewDay}
-                                    >
-                                        <Plus size={16} className="mr-2" /> Añadir otro día
-                                    </Button>
                                 </div>
                             </TabsContent>
                         </ScrollArea>

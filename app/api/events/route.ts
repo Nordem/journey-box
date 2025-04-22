@@ -8,20 +8,28 @@ export async function GET() {
       select: {
         id: true,
         name: true,
-        activities: true,
-        category: true,
+        location: true,
         city: true,
+        state: true,
         country: true,
         description: true,
+        startDate: true,
         endDate: true,
         highlights: true,
         isHighlight: true,
         maxParticipants: true,
         originalPrice: true,
         finalPrice: true,
-        startDate: true,
-        state: true
-      }
+        tripManager: true,
+        hotelName: true,
+        hotelDescription: true,
+        hotelAmenities: true,
+        hotelIncludes: true,
+        hotelExcludes: true
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     if (!events || events.length === 0) {
@@ -32,26 +40,128 @@ export async function GET() {
     const formattedEvents = events.map(event => ({
       id: event.id,
       name: event.name,
-      category: event.category,
+      location: event.location,
       city: event.city,
       state: event.state,
       country: event.country,
       description: event.description,
-      startDate: event.startDate.toISOString(),
-      endDate: event.endDate.toISOString(),
-      activities: event.activities || [],
+      startDate: event.startDate?.toISOString() || null,
+      endDate: event.endDate?.toISOString() || null,
       highlights: event.highlights || [],
       maxParticipants: event.maxParticipants,
       originalPrice: event.originalPrice,
       finalPrice: event.finalPrice,
-      isHighlight: event.isHighlight
+      isHighlight: event.isHighlight,
+      tripManager: event.tripManager,
+      hotelName: event.hotelName,
+      hotelDescription: event.hotelDescription,
+      hotelAmenities: event.hotelAmenities || [],
+      hotelIncludes: event.hotelIncludes || [],
+      hotelExcludes: event.hotelExcludes || []
     }));
 
     return NextResponse.json({ events: formattedEvents });
   } catch (error) {
     console.error('Error fetching events:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch events' },
+      { error: 'Error fetching events' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+
+    const event = await prisma.event.create({
+      data: {
+        name: data.name,
+        location: data.location,
+        description: data.description,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        maxParticipants: parseInt(data.maxParticipants),
+        originalPrice: parseFloat(data.originalPrice),
+        finalPrice: parseFloat(data.finalPrice),
+        tripManager: data.tripManager,
+        hotelName: data.hotelName,
+        hotelDescription: data.hotelDescription,
+        hotelAmenities: data.hotelAmenities,
+        hotelIncludes: data.hotelIncludes,
+        hotelExcludes: data.hotelExcludes,
+      },
+    });
+
+    return NextResponse.json(event);
+  } catch (error) {
+    console.error("Error creating event:", error);
+    return NextResponse.json(
+      { error: "Error creating event" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const data = await request.json();
+
+    const event = await prisma.event.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        name: data.name,
+        location: data.location,
+        description: data.description,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        maxParticipants: parseInt(data.maxParticipants),
+        originalPrice: parseFloat(data.originalPrice),
+        finalPrice: parseFloat(data.finalPrice),
+        tripManager: data.tripManager,
+        hotelName: data.hotelName,
+        hotelDescription: data.hotelDescription,
+        hotelAmenities: data.hotelAmenities,
+        hotelIncludes: data.hotelIncludes,
+        hotelExcludes: data.hotelExcludes,
+      },
+    });
+
+    return NextResponse.json(event);
+  } catch (error) {
+    console.error("Error updating event:", error);
+    return NextResponse.json(
+      { error: "Error updating event" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Event ID is required" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.event.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    return NextResponse.json(
+      { error: "Error deleting event" },
       { status: 500 }
     );
   }
