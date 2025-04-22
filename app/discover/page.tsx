@@ -44,6 +44,18 @@ export default function DiscoverPage() {
 
       const data = await response.json();
       setAllEvents(data.events);
+
+      // Store the current events count in session storage
+      const currentCount = data.events.length;
+      const cachedCount = sessionStorage.getItem('eventsCount');
+      
+      // If counts differ or no cached count exists, update the cache
+      if (cachedCount === null || parseInt(cachedCount) !== currentCount) {
+        sessionStorage.setItem('eventsCount', currentCount.toString());
+        return true; // Indicate that events count has changed
+      }
+      
+      return false; // Indicate that events count has not changed
     } catch (error) {
       console.error('Error fetching events:', error);
       toast({
@@ -51,15 +63,16 @@ export default function DiscoverPage() {
         description: "Failed to fetch events. Please try again later.",
         variant: "destructive",
       });
+      return false;
     } finally {
       setLoadingAllEvents(false);
     }
   };
 
   // Function to fetch user profile data
-  const fetchUserData = async (userId: string) => {
+  const fetchUserData = async (userId: string, forceRefresh: boolean = false) => {
     try {
-      setLoadingRecommendedEvents(true); // Set loading state at the start
+      setLoadingRecommendedEvents(true);
       const response = await fetch(`/api/user/${userId}`, {
         method: 'GET',
         headers: {
@@ -89,43 +102,56 @@ export default function DiscoverPage() {
           });
           router.push('/register');
         } else {
-          // Keep loading state true while fetching recommendations
-          const recommendedEvents = await getRecommendedEvents({
-            userProfile: {
-              name: data.userProfile.name,
-              location: data.userProfile.location,
-              currentTravelLocation: data.userProfile.currentTravelLocation || "",
-              languages: data.userProfile.languages || [],
-              personalityTraits: data.userProfile.personalityTraits || [],
-              goals: data.userProfile.goals || [],
-              hobbiesAndInterests: data.userProfile.hobbiesAndInterests || [],
-              additionalInfo: data.userProfile.additionalInfo || "",
-              nearestAirport: data.userProfile.nearestAirport || ""
-            },
-            eventPreferences: {
-              categories: data.eventPreferences?.categories || [],
-              vibeKeywords: data.eventPreferences?.vibeKeywords || [],
-              budget: data.eventPreferences?.budget || "",
-              preferredExperiences: data.eventPreferences?.preferredExperiences || [],
-              preferredDestinations: data.eventPreferences?.preferredDestinations || [],
-              seasonalPreferences: data.eventPreferences?.seasonalPreferences || [],
-              groupSizePreference: data.eventPreferences?.groupSizePreference || [],
-              blockedDates: data.eventPreferences?.blockedDates || [],
-              teamBuildingPrefs: data.eventPreferences?.teamBuildingPrefs || {
-                preferredActivities: [],
-                location: "both",
-                duration: "half_day",
-                suggestions: ""
-              }
-            },
-            restrictions: data.restrictions || {},
-            calendarAvailability: data.calendarEvents?.reduce((acc: any, event: any) => {
-              acc[event.date] = event.status;
-              return acc;
-            }, {}) || {}
-          });
+          // Check if events count has changed
+          const eventsCountChanged = await fetchAllEvents();
+          
+          // Get cached recommendations
+          const cachedResponse = sessionStorage.getItem('lastRecommendedEvents');
+          
+          if (!forceRefresh && !eventsCountChanged && cachedResponse) {
+            // Use cached response if events count hasn't changed
+            setRecommendedEvents(JSON.parse(cachedResponse));
+          } else {
+            // Fetch new recommendations
+            const recommendedEvents = await getRecommendedEvents({
+              userProfile: {
+                name: data.userProfile.name,
+                location: data.userProfile.location,
+                currentTravelLocation: data.userProfile.currentTravelLocation || "",
+                languages: data.userProfile.languages || [],
+                personalityTraits: data.userProfile.personalityTraits || [],
+                goals: data.userProfile.goals || [],
+                hobbiesAndInterests: data.userProfile.hobbiesAndInterests || [],
+                additionalInfo: data.userProfile.additionalInfo || "",
+                nearestAirport: data.userProfile.nearestAirport || ""
+              },
+              eventPreferences: {
+                categories: data.eventPreferences?.categories || [],
+                vibeKeywords: data.eventPreferences?.vibeKeywords || [],
+                budget: data.eventPreferences?.budget || "",
+                preferredExperiences: data.eventPreferences?.preferredExperiences || [],
+                preferredDestinations: data.eventPreferences?.preferredDestinations || [],
+                seasonalPreferences: data.eventPreferences?.seasonalPreferences || [],
+                groupSizePreference: data.eventPreferences?.groupSizePreference || [],
+                blockedDates: data.eventPreferences?.blockedDates || [],
+                teamBuildingPrefs: data.eventPreferences?.teamBuildingPrefs || {
+                  preferredActivities: [],
+                  location: "both",
+                  duration: "half_day",
+                  suggestions: ""
+                }
+              },
+              restrictions: data.restrictions || {},
+              calendarAvailability: data.calendarEvents?.reduce((acc: any, event: any) => {
+                acc[event.date] = event.status;
+                return acc;
+              }, {}) || {}
+            });
 
-          setRecommendedEvents(recommendedEvents);
+            setRecommendedEvents(recommendedEvents);
+            // Cache the new recommendations
+            sessionStorage.setItem('lastRecommendedEvents', JSON.stringify(recommendedEvents));
+          }
         }
       }
     } catch (error) {
@@ -144,7 +170,7 @@ export default function DiscoverPage() {
     setIsRefreshing(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      await Promise.all([fetchAllEvents(), fetchUserData(session.user.id)]);
+      await Promise.all([fetchAllEvents(), fetchUserData(session.user.id, true)]);
     }
     setIsRefreshing(false);
   };
