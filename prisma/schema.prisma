@@ -137,7 +137,12 @@ model Event {
   state           String?
   date            DateTime?
   location        String?
-  music           String[]
+  tripManager     String?
+  hotelName       String?
+  hotelDescription String?
+  hotelAmenities  String[]
+  hotelIncludes   String[]
+  hotelExcludes   String[]
 }
 
 enum EventCategory {
