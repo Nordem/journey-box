@@ -2352,7 +2352,7 @@ export default function ProfilePage() {
                               className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                               onClick={handleSaveBlockedDates}
                             >
-                              <Save size={12} className="mr-1" /> Guardar fechas
+                              <Save size={12} className="mr-1" /> Guardar
                             </Button>
                           </div>
                         )}
