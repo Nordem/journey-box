@@ -120,29 +120,26 @@ model Deliverable {
 model Event {
   id              String        @id @default(uuid())
   name            String
-  activities      String[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  category        EventCategory
-  city            String
+  location        String?
+  city            String?
+  state           String?
   country         String        @default("Mexico")
   description     String
-  endDate         DateTime
+  startDate       DateTime?
+  endDate         DateTime?
   highlights      String[]
   isHighlight     Boolean       @default(false)
   maxParticipants Int?
   originalPrice   Float?
   finalPrice      Float?
-  startDate       DateTime
-  state           String?
-  date            DateTime?
-  location        String?
   tripManager     String?
   hotelName       String?
   hotelDescription String?
   hotelAmenities  String[]
   hotelIncludes   String[]
   hotelExcludes   String[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 enum EventCategory {
