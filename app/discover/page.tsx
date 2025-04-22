@@ -12,6 +12,7 @@ import { getRecommendedEvents } from "@/services/userMatchingEvents"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
+import Loading from "@/components/ui/loading"
 
 interface DashboardEvent extends EventType {
   matchScore?: number;
@@ -26,6 +27,15 @@ export default function DiscoverPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const [dots, setDots] = useState(0);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => (prev + 1) % 3);
+    }, 500);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Function to fetch all events
   const fetchAllEvents = async () => {
@@ -194,19 +204,20 @@ export default function DiscoverPage() {
   }, [router]);
 
   if (loadingAllEvents) {
-    return (
-      <div className="flex flex-col gap-8">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-10 w-[250px]" />
-          <Skeleton className="h-10 w-[100px]" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Skeleton className="h-[300px] w-full" />
-          <Skeleton className="h-[300px] w-full" />
-          <Skeleton className="h-[300px] w-full" />
-        </div>
-      </div>
-    );
+    <Loading />
+    // return (
+    //   <div className="flex flex-col gap-8">
+    //     <div className="flex justify-between items-center">
+    //       <Skeleton className="h-10 w-[250px]" />
+    //       <Skeleton className="h-10 w-[100px]" />
+    //     </div>
+    //     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    //       <Skeleton className="h-[300px] w-full" />
+    //       <Skeleton className="h-[300px] w-full" />
+    //       <Skeleton className="h-[300px] w-full" />
+    //     </div>
+    //   </div>
+    // );
   }
 
   return (
@@ -240,25 +251,7 @@ export default function DiscoverPage() {
         </TabsList>
         <TabsContent value="recommended" className="mt-4 md:mt-6">
           {loadingRecommendedEvents ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="relative">
-                <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-500/30"></div>
-                <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
-                </div>
-                <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-600/50 border-t-transparent"></div>
-                </div>
-              </div>
-              <div className="flex flex-col items-center space-y-2">
-                <p className="text-indigo-200 text-sm animate-pulse">Cargando eventos recomendados...</p>
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
-                </div>
-              </div>
-            </div>
+            <Loading />
           ) : recommendedEvents.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {recommendedEvents.map((event, index) => (

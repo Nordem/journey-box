@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import { useUserProfile } from "@/lib/context/user-profile-context"
+import Loading from "@/components/ui/loading"
 
 interface UserProfile {
   name: string;
@@ -975,19 +976,7 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-col gap-4 md:gap-8 p-4 md:p-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <Skeleton className="h-10 w-[200px]" />
-          <Skeleton className="h-10 w-[150px]" />
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:gap-6">
-          <Skeleton className="h-[300px] w-full" />
-          <Skeleton className="h-[300px] w-full" />
-          <Skeleton className="h-[300px] w-full" />
-        </div>
-      </div>
-    )
+    <Loading />
   }
 
   if (!userProfile) {
@@ -1009,7 +998,7 @@ export default function ProfilePage() {
         </h1>
 
         {loading ? (
-          <ProfileSkeleton />
+          <Loading />
         ) : !userProfile ? (
           <div className="p-8 text-center">
             <p className="text-gray-400 mb-4">No se pudo cargar la información del perfil</p>
