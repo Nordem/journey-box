@@ -96,6 +96,7 @@ async function makeOpenAIRequest(prompt: string, retryCount = 0): Promise<OpenAI
           Authorization: `Bearer ${OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
+        timeout: 40000, // 40 second timeout
       }
     );
     return response.data;
@@ -116,10 +117,143 @@ async function makeOpenAIRequest(prompt: string, retryCount = 0): Promise<OpenAI
         return makeOpenAIRequest(prompt, retryCount + 1);
       }
       
+      // Handle network errors
+      if (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK') {
+        if (retryCount < MAX_RETRIES) {
+          const delay = RETRY_DELAY * Math.pow(2, retryCount);
+          console.log(`Network error. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return makeOpenAIRequest(prompt, retryCount + 1);
+        }
+        throw new Error("Network error: Unable to connect to OpenAI API after multiple attempts.");
+      }
+      
       throw new Error(`OpenAI API error: ${error.response?.status} - ${errorMessage}`);
     }
     throw error;
   }
+}
+
+// Fallback function to calculate match scores locally
+function calculateLocalMatchScore(event: Event, userProfile: UserProfile): number {
+  let score = 0;
+  
+  // Location compatibility (20 points)
+  if (userProfile.userProfile.location && event.city) {
+    if (userProfile.userProfile.location.toLowerCase() === event.city.toLowerCase()) {
+      score += 20;
+    } else if (userProfile.userProfile.location.toLowerCase().includes(event.city.toLowerCase()) || 
+               event.city.toLowerCase().includes(userProfile.userProfile.location.toLowerCase())) {
+      score += 10;
+    }
+  }
+  
+  // Experience match (20 points)
+  if (userProfile.eventPreferences.preferredExperiences?.length > 0 && event.activities?.length > 0) {
+    const matchingExperiences = event.activities.filter(activity => 
+      userProfile.eventPreferences.preferredExperiences.some(pref => 
+        activity.toLowerCase().includes(pref.toLowerCase()) || 
+        pref.toLowerCase().includes(activity.toLowerCase())
+      )
+    );
+    score += (matchingExperiences.length / userProfile.eventPreferences.preferredExperiences.length) * 20;
+  }
+  
+  // Destination type match (20 points)
+  if (userProfile.eventPreferences.preferredDestinations?.length > 0) {
+    const matchingDestinations = userProfile.eventPreferences.preferredDestinations.filter(dest => 
+      event.city.toLowerCase().includes(dest.toLowerCase()) || 
+      dest.toLowerCase().includes(event.city.toLowerCase())
+    );
+    score += (matchingDestinations.length / userProfile.eventPreferences.preferredDestinations.length) * 20;
+  }
+  
+  // Personality fit (20 points)
+  if (userProfile.userProfile.personalityTraits?.length > 0 && event.highlights?.length > 0) {
+    const matchingTraits = event.highlights.filter(highlight => 
+      userProfile.userProfile.personalityTraits.some(trait => 
+        highlight.toLowerCase().includes(trait.toLowerCase()) || 
+        trait.toLowerCase().includes(highlight.toLowerCase())
+      )
+    );
+    score += (matchingTraits.length / userProfile.userProfile.personalityTraits.length) * 20;
+  }
+  
+  // Price and accessibility (20 points)
+  if (userProfile.eventPreferences.budget) {
+    const budget = parseInt(userProfile.eventPreferences.budget);
+    if (event.finalPrice <= budget) {
+      score += 20;
+    } else if (event.finalPrice <= budget * 1.2) {
+      score += 10;
+    }
+  }
+  
+  return Math.min(Math.round(score), 100);
+}
+
+// Fallback function to generate match reasons in Spanish
+function generateLocalMatchReasons(event: Event, userProfile: UserProfile): string[] {
+  const reasons: string[] = [];
+  
+  // Location match
+  if (userProfile.userProfile.location && event.city) {
+    if (userProfile.userProfile.location.toLowerCase() === event.city.toLowerCase()) {
+      reasons.push(`Ubicación perfecta: ${event.city} coincide con tu ubicación preferida`);
+    } else if (userProfile.userProfile.location.toLowerCase().includes(event.city.toLowerCase()) || 
+               event.city.toLowerCase().includes(userProfile.userProfile.location.toLowerCase())) {
+      reasons.push(`Ubicación cercana: ${event.city} está cerca de tu ubicación preferida`);
+    }
+  }
+  
+  // Experience match
+  if (userProfile.eventPreferences.preferredExperiences?.length > 0 && event.activities?.length > 0) {
+    const matchingExperiences = event.activities.filter(activity => 
+      userProfile.eventPreferences.preferredExperiences.some(pref => 
+        activity.toLowerCase().includes(pref.toLowerCase()) || 
+        pref.toLowerCase().includes(activity.toLowerCase())
+      )
+    );
+    if (matchingExperiences.length > 0) {
+      reasons.push(`Incluye ${matchingExperiences.length} de tus experiencias preferidas`);
+    }
+  }
+  
+  // Destination match
+  if (userProfile.eventPreferences.preferredDestinations?.length > 0) {
+    const matchingDestinations = userProfile.eventPreferences.preferredDestinations.filter(dest => 
+      event.city.toLowerCase().includes(dest.toLowerCase()) || 
+      dest.toLowerCase().includes(event.city.toLowerCase())
+    );
+    if (matchingDestinations.length > 0) {
+      reasons.push(`Coincide con ${matchingDestinations.length} de tus destinos preferidos`);
+    }
+  }
+  
+  // Personality match
+  if (userProfile.userProfile.personalityTraits?.length > 0 && event.highlights?.length > 0) {
+    const matchingTraits = event.highlights.filter(highlight => 
+      userProfile.userProfile.personalityTraits.some(trait => 
+        highlight.toLowerCase().includes(trait.toLowerCase()) || 
+        trait.toLowerCase().includes(highlight.toLowerCase())
+      )
+    );
+    if (matchingTraits.length > 0) {
+      reasons.push(`Se alinea con ${matchingTraits.length} de tus rasgos de personalidad`);
+    }
+  }
+  
+  // Price match
+  if (userProfile.eventPreferences.budget) {
+    const budget = parseInt(userProfile.eventPreferences.budget);
+    if (event.finalPrice <= budget) {
+      reasons.push(`Dentro de tu presupuesto: $${event.finalPrice} MXN`);
+    } else if (event.finalPrice <= budget * 1.2) {
+      reasons.push(`Ligeramente por encima de tu presupuesto: $${event.finalPrice} MXN`);
+    }
+  }
+  
+  return reasons;
 }
 
 export async function getRecommendedEvents(userProfile: UserProfile): Promise<RecommendedEvent[]> {
@@ -146,8 +280,9 @@ export async function getRecommendedEvents(userProfile: UserProfile): Promise<Re
     console.log(`Found ${events.length} events to analyze`);
     const recommendedEvents: RecommendedEvent[] = [];
 
-    // Format events list with more details
-    const eventsList = events.map((event: Event) => `
+    try {
+      // Try OpenAI API first
+      const eventsList = events.map((event: Event) => `
 Event: ${event.name}
 Location: ${event.city}, ${event.state || ''}, ${event.country}
 Dates: ${event.startDate} - ${event.endDate}
@@ -158,7 +293,7 @@ Original Price: ${event.originalPrice || "Not specified"}
 Final Price: ${event.finalPrice || "Not specified"}
 ---`).join("\n");
 
-    const prompt = `As a travel guru, your task is to analyze the following events and match them with the user's profile. Your goal is to find the best matches based on the user's preferences and the event details.
+      const prompt = `As a travel guru, your task is to analyze the following events and match them with the user's profile. Your goal is to find the best matches based on the user's preferences and the event details.
 
 User Profile:
 - Location: ${userProfile.userProfile.location || "Not specified"}
@@ -214,17 +349,15 @@ IMPORTANT:
 - Take into account the user's preferred experiences and destinations
 - Don't be too strict with the scoring - partial matches are acceptable`;
 
-    console.log('=== OpenAI Prompt Content ===');
-    console.log(prompt);
-    console.log('=== End of Prompt ===');
+      console.log('=== OpenAI Prompt Content ===');
+      console.log(prompt);
+      console.log('=== End of Prompt ===');
 
-    try {
       const openaiData = await makeOpenAIRequest(prompt);
 
       if (openaiData.choices && openaiData.choices.length > 0) {
         const content = openaiData.choices[0].message.content.trim();
         try {
-          // Clean the response to ensure it's valid JSON
           const cleanContent = content.replace(/^[^{]*({.*})[^}]*$/, '$1');
           const matchResults = JSON.parse(cleanContent);
           
@@ -245,34 +378,29 @@ IMPORTANT:
         } catch (parseError) {
           console.error("Error parsing OpenAI response:", parseError);
           console.error("Raw response:", content);
+          throw parseError;
         }
       }
     } catch (error) {
-      console.error("OpenAI API error:", error);
-      // If OpenAI API fails, implement a more sophisticated fallback mechanism
-      console.warn("OpenAI API unavailable, falling back to advanced recommendations");
+      console.error("OpenAI API failed, falling back to local matching:", error);
+      
+      // Fallback to local matching
       events.forEach((event: Event) => {
-        const score = calculateMatchScore(event, userProfile);
+        const score = calculateLocalMatchScore(event, userProfile);
         if (score >= 40) {
           recommendedEvents.push({
             ...event,
             matchScore: score,
-            matchReasons: generateMatchReasons(event, userProfile)
+            matchReasons: generateLocalMatchReasons(event, userProfile)
           });
         }
       });
     }
 
-    // Sort by match score and limit to top 5 recommendations
-    const sortedEvents = recommendedEvents
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, 5);
-    
-    console.log('Final recommended events:', sortedEvents);
-    return sortedEvents;
+    return recommendedEvents;
   } catch (error) {
     console.error("Error in getRecommendedEvents:", error);
-    return [];
+    throw error;
   }
 }
 
