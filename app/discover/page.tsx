@@ -27,15 +27,6 @@ export default function DiscoverPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
-  const [dots, setDots] = useState(0);
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDots(prev => (prev + 1) % 3);
-    }, 500);
-    
-    return () => clearInterval(interval);
-  }, []);
 
   // Function to fetch all events
   const fetchAllEvents = async () => {
@@ -205,19 +196,6 @@ export default function DiscoverPage() {
 
   if (loadingAllEvents) {
     <Loading />
-    // return (
-    //   <div className="flex flex-col gap-8">
-    //     <div className="flex justify-between items-center">
-    //       <Skeleton className="h-10 w-[250px]" />
-    //       <Skeleton className="h-10 w-[100px]" />
-    //     </div>
-    //     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    //       <Skeleton className="h-[300px] w-full" />
-    //       <Skeleton className="h-[300px] w-full" />
-    //       <Skeleton className="h-[300px] w-full" />
-    //     </div>
-    //   </div>
-    // );
   }
 
   return (
