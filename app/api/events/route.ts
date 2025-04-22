@@ -26,7 +26,10 @@ export async function GET() {
         hotelAmenities: true,
         hotelIncludes: true,
         hotelExcludes: true
-      }
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     if (!events || events.length === 0) {
@@ -61,7 +64,104 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching events:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch events' },
+      { error: 'Error fetching events' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+
+    const event = await prisma.event.create({
+      data: {
+        name: data.name,
+        location: data.location,
+        description: data.description,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        maxParticipants: parseInt(data.maxParticipants),
+        originalPrice: parseFloat(data.originalPrice),
+        finalPrice: parseFloat(data.finalPrice),
+        tripManager: data.tripManager,
+        hotelName: data.hotelName,
+        hotelDescription: data.hotelDescription,
+        hotelAmenities: data.hotelAmenities,
+        hotelIncludes: data.hotelIncludes,
+        hotelExcludes: data.hotelExcludes,
+      },
+    });
+
+    return NextResponse.json(event);
+  } catch (error) {
+    console.error("Error creating event:", error);
+    return NextResponse.json(
+      { error: "Error creating event" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const data = await request.json();
+
+    const event = await prisma.event.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        name: data.name,
+        location: data.location,
+        description: data.description,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        maxParticipants: parseInt(data.maxParticipants),
+        originalPrice: parseFloat(data.originalPrice),
+        finalPrice: parseFloat(data.finalPrice),
+        tripManager: data.tripManager,
+        hotelName: data.hotelName,
+        hotelDescription: data.hotelDescription,
+        hotelAmenities: data.hotelAmenities,
+        hotelIncludes: data.hotelIncludes,
+        hotelExcludes: data.hotelExcludes,
+      },
+    });
+
+    return NextResponse.json(event);
+  } catch (error) {
+    console.error("Error updating event:", error);
+    return NextResponse.json(
+      { error: "Error updating event" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Event ID is required" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.event.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    return NextResponse.json(
+      { error: "Error deleting event" },
       { status: 500 }
     );
   }

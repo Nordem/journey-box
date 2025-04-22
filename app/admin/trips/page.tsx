@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dialog"
 import TripListItem from "@/components/ui/TripListItem"
 import TripForm from "@/components/ui/TripForm"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 // Define Trip interface
 interface Trip {
@@ -73,7 +75,7 @@ const initialTrips: Trip[] = [
 
 export default function AdminTripsPage() {
   const [showForm, setShowForm] = useState(false)
-  const [trips, setTrips] = useState<Trip[]>(initialTrips)
+  const [trips, setTrips] = useState<Trip[]>([])
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -84,110 +86,140 @@ export default function AdminTripsPage() {
 
   // Load trips on init
   useEffect(() => {
-    // Here you would typically fetch from your API
-    // For now using localStorage as placeholder
-    if (typeof window !== "undefined") {
-      const savedTrips = localStorage.getItem("adminTrips")
-      if (savedTrips) {
-        try {
-          setTrips(JSON.parse(savedTrips))
-        } catch (e) {
-          console.error("Error parsing saved trips:", e)
-          setTrips(initialTrips)
-          localStorage.setItem("adminTrips", JSON.stringify(initialTrips))
-        }
-      } else {
-        setTrips(initialTrips)
-        localStorage.setItem("adminTrips", JSON.stringify(initialTrips))
+    const fetchTrips = async () => {
+      try {
+        const response = await fetch('/api/events')
+        if (!response.ok) throw new Error('Failed to fetch events')
+        const { events } = await response.json()
+        setTrips(events.map((event: any) => ({
+          id: event.id,
+          title: event.name,
+          location: event.location,
+          dates: `${format(new Date(event.startDate), 'MMM d', { locale: es })} - ${format(new Date(event.endDate), 'MMM d, yyyy', { locale: es })}`,
+          availability: event.maxParticipants,
+          employeePrice: event.finalPrice,
+          regularPrice: event.originalPrice,
+          description: event.description,
+          imageUrl: event.imageUrl || "/placeholder.svg",
+          hasVideo: false,
+          participants: [],
+          tripManager: event.tripManager,
+          hotel: {
+            name: event.hotelName,
+            description: event.hotelDescription,
+            amenities: event.hotelAmenities || [],
+          },
+          includes: event.hotelIncludes || [],
+          excludes: event.hotelExcludes || [],
+          galleryImages: event.galleryImages || [],
+        })))
+      } catch (error) {
+        console.error('Error fetching trips:', error)
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los eventos",
+          variant: "destructive",
+        })
       }
     }
+
+    fetchTrips()
   }, [])
 
-  const handleSubmit = (formData: FormData) => {
-    // Create a new trip object from the form data
-    const newTrip: Trip = {
-      id: editingTrip?.id || Date.now().toString(),
-      title: formData.get('title') as string,
-      location: formData.get('location') as string,
-      dates: formData.get('dates') as string,
-      availability: parseInt(formData.get('availability') as string),
-      employeePrice: parseFloat(formData.get('employeePrice') as string),
-      regularPrice: parseFloat(formData.get('regularPrice') as string),
-      description: formData.get('description') as string,
-      imageUrl: formData.get('imageUrl') as string,
-      hasVideo: formData.get('hasVideo') === 'true',
-      videoUrl: formData.get('videoUrl') as string || '',
-      participants: [],
-      tripManager: formData.get('tripManager') as string,
-      hotel: {
-        name: formData.get('hotelName') as string,
-        description: formData.get('hotelDescription') as string,
-        amenities: (formData.get('hotelAmenities') as string).split(',').map(item => item.trim()),
-      },
-      // Includes and excludes
-      includes: (formData.get('includes') as string).split('\n').filter(item => item.trim()),
-      excludes: (formData.get('excludes') as string).split('\n').filter(item => item.trim()),
-      // Itinerary
-      itinerary: [
-        {
-          title: formData.get('day1Title') as string,
-          activities: (formData.get('day1Activities') as string).split('\n').filter(item => item.trim()),
+  const handleSubmit = async (formData: any) => {
+    try {
+      const response = await fetch('/api/events', {
+        method: editingTrip ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          title: formData.get('day2Title') as string,
-          activities: (formData.get('day2Activities') as string).split('\n').filter(item => item.trim()),
-        },
-      ],
-    };
+        body: JSON.stringify({
+          id: editingTrip?.id,
+          name: formData.name,
+          location: formData.location,
+          description: formData.description,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          maxParticipants: formData.maxParticipants,
+          originalPrice: formData.originalPrice,
+          finalPrice: formData.finalPrice,
+          tripManager: formData.tripManager,
+          hotelName: formData.hotelName,
+          hotelDescription: formData.hotelDescription,
+          hotelAmenities: formData.hotelAmenities,
+          hotelIncludes: formData.hotelIncludes,
+          hotelExcludes: formData.hotelExcludes,
+        }),
+      })
 
-    // Add gallery images
-    const galleryImagesCount = parseInt(formData.get('galleryImagesCount') as string) || 0;
-    newTrip.galleryImages = [];
-    for (let i = 0; i < galleryImagesCount; i++) {
-      const imageUrl = formData.get(`galleryImage${i}`) as string;
-      if (imageUrl) {
-        newTrip.galleryImages.push(imageUrl);
-      }
-    }
+      if (!response.ok) throw new Error('Failed to save event')
 
-    // Add additional days to the itinerary
-    const additionalDaysCount = parseInt(formData.get('additionalDaysCount') as string) || 0;
-    for (let i = 0; i < additionalDaysCount; i++) {
-      const title = formData.get(`additionalDay${i}Title`) as string;
-      const activities = (formData.get(`additionalDay${i}Activities`) as string).split('\n').filter(item => item.trim());
+      const savedEvent = await response.json()
       
-      if (title && activities.length > 0) {
-        newTrip.itinerary?.push({
-          title,
-          activities,
+      // Update the trips state
+      if (editingTrip) {
+        setTrips(trips.map(trip => trip.id === editingTrip.id ? {
+          ...trip,
+          title: savedEvent.name,
+          location: savedEvent.location,
+          dates: `${format(new Date(savedEvent.startDate), 'MMM d', { locale: es })} - ${format(new Date(savedEvent.endDate), 'MMM d, yyyy', { locale: es })}`,
+          availability: savedEvent.maxParticipants,
+          employeePrice: savedEvent.finalPrice,
+          regularPrice: savedEvent.originalPrice,
+          description: savedEvent.description,
+          tripManager: savedEvent.tripManager,
+          hotel: {
+            name: savedEvent.hotelName,
+            description: savedEvent.hotelDescription,
+            amenities: savedEvent.hotelAmenities,
+          },
+          includes: savedEvent.hotelIncludes,
+          excludes: savedEvent.hotelExcludes,
+        } : trip));
+        toast({
+          title: "Evento actualizado exitosamente",
+          description: "Los cambios se han guardado.",
+        });
+      } else {
+        setTrips([...trips, {
+          id: savedEvent.id,
+          title: savedEvent.name,
+          location: savedEvent.location,
+          dates: `${format(new Date(savedEvent.startDate), 'MMM d', { locale: es })} - ${format(new Date(savedEvent.endDate), 'MMM d, yyyy', { locale: es })}`,
+          availability: savedEvent.maxParticipants,
+          employeePrice: savedEvent.finalPrice,
+          regularPrice: savedEvent.originalPrice,
+          description: savedEvent.description,
+          imageUrl: savedEvent.imageUrl || "/placeholder.svg",
+          hasVideo: false,
+          participants: [],
+          tripManager: savedEvent.tripManager,
+          hotel: {
+            name: savedEvent.hotelName,
+            description: savedEvent.hotelDescription,
+            amenities: savedEvent.hotelAmenities,
+          },
+          includes: savedEvent.hotelIncludes,
+          excludes: savedEvent.hotelExcludes,
+          galleryImages: savedEvent.galleryImages || [],
+        }]);
+        toast({
+          title: "Evento creado exitosamente",
+          description: "El nuevo evento ha sido agregado al catálogo.",
         });
       }
-    }
 
-    // Update the trips state
-    if (editingTrip) {
-      setTrips(trips.map(trip => trip.id === editingTrip.id ? newTrip : trip));
+      // Close the form
+      setShowForm(false);
+      setEditingTrip(null);
+    } catch (error) {
+      console.error('Error saving event:', error)
       toast({
-        title: "Evento creado exitosamente",
-        description: "Los cambios se han guardado.",
-      });
-    } else {
-      setTrips([...trips, newTrip]);
-      toast({
-        title: "Evento creado exitosamente",
-        description: "El nuevo evento ha sido agregado al catálogo.",
-      });
+        title: "Error",
+        description: "No se pudo guardar el evento",
+        variant: "destructive",
+      })
     }
-
-    // Save to localStorage
-    const updatedTrips = editingTrip 
-      ? trips.map(trip => trip.id === editingTrip.id ? newTrip : trip) 
-      : [...trips, newTrip];
-    localStorage.setItem('adminTrips', JSON.stringify(updatedTrips));
-
-    // Close the form
-    setShowForm(false);
-    setEditingTrip(null);
   };
 
   const handleEditTrip = (trip: Trip) => {
@@ -200,23 +232,34 @@ export default function AdminTripsPage() {
     setShowDeleteConfirm(true)
   }
 
-  const handleDeleteTrip = () => {
+  const handleDeleteTrip = async () => {
     if (!tripToDelete) return
     
-    const updatedTrips = trips.filter((trip) => trip.id !== tripToDelete.id)
-    setTrips(updatedTrips)
+    try {
+      const response = await fetch(`/api/events?id=${tripToDelete.id}`, {
+        method: 'DELETE',
+      })
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem("adminTrips", JSON.stringify(updatedTrips))
+      if (!response.ok) throw new Error('Failed to delete event')
+
+      const updatedTrips = trips.filter((trip) => trip.id !== tripToDelete.id)
+      setTrips(updatedTrips)
+
+      toast({
+        title: "Evento eliminado",
+        description: `El evento ${tripToDelete.title} ha sido eliminado exitosamente.`,
+      })
+
+      setShowDeleteConfirm(false)
+      setTripToDelete(null)
+    } catch (error) {
+      console.error('Error deleting event:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el evento",
+        variant: "destructive",
+      })
     }
-
-    toast({
-      title: "Evento eliminado",
-      description: `El evento ${tripToDelete.title} ha sido eliminado exitosamente.`,
-    })
-
-    setShowDeleteConfirm(false)
-    setTripToDelete(null)
   }
 
   const handleViewParticipants = (trip: Trip) => {
