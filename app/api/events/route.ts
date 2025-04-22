@@ -8,19 +8,24 @@ export async function GET() {
       select: {
         id: true,
         name: true,
-        activities: true,
-        category: true,
+        location: true,
         city: true,
+        state: true,
         country: true,
         description: true,
+        startDate: true,
         endDate: true,
         highlights: true,
         isHighlight: true,
         maxParticipants: true,
         originalPrice: true,
         finalPrice: true,
-        startDate: true,
-        state: true
+        tripManager: true,
+        hotelName: true,
+        hotelDescription: true,
+        hotelAmenities: true,
+        hotelIncludes: true,
+        hotelExcludes: true
       }
     });
 
@@ -32,19 +37,24 @@ export async function GET() {
     const formattedEvents = events.map(event => ({
       id: event.id,
       name: event.name,
-      category: event.category,
+      location: event.location,
       city: event.city,
       state: event.state,
       country: event.country,
       description: event.description,
-      startDate: event.startDate.toISOString(),
-      endDate: event.endDate.toISOString(),
-      activities: event.activities || [],
+      startDate: event.startDate?.toISOString() || null,
+      endDate: event.endDate?.toISOString() || null,
       highlights: event.highlights || [],
       maxParticipants: event.maxParticipants,
       originalPrice: event.originalPrice,
       finalPrice: event.finalPrice,
-      isHighlight: event.isHighlight
+      isHighlight: event.isHighlight,
+      tripManager: event.tripManager,
+      hotelName: event.hotelName,
+      hotelDescription: event.hotelDescription,
+      hotelAmenities: event.hotelAmenities || [],
+      hotelIncludes: event.hotelIncludes || [],
+      hotelExcludes: event.hotelExcludes || []
     }));
 
     return NextResponse.json({ events: formattedEvents });
