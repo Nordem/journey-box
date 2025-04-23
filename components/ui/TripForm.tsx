@@ -61,6 +61,15 @@ interface FormData {
     hotelExcludes: string
     imageUrl: string
     galleryImages: string[]
+    itineraryActions: ItineraryAction[]
+}
+
+interface ItineraryAction {
+    id?: string
+    dayTitle: string
+    title: string
+    startTime: string
+    responsible: string
 }
 
 interface SubmitData {
@@ -80,6 +89,7 @@ interface SubmitData {
     hotelExcludes: string[]
     imageUrl: string
     galleryImages: string[]
+    itineraryActions: ItineraryAction[]
 }
 
 interface CompleteDateRange {
@@ -106,6 +116,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         hotelExcludes: editingTrip?.excludes?.join("\n") || "",
         imageUrl: editingTrip?.imageUrl || "",
         galleryImages: editingTrip?.galleryImages || [],
+        itineraryActions: editingTrip?.itineraryActions || [],
     });
 
     // Add state for image preview
@@ -145,6 +156,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                 hotelExcludes: editingTrip.excludes?.join("\n") || "",
                 imageUrl: editingTrip.imageUrl || "",
                 galleryImages: editingTrip.galleryImages || [],
+                itineraryActions: editingTrip.itineraryActions || [],
             });
         }
     }, [editingTrip]);
@@ -277,90 +289,88 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
     const [alert, setAlert] = useState<{ title: string; description: string } | null>(null);
 
+    // Handle itinerary action changes
+    const handleItineraryActionChange = (index: number, field: keyof ItineraryAction, value: string) => {
+        setFormData(prev => {
+            const newActions = [...prev.itineraryActions];
+            newActions[index] = { ...newActions[index], [field]: value };
+            return { ...prev, itineraryActions: newActions };
+        });
+    };
+
+    // Add new itinerary action
+    const addItineraryAction = () => {
+        setFormData(prev => ({
+            ...prev,
+            itineraryActions: [
+                ...prev.itineraryActions,
+                { dayTitle: "", title: "", startTime: "", responsible: "" }
+            ]
+        }));
+    };
+
+    // Remove itinerary action
+    const removeItineraryAction = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            itineraryActions: prev.itineraryActions.filter((_, i) => i !== index)
+        }));
+    };
+
     // Handle form submission
-    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        // Check if all required fields are filled
-        const requiredFields = [
-            { id: "name", value: formData.name, label: "Título del Evento" },
-            { id: "location", value: formData.location, label: "Ubicación" },
-            { id: "startDate", value: formData.startDate, label: "Fecha de inicio" },
-            { id: "endDate", value: formData.endDate, label: "Fecha de fin" },
-            { id: "maxParticipants", value: formData.maxParticipants, label: "Disponibilidad" },
-            { id: "originalPrice", value: formData.originalPrice, label: "Precio Original" },
-            { id: "finalPrice", value: formData.finalPrice, label: "Precio Final" },
-            { id: "description", value: formData.description, label: "Descripción" },
-            { id: "tripManager", value: formData.tripManager, label: "Gerente del Evento" },
-            { id: "hotelName", value: formData.hotelName, label: "Nombre del Hotel" },
-            { id: "hotelDescription", value: formData.hotelDescription, label: "Descripción del Hotel" },
-            { id: "hotelAmenities", value: formData.hotelAmenities, label: "Amenidades del Hotel" },
-            { id: "hotelIncludes", value: formData.hotelIncludes, label: "Incluye" },
-            { id: "hotelExcludes", value: formData.hotelExcludes, label: "No Incluye" },
-        ];
-
-        const missingFields = requiredFields.filter(field => !field.value);
-        if (missingFields.length > 0) {
-            setAlert({
-                title: "Campos requeridos",
-                description: `Por favor completa los siguientes campos: ${missingFields.map(f => f.label).join(", ")}`,
+        // Validate required fields
+        if (!formData.name || !formData.location || !formData.description || !formData.startDate || !formData.endDate) {
+            toast({
+                title: "Error",
+                description: "Por favor completa todos los campos requeridos",
+                variant: "destructive",
             });
             return;
         }
 
-        // Check if date range is selected
-        if (!isCompleteDateRange(date)) {
-            setAlert({
-                title: "Fechas requeridas",
-                description: "Por favor selecciona un rango de fechas para el evento",
-            });
-            return;
-        }
-
-        // Validate price fields
-        const originalPrice = parseFloat(formData.originalPrice);
-        const finalPrice = parseFloat(formData.finalPrice);
-
-        if (isNaN(originalPrice) || isNaN(finalPrice)) {
-            setAlert({
-                title: "Precios inválidos",
-                description: "Por favor ingresa valores numéricos válidos para los precios",
-            });
-            return;
-        }
-
-        if (originalPrice <= 0 || finalPrice <= 0) {
-            setAlert({
-                title: "Precios inválidos",
-                description: "Los precios deben ser mayores a 0",
-            });
-            return;
-        }
-
-        if (finalPrice > originalPrice) {
-            setAlert({
-                title: "Precios inválidos",
-                description: "El precio final no puede ser mayor al precio original",
-            });
-            return;
-        }
-
-        // Prepare data for submission
+        // Prepare the data for submission
         const submitData: SubmitData = {
-            ...formData,
+            name: formData.name,
+            location: formData.location,
+            description: formData.description,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
             maxParticipants: parseInt(formData.maxParticipants),
-            originalPrice: originalPrice,
-            finalPrice: finalPrice,
-            startDate: date.from.toISOString(),
-            endDate: date.to.toISOString(),
+            originalPrice: parseFloat(formData.originalPrice),
+            finalPrice: parseFloat(formData.finalPrice),
+            tripManager: formData.tripManager,
+            hotelName: formData.hotelName,
+            hotelDescription: formData.hotelDescription,
             hotelAmenities: formData.hotelAmenities.split(",").map(item => item.trim()),
             hotelIncludes: formData.hotelIncludes.split("\n").filter(item => item.trim()),
             hotelExcludes: formData.hotelExcludes.split("\n").filter(item => item.trim()),
             imageUrl: formData.imageUrl,
-            galleryImages: galleryImages.map(img => img.url),
+            galleryImages: formData.galleryImages,
+            itineraryActions: formData.itineraryActions.map(action => ({
+                dayTitle: action.dayTitle,
+                title: action.title,
+                startTime: action.startTime,
+                responsible: action.responsible
+            }))
         };
 
-        onSubmit(submitData);
+        try {
+            await onSubmit(submitData);
+            toast({
+                title: "Éxito",
+                description: "El viaje ha sido guardado correctamente",
+            });
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            toast({
+                title: "Error",
+                description: "Hubo un error al guardar el viaje",
+                variant: "destructive",
+            });
+        }
     };
 
     return (
@@ -384,30 +394,16 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                     </Alert>
                 )}
                 <form onSubmit={handleFormSubmit} className="space-y-8">
-                    <Tabs defaultValue="basic" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 mb-6 bg-transparent border border-indigo-500/30 rounded-xl p-2">
-                            <TabsTrigger
-                                value="basic"
-                                className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
-                            >
-                                Información Básica
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="media"
-                                className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
-                            >
-                                Imágenes y Videos
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="details"
-                                className="text-xs md:text-sm data-[state=active]:bg-gradient-to-r from-indigo-500/20 to-purple-500/20 data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-indigo-400"
-                            >
-                                Detalles
-                            </TabsTrigger>
+                    <Tabs defaultValue="general" className="w-full">
+                        <TabsList className="grid w-full grid-cols-4">
+                            <TabsTrigger value="general">General</TabsTrigger>
+                            <TabsTrigger value="hotel">Hotel</TabsTrigger>
+                            <TabsTrigger value="images">Imágenes</TabsTrigger>
+                            <TabsTrigger value="itinerary">Itinerario</TabsTrigger>
                         </TabsList>
 
                         <ScrollArea className="h-[calc(100vh-300px)] md:h-[calc(100vh-250px)] pr-4">
-                            <TabsContent value="basic" className="mt-0 space-y-4">
+                            <TabsContent value="general" className="mt-0 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Título del Evento</Label>
@@ -591,7 +587,81 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 </div>
                             </TabsContent>
 
-                            <TabsContent value="media" className="mt-0 space-y-4">
+                            <TabsContent value="hotel" className="mt-0 space-y-4">
+                                <div className="space-y-4">
+                                    <h3 className="text-md font-medium">Información del Hotel</h3>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="hotelName">Nombre del Hotel</Label>
+                                        <div className="relative">
+                                            <Hotel className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                id="hotelName"
+                                                placeholder="Ej: Paradisus Playa del Carmen"
+                                                className="pl-10"
+                                                value={formData.hotelName}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="hotelDescription">Descripción del Hotel</Label>
+                                        <Textarea
+                                            id="hotelDescription"
+                                            placeholder="Describe el hotel, sus instalaciones y servicios..."
+                                            className="min-h-[100px]"
+                                            value={formData.hotelDescription}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="hotelAmenities">Amenidades (separadas por coma)</Label>
+                                        <Input
+                                            id="hotelAmenities"
+                                            placeholder="Ej: Todo incluido, Spa, Piscinas, WiFi gratis"
+                                            value={formData.hotelAmenities}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <Separator className="my-4" />
+
+                                <div className="space-y-4">
+                                    <h3 className="text-md font-medium">Incluye y No Incluye</h3>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="hotelIncludes">Incluye (un elemento por línea)</Label>
+                                        <Textarea
+                                            id="hotelIncludes"
+                                            placeholder="Ej: Vuelos redondos Ciudad de México - Cancún&#10;Traslados aeropuerto - hotel - aeropuerto&#10;3 noches de alojamiento en hotel 5 estrellas"
+                                            className="min-h-[120px]"
+                                            value={formData.hotelIncludes}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="hotelExcludes">No Incluye (un elemento por línea)</Label>
+                                        <Textarea
+                                            id="hotelExcludes"
+                                            placeholder="Ej: Gastos personales y propinas&#10;Actividades no mencionadas en el itinerario&#10;Tratamientos de spa"
+                                            className="min-h-[120px]"
+                                            value={formData.hotelExcludes}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="images" className="mt-0 space-y-4">
                                 <div className="space-y-4">
                                     <div className="p-4 border border-dashed rounded-lg text-center">
                                         <div className="flex flex-col items-center justify-center gap-2">
@@ -693,78 +763,78 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 </div>
                             </TabsContent>
 
-                            <TabsContent value="details" className="mt-0 space-y-4">
-                                <div className="space-y-4">
-                                    <h3 className="text-md font-medium">Información del Hotel</h3>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="hotelName">Nombre del Hotel</Label>
-                                        <div className="relative">
-                                            <Hotel className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                id="hotelName"
-                                                placeholder="Ej: Paradisus Playa del Carmen"
-                                                className="pl-10"
-                                                value={formData.hotelName}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
+                            <TabsContent value="itinerary">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Itinerario del Evento</CardTitle>
+                                        <CardDescription>
+                                            Agrega las actividades del itinerario día por día
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-4">
+                                            {formData.itineraryActions.map((action, index) => (
+                                                <div key={index} className="border rounded-lg p-4 space-y-4">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor={`dayTitle-${index}`}>Día</Label>
+                                                            <Input
+                                                                id={`dayTitle-${index}`}
+                                                                value={action.dayTitle}
+                                                                onChange={(e) => handleItineraryActionChange(index, 'dayTitle', e.target.value)}
+                                                                placeholder="Ej: Día 1"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor={`startTime-${index}`}>Hora</Label>
+                                                            <Input
+                                                                id={`startTime-${index}`}
+                                                                type="time"
+                                                                value={action.startTime}
+                                                                onChange={(e) => handleItineraryActionChange(index, 'startTime', e.target.value)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor={`title-${index}`}>Actividad</Label>
+                                                        <Input
+                                                            id={`title-${index}`}
+                                                            value={action.title}
+                                                            onChange={(e) => handleItineraryActionChange(index, 'title', e.target.value)}
+                                                            placeholder="Descripción de la actividad"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor={`responsible-${index}`}>Responsable</Label>
+                                                        <Input
+                                                            id={`responsible-${index}`}
+                                                            value={action.responsible}
+                                                            onChange={(e) => handleItineraryActionChange(index, 'responsible', e.target.value)}
+                                                            placeholder="Persona a cargo"
+                                                        />
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => removeItineraryAction(index)}
+                                                    >
+                                                        Eliminar Actividad
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={addItineraryAction}
+                                                className="w-full"
+                                            >
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Agregar Actividad
+                                            </Button>
                                         </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="hotelDescription">Descripción del Hotel</Label>
-                                        <Textarea
-                                            id="hotelDescription"
-                                            placeholder="Describe el hotel, sus instalaciones y servicios..."
-                                            className="min-h-[100px]"
-                                            value={formData.hotelDescription}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="hotelAmenities">Amenidades (separadas por coma)</Label>
-                                        <Input
-                                            id="hotelAmenities"
-                                            placeholder="Ej: Todo incluido, Spa, Piscinas, WiFi gratis"
-                                            value={formData.hotelAmenities}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <Separator className="my-4" />
-
-                                <div className="space-y-4">
-                                    <h3 className="text-md font-medium">Incluye y No Incluye</h3>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="hotelIncludes">Incluye (un elemento por línea)</Label>
-                                        <Textarea
-                                            id="hotelIncludes"
-                                            placeholder="Ej: Vuelos redondos Ciudad de México - Cancún&#10;Traslados aeropuerto - hotel - aeropuerto&#10;3 noches de alojamiento en hotel 5 estrellas"
-                                            className="min-h-[120px]"
-                                            value={formData.hotelIncludes}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="hotelExcludes">No Incluye (un elemento por línea)</Label>
-                                        <Textarea
-                                            id="hotelExcludes"
-                                            placeholder="Ej: Gastos personales y propinas&#10;Actividades no mencionadas en el itinerario&#10;Tratamientos de spa"
-                                            className="min-h-[120px]"
-                                            value={formData.hotelExcludes}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
-                                </div>
+                                    </CardContent>
+                                </Card>
                             </TabsContent>
                         </ScrollArea>
                     </Tabs>

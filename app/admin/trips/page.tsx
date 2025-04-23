@@ -53,6 +53,7 @@ interface Trip {
     activities: string[];
   }>;
   galleryImages?: string[];
+  itineraryActions: string[];
 }
 
 export default function AdminTripsPage() {
@@ -66,45 +67,46 @@ export default function AdminTripsPage() {
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null)
   const { toast } = useToast()
 
-  // Load trips on init
-  useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const response = await fetch('/api/events')
-        if (!response.ok) throw new Error('Failed to fetch events')
-        const { events } = await response.json()
-        setTrips(events.map((event: any) => ({
-          id: event.id,
-          title: event.name,
-          location: event.location,
-          dates: `${format(new Date(event.startDate), 'MMM d', { locale: es })} - ${format(new Date(event.endDate), 'MMM d, yyyy', { locale: es })}`,
-          availability: event.maxParticipants,
-          employeePrice: event.finalPrice,
-          regularPrice: event.originalPrice,
-          description: event.description,
-          imageUrl: event.imageUrl || "/placeholder.svg",
-          hasVideo: false,
-          participants: [],
-          tripManager: event.tripManager,
-          hotel: {
-            name: event.hotelName,
-            description: event.hotelDescription,
-            amenities: event.hotelAmenities || [],
-          },
-          includes: event.hotelIncludes || [],
-          excludes: event.hotelExcludes || [],
-          galleryImages: event.galleryImages || [],
-        })))
-      } catch (error) {
-        console.error('Error fetching trips:', error)
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los eventos",
-          variant: "destructive",
-        })
-      }
+  const fetchTrips = async () => {
+    try {
+      const response = await fetch('/api/events')
+      if (!response.ok) throw new Error('Failed to fetch events')
+      const data = await response.json()
+      const formattedTrips = data.events.map((event: any) => ({
+        id: event.id,
+        title: event.name,
+        location: event.location,
+        dates: `${format(new Date(event.startDate), 'MMM d', { locale: es })} - ${format(new Date(event.endDate), 'MMM d, yyyy', { locale: es })}`,
+        availability: event.maxParticipants,
+        employeePrice: event.finalPrice,
+        regularPrice: event.originalPrice,
+        description: event.description,
+        imageUrl: event.imageUrl || "/placeholder.svg",
+        hasVideo: false,
+        participants: [],
+        tripManager: event.tripManager,
+        hotel: {
+          name: event.hotelName,
+          description: event.hotelDescription,
+          amenities: event.hotelAmenities,
+        },
+        includes: event.hotelIncludes,
+        excludes: event.hotelExcludes,
+        galleryImages: event.galleryImages || [],
+        itineraryActions: event.itineraryActions || []
+      }))
+      setTrips(formattedTrips)
+    } catch (error) {
+      console.error('Error fetching trips:', error)
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los eventos",
+        variant: "destructive",
+      })
     }
+  }
 
+  useEffect(() => {
     fetchTrips()
   }, [])
 
@@ -132,72 +134,22 @@ export default function AdminTripsPage() {
           hotelIncludes: formData.hotelIncludes,
           hotelExcludes: formData.hotelExcludes,
           imageUrl: formData.imageUrl,
-          galleryImages: formData.galleryImages
+          galleryImages: formData.galleryImages,
+          itineraryActions: formData.itineraryActions
         }),
       })
 
       if (!response.ok) throw new Error('Failed to save event')
 
       const savedEvent = await response.json()
+      setShowForm(false)
+      setEditingTrip(null)
+      fetchTrips()
       
-      // Update the trips state
-      if (editingTrip) {
-        setTrips(trips.map(trip => trip.id === editingTrip.id ? {
-          ...trip,
-          title: savedEvent.name,
-          location: savedEvent.location,
-          dates: `${format(new Date(savedEvent.startDate), 'MMM d', { locale: es })} - ${format(new Date(savedEvent.endDate), 'MMM d, yyyy', { locale: es })}`,
-          availability: savedEvent.maxParticipants,
-          employeePrice: savedEvent.finalPrice,
-          regularPrice: savedEvent.originalPrice,
-          description: savedEvent.description,
-          tripManager: savedEvent.tripManager,
-          hotel: {
-            name: savedEvent.hotelName,
-            description: savedEvent.hotelDescription,
-            amenities: savedEvent.hotelAmenities,
-          },
-          includes: savedEvent.hotelIncludes,
-          excludes: savedEvent.hotelExcludes,
-          imageUrl: savedEvent.imageUrl || "/placeholder.svg",
-          galleryImages: savedEvent.galleryImages || []
-        } : trip));
-        toast({
-          title: "Evento actualizado exitosamente",
-          description: "Los cambios se han guardado.",
-        });
-      } else {
-        setTrips([...trips, {
-          id: savedEvent.id,
-          title: savedEvent.name,
-          location: savedEvent.location,
-          dates: `${format(new Date(savedEvent.startDate), 'MMM d', { locale: es })} - ${format(new Date(savedEvent.endDate), 'MMM d, yyyy', { locale: es })}`,
-          availability: savedEvent.maxParticipants,
-          employeePrice: savedEvent.finalPrice,
-          regularPrice: savedEvent.originalPrice,
-          description: savedEvent.description,
-          imageUrl: savedEvent.imageUrl || "/placeholder.svg",
-          hasVideo: false,
-          participants: [],
-          tripManager: savedEvent.tripManager,
-          hotel: {
-            name: savedEvent.hotelName,
-            description: savedEvent.hotelDescription,
-            amenities: savedEvent.hotelAmenities,
-          },
-          includes: savedEvent.hotelIncludes,
-          excludes: savedEvent.hotelExcludes,
-          galleryImages: savedEvent.galleryImages || []
-        }]);
-        toast({
-          title: "Evento creado exitosamente",
-          description: "El nuevo evento ha sido agregado al catálogo.",
-        });
-      }
-
-      // Close the form
-      setShowForm(false);
-      setEditingTrip(null);
+      toast({
+        title: editingTrip ? "Evento actualizado" : "Evento creado",
+        description: editingTrip ? "Los cambios se han guardado" : "El nuevo evento ha sido agregado al catálogo",
+      })
     } catch (error) {
       console.error('Error saving event:', error)
       toast({
@@ -206,7 +158,7 @@ export default function AdminTripsPage() {
         variant: "destructive",
       })
     }
-  };
+  }
 
   const handleEditTrip = (trip: Trip) => {
     setEditingTrip(trip)

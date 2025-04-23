@@ -27,7 +27,16 @@ export async function GET() {
         hotelIncludes: true,
         hotelExcludes: true,
         imageUrl: true,
-        galleryImages: true
+        galleryImages: true,
+        itineraryActions: {
+          select: {
+            id: true,
+            dayTitle: true,
+            title: true,
+            startTime: true,
+            responsible: true
+          }
+        }
       },
       orderBy: {
         createdAt: "desc",
@@ -61,7 +70,8 @@ export async function GET() {
       hotelIncludes: event.hotelIncludes || [],
       hotelExcludes: event.hotelExcludes || [],
       imageUrl: event.imageUrl,
-      galleryImages: event.galleryImages || []
+      galleryImages: event.galleryImages || [],
+      itineraryActions: event.itineraryActions || []
     }));
 
     return NextResponse.json({ events: formattedEvents });
@@ -95,8 +105,19 @@ export async function POST(request: Request) {
         hotelIncludes: data.hotelIncludes,
         hotelExcludes: data.hotelExcludes,
         imageUrl: data.imageUrl,
-        galleryImages: data.galleryImages
+        galleryImages: data.galleryImages,
+        itineraryActions: {
+          create: data.itineraryActions.map((action: any) => ({
+            dayTitle: action.dayTitle,
+            title: action.title,
+            startTime: action.startTime,
+            responsible: action.responsible
+          }))
+        }
       },
+      include: {
+        itineraryActions: true
+      }
     });
 
     return NextResponse.json(event);
@@ -112,6 +133,13 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const data = await request.json();
+
+    // First, delete existing itinerary actions
+    await prisma.eventItineraryActions.deleteMany({
+      where: {
+        eventId: data.id
+      }
+    });
 
     const event = await prisma.event.update({
       where: {
@@ -133,8 +161,19 @@ export async function PUT(request: Request) {
         hotelIncludes: data.hotelIncludes,
         hotelExcludes: data.hotelExcludes,
         imageUrl: data.imageUrl,
-        galleryImages: data.galleryImages
+        galleryImages: data.galleryImages,
+        itineraryActions: {
+          create: data.itineraryActions.map((action: any) => ({
+            dayTitle: action.dayTitle,
+            title: action.title,
+            startTime: action.startTime,
+            responsible: action.responsible
+          }))
+        }
       },
+      include: {
+        itineraryActions: true
+      }
     });
 
     return NextResponse.json(event);
