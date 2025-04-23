@@ -25,6 +25,8 @@ import { useUserProfile } from "@/lib/context/user-profile-context"
 interface SidebarProps {
   isAdmin?: boolean
   className?: string
+  isCollapsed: boolean
+  onToggleCollapse: () => void
 }
 
 interface NavItem {
@@ -38,8 +40,10 @@ interface NavItem {
 export default function Sidebar({
   isAdmin = true,
   className,
-}: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  isCollapsed,
+  onToggleCollapse,
+  onMobileChange, // New prop
+}: SidebarProps & { onMobileChange?: (isMobile: boolean) => void }) {
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -51,16 +55,14 @@ export default function Sidebar({
   useEffect(() => {
     setMounted(true)
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768) // 768px is the md breakpoint
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      onMobileChange?.(mobile) // Notify parent about mobile state
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed)
-  }
+  }, [onMobileChange])
 
   const mainNavItems: NavItem[] = [
     {
@@ -108,7 +110,7 @@ export default function Sidebar({
           variant="ghost"
           size="icon"
           className="absolute -right-3 top-8 h-6 w-6 rounded-full border border-indigo-500/30 bg-black text-white shadow-md"
-          onClick={toggleSidebar}
+          onClick={onToggleCollapse}
         >
           {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </Button>
@@ -290,6 +292,7 @@ export default function Sidebar({
         isCollapsed ? "w-[70px]" : "w-[250px]",
         className,
       )}
+      data-collapsed={isCollapsed} // Add this attribute
     >
       <SidebarContent />
     </div>

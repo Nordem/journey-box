@@ -1,23 +1,23 @@
-import type { Metadata } from 'next'
+'use client'
+
+import { useState } from 'react'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { UserProfileProvider } from '@/lib/context/user-profile-context'
+import Sidebar from '@/components/sidebar'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'Journey Box - Viajes para Empleados',
-  description: 'Programa de viajes exclusivos para empleados con descuentos especiales',
-  generator: 'v0.dev',
-}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false) // Track mobile state
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
@@ -29,7 +29,28 @@ export default function RootLayout({
           storageKey="journeybox-theme"
         >
           <UserProfileProvider>
-            {children}
+            <div className="flex h-screen">
+              {/* Sidebar */}
+              <Sidebar
+                isAdmin={true}
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                onMobileChange={setIsMobile} // Pass callback to update mobile state
+              />
+
+              {/* Main Content */}
+              <main
+                className={`flex-1 overflow-auto transition-all duration-300 ${
+                  isMobile
+                    ? 'ml-0 mt-6' // No margin when in mobile view
+                    : isSidebarCollapsed
+                    ? 'ml-[70px]'
+                    : 'ml-[250px]'
+                }`}
+              >
+                {children}
+              </main>
+            </div>
             <Toaster />
           </UserProfileProvider>
         </ThemeProvider>
