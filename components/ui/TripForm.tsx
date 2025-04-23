@@ -139,12 +139,20 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Update form data when editingTrip changes
     useEffect(() => {
         if (editingTrip) {
+            const startDate = editingTrip.startDate ? new Date(editingTrip.startDate) : undefined;
+            const endDate = editingTrip.endDate ? new Date(editingTrip.endDate) : undefined;
+            
+            setDate({
+                from: startDate,
+                to: endDate
+            });
+
             setFormData({
                 name: editingTrip.title || "",
                 location: editingTrip.location || "",
                 description: editingTrip.description || "",
-                startDate: editingTrip.startDate || "",
-                endDate: editingTrip.endDate || "",
+                startDate: startDate?.toISOString() || "",
+                endDate: endDate?.toISOString() || "",
                 maxParticipants: editingTrip.availability?.toString() || "",
                 originalPrice: editingTrip.regularPrice?.toString() || "",
                 finalPrice: editingTrip.employeePrice?.toString() || "",
@@ -320,57 +328,34 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Handle form submission
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        // Validate required fields
-        if (!formData.name || !formData.location || !formData.description || !formData.startDate || !formData.endDate) {
+        
+        if (!date?.from || !date?.to) {
             toast({
                 title: "Error",
-                description: "Por favor completa todos los campos requeridos",
+                description: "Please select a valid date range",
                 variant: "destructive",
             });
             return;
         }
 
-        // Prepare the data for submission
         const submitData: SubmitData = {
-            name: formData.name,
-            location: formData.location,
-            description: formData.description,
-            startDate: formData.startDate,
-            endDate: formData.endDate,
+            ...formData,
+            startDate: date.from.toISOString(),
+            endDate: date.to.toISOString(),
             maxParticipants: parseInt(formData.maxParticipants),
             originalPrice: parseFloat(formData.originalPrice),
             finalPrice: parseFloat(formData.finalPrice),
-            tripManager: formData.tripManager,
-            hotelName: formData.hotelName,
-            hotelDescription: formData.hotelDescription,
             hotelAmenities: formData.hotelAmenities.split(",").map(item => item.trim()),
-            hotelIncludes: formData.hotelIncludes.split("\n").filter(item => item.trim()),
-            hotelExcludes: formData.hotelExcludes.split("\n").filter(item => item.trim()),
-            imageUrl: formData.imageUrl,
-            galleryImages: formData.galleryImages,
+            hotelIncludes: formData.hotelIncludes.split("\n").map(item => item.trim()),
+            hotelExcludes: formData.hotelExcludes.split("\n").map(item => item.trim()),
+            galleryImages: galleryImages.map(img => img.url),
             itineraryActions: formData.itineraryActions.map(action => ({
-                dayTitle: action.dayTitle,
-                title: action.title,
-                startTime: action.startTime,
-                responsible: action.responsible
+                ...action,
+                id: action.id || undefined
             }))
         };
 
-        try {
-            await onSubmit(submitData);
-            toast({
-                title: "Éxito",
-                description: "El viaje ha sido guardado correctamente",
-            });
-        } catch (error) {
-            console.error('Error submitting form:', error);
-            toast({
-                title: "Error",
-                description: "Hubo un error al guardar el viaje",
-                variant: "destructive",
-            });
-        }
+        onSubmit(submitData);
     };
 
     return (

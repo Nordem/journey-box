@@ -76,6 +76,8 @@ export default function AdminTripsPage() {
         id: event.id,
         title: event.name,
         location: event.location,
+        startDate: event.startDate,
+        endDate: event.endDate,
         dates: `${format(new Date(event.startDate), 'MMM d', { locale: es })} - ${format(new Date(event.endDate), 'MMM d, yyyy', { locale: es })}`,
         availability: event.maxParticipants,
         employeePrice: event.finalPrice,
@@ -88,10 +90,10 @@ export default function AdminTripsPage() {
         hotel: {
           name: event.hotelName,
           description: event.hotelDescription,
-          amenities: event.hotelAmenities,
+          amenities: event.hotelAmenities || [],
         },
-        includes: event.hotelIncludes,
-        excludes: event.hotelExcludes,
+        includes: event.hotelIncludes || [],
+        excludes: event.hotelExcludes || [],
         galleryImages: event.galleryImages || [],
         itineraryActions: event.itineraryActions || []
       }))
@@ -124,22 +126,25 @@ export default function AdminTripsPage() {
           description: formData.description,
           startDate: formData.startDate,
           endDate: formData.endDate,
-          maxParticipants: formData.maxParticipants,
-          originalPrice: formData.originalPrice,
-          finalPrice: formData.finalPrice,
-          tripManager: formData.tripManager,
-          hotelName: formData.hotelName,
-          hotelDescription: formData.hotelDescription,
-          hotelAmenities: formData.hotelAmenities,
-          hotelIncludes: formData.hotelIncludes,
-          hotelExcludes: formData.hotelExcludes,
-          imageUrl: formData.imageUrl,
-          galleryImages: formData.galleryImages,
-          itineraryActions: formData.itineraryActions
+          maxParticipants: parseInt(formData.maxParticipants) || 0,
+          originalPrice: parseFloat(formData.originalPrice) || 0,
+          finalPrice: parseFloat(formData.finalPrice) || 0,
+          tripManager: formData.tripManager || "",
+          hotelName: formData.hotelName || "",
+          hotelDescription: formData.hotelDescription || "",
+          hotelAmenities: formData.hotelAmenities || [],
+          hotelIncludes: formData.hotelIncludes || [],
+          hotelExcludes: formData.hotelExcludes || [],
+          imageUrl: formData.imageUrl || "",
+          galleryImages: formData.galleryImages || [],
+          itineraryActions: formData.itineraryActions || []
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to save event')
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save event');
+      }
 
       const savedEvent = await response.json()
       setShowForm(false)
@@ -154,7 +159,7 @@ export default function AdminTripsPage() {
       console.error('Error saving event:', error)
       toast({
         title: "Error",
-        description: "No se pudo guardar el evento",
+        description: error instanceof Error ? error.message : "No se pudo guardar el evento",
         variant: "destructive",
       })
     }
@@ -178,7 +183,10 @@ export default function AdminTripsPage() {
         method: 'DELETE',
       })
 
-      if (!response.ok) throw new Error('Failed to delete event')
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete event');
+      }
 
       const updatedTrips = trips.filter((trip) => trip.id !== tripToDelete.id)
       setTrips(updatedTrips)
@@ -194,7 +202,7 @@ export default function AdminTripsPage() {
       console.error('Error deleting event:', error)
       toast({
         title: "Error",
-        description: "No se pudo eliminar el evento",
+        description: error instanceof Error ? error.message : "No se pudo eliminar el evento",
         variant: "destructive",
       })
     }

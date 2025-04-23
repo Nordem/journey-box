@@ -88,6 +88,14 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
+    // Validate required fields
+    if (!data.name || !data.location || !data.description || !data.startDate || !data.endDate) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
     const event = await prisma.event.create({
       data: {
         name: data.name,
@@ -95,23 +103,23 @@ export async function POST(request: Request) {
         description: data.description,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
-        maxParticipants: parseInt(data.maxParticipants),
-        originalPrice: parseFloat(data.originalPrice),
-        finalPrice: parseFloat(data.finalPrice),
-        tripManager: data.tripManager,
-        hotelName: data.hotelName,
-        hotelDescription: data.hotelDescription,
-        hotelAmenities: data.hotelAmenities,
-        hotelIncludes: data.hotelIncludes,
-        hotelExcludes: data.hotelExcludes,
-        imageUrl: data.imageUrl,
-        galleryImages: data.galleryImages,
+        maxParticipants: parseInt(data.maxParticipants) || 0,
+        originalPrice: parseFloat(data.originalPrice) || 0,
+        finalPrice: parseFloat(data.finalPrice) || 0,
+        tripManager: data.tripManager || "",
+        hotelName: data.hotelName || "",
+        hotelDescription: data.hotelDescription || "",
+        hotelAmenities: data.hotelAmenities || [],
+        hotelIncludes: data.hotelIncludes || [],
+        hotelExcludes: data.hotelExcludes || [],
+        imageUrl: data.imageUrl || "",
+        galleryImages: data.galleryImages || [],
         itineraryActions: {
-          create: data.itineraryActions.map((action: any) => ({
-            dayTitle: action.dayTitle,
-            title: action.title,
-            startTime: action.startTime,
-            responsible: action.responsible
+          create: (data.itineraryActions || []).map((action: any) => ({
+            dayTitle: action.dayTitle || "",
+            title: action.title || "",
+            startTime: action.startTime || "",
+            responsible: action.responsible || ""
           }))
         }
       },
@@ -134,6 +142,14 @@ export async function PUT(request: Request) {
   try {
     const data = await request.json();
 
+    // Validate required fields
+    if (!data.id || !data.name || !data.location || !data.description || !data.startDate || !data.endDate) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
     // First, delete existing itinerary actions
     await prisma.eventItineraryActions.deleteMany({
       where: {
@@ -151,23 +167,23 @@ export async function PUT(request: Request) {
         description: data.description,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
-        maxParticipants: parseInt(data.maxParticipants),
-        originalPrice: parseFloat(data.originalPrice),
-        finalPrice: parseFloat(data.finalPrice),
-        tripManager: data.tripManager,
-        hotelName: data.hotelName,
-        hotelDescription: data.hotelDescription,
-        hotelAmenities: data.hotelAmenities,
-        hotelIncludes: data.hotelIncludes,
-        hotelExcludes: data.hotelExcludes,
-        imageUrl: data.imageUrl,
-        galleryImages: data.galleryImages,
+        maxParticipants: parseInt(data.maxParticipants) || 0,
+        originalPrice: parseFloat(data.originalPrice) || 0,
+        finalPrice: parseFloat(data.finalPrice) || 0,
+        tripManager: data.tripManager || "",
+        hotelName: data.hotelName || "",
+        hotelDescription: data.hotelDescription || "",
+        hotelAmenities: data.hotelAmenities || [],
+        hotelIncludes: data.hotelIncludes || [],
+        hotelExcludes: data.hotelExcludes || [],
+        imageUrl: data.imageUrl || "",
+        galleryImages: data.galleryImages || [],
         itineraryActions: {
-          create: data.itineraryActions.map((action: any) => ({
-            dayTitle: action.dayTitle,
-            title: action.title,
-            startTime: action.startTime,
-            responsible: action.responsible
+          create: (data.itineraryActions || []).map((action: any) => ({
+            dayTitle: action.dayTitle || "",
+            title: action.title || "",
+            startTime: action.startTime || "",
+            responsible: action.responsible || ""
           }))
         }
       },
