@@ -991,7 +991,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white px-5">
       <div className="container px-4 py-8">
         <h1 className="text-2xl font-bold mb-6 bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
           Mi Perfil

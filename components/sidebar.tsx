@@ -290,6 +290,7 @@ export default function Sidebar({
         isCollapsed ? "w-[70px]" : "w-[250px]",
         className,
       )}
+      data-collapsed={isCollapsed} // Add this attribute
     >
       <SidebarContent />
     </div>

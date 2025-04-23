@@ -16,6 +16,7 @@ export interface Event {
   state?: string;
   country: string;
   description: string;
+  imageUrl: string;
   startDate: string;
   endDate: string;
   activities: string[];
@@ -25,6 +26,7 @@ export interface Event {
   finalPrice: number;
   isHighlight: boolean;
   location?: string;
+  tripManager?: string;
 }
 
 export interface UserProfile {
