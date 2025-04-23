@@ -151,10 +151,10 @@ export default function ProfilePage() {
   ]
 
   const travelSeasons = [
-    { value: "Summer", label: "Verano", icon: <Sun className="h-4 w-4" /> },
-    { value: "Winter", label: "Invierno", icon: <Snowflake className="h-4 w-4" /> },
-    { value: "Spring", label: "Primavera", icon: <Flower className="h-4 w-4" /> },
-    { value: "Autumn", label: "Otoño", icon: <Leaf className="h-4 w-4" /> },
+    { value: "summer", label: "Verano", icon: <Sun className="h-4 w-4" /> },
+    { value: "winter", label: "Invierno", icon: <Snowflake className="h-4 w-4" /> },
+    { value: "spring", label: "Primavera", icon: <Flower className="h-4 w-4" /> },
+    { value: "autumn", label: "Otoño", icon: <Leaf className="h-4 w-4" /> },
   ]
 
   const getExperienceIcon = (value: string) => {
@@ -168,11 +168,11 @@ export default function ProfilePage() {
   }
 
   const getSeasonIcon = (season: string) => {
-    switch (season) {
-      case 'Summer': return <Sun className="h-4 w-4" />
-      case 'Winter': return <Snowflake className="h-4 w-4" />
-      case 'Spring': return <Flower className="h-4 w-4" />
-      case 'Autumn': return <Leaf className="h-4 w-4" />
+    switch (season.toLowerCase()) {
+      case 'summer': return <Sun className="h-4 w-4" />
+      case 'winter': return <Snowflake className="h-4 w-4" />
+      case 'spring': return <Flower className="h-4 w-4" />
+      case 'autumn': return <Leaf className="h-4 w-4" />
       default: return <Calendar className="h-4 w-4" />
     }
   }
@@ -239,11 +239,11 @@ export default function ProfilePage() {
   }
 
   const toggleSeason = (value: string) => {
-    setEditedSeasons(prev =>
-      prev.includes(value)
-        ? prev.filter(v => v !== value)
-        : [...prev, value]
-    )
+    if (editedSeasons.includes(value)) {
+      setEditedSeasons(prev => prev.filter(v => v !== value));
+    } else if (editedSeasons.length < 4) {
+      setEditedSeasons(prev => [...prev, value]);
+    }
   }
 
   const formatDate = (date: Date) => {
@@ -2260,7 +2260,7 @@ export default function ProfilePage() {
 
                       {isEditingSeasons ? (
                         <div className="space-y-3">
-                          <p className="text-xs text-gray-400 mb-1">Selecciona tus temporadas preferidas</p>
+                          <p className="text-xs text-gray-400 mb-1">Selecciona tus temporadas preferidas (máximo 4)</p>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {travelSeasons.map((season) => (
                               <div
@@ -2285,17 +2285,20 @@ export default function ProfilePage() {
                         <div className="text-center py-6">
                           {eventPreferences?.seasonalPreferences?.length > 0 ? (
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                              {eventPreferences.seasonalPreferences.map((season) => (
-                                <div
-                                  key={season}
-                                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20 text-center"
-                                >
-                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
-                                    {getSeasonIcon(season)}
+                              {eventPreferences.seasonalPreferences.map((seasonValue) => {
+                                const season = travelSeasons.find(s => s.value === seasonValue);
+                                return (
+                                  <div
+                                    key={seasonValue}
+                                    className="flex flex-col items-center justify-center p-2 rounded-lg bg-indigo-950/50 border border-indigo-500/20 text-center"
+                                  >
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-900/60 flex items-center justify-center mb-1">
+                                      {getSeasonIcon(seasonValue)}
+                                    </div>
+                                    <span className="text-xs">{season?.label || seasonValue}</span>
                                   </div>
-                                  <span className="text-xs">{season}</span>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           ) : (
                             <>
