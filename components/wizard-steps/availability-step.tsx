@@ -20,10 +20,10 @@ interface AvailabilityStepProps {
 }
 
 const seasons = [
-  { icon: "🌸", label: "Primavera" },
-  { icon: "☀️", label: "Verano" },
-  { icon: "🍂", label: "Otoño" },
-  { icon: "❄️", label: "Invierno" }
+  { value: "spring", icon: "🌸", label: "Primavera" },
+  { value: "summer", icon: "☀️", label: "Verano" },
+  { value: "autumn", icon: "🍂", label: "Otoño" },
+  { value: "winter", icon: "❄️", label: "Invierno" }
 ]
 
 const groupSizes = [
@@ -42,39 +42,27 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
   const [customSeasons, setCustomSeasons] = useState<Array<{icon: string, label: string}>>([])
 
   const toggleSeason = (season: string) => {
-    setSelectedSeasons(prev => 
-      prev.includes(season) ? prev.filter(s => s !== season) : [...prev, season]
-    )
+    if (selectedSeasons.includes(season)) {
+      setSelectedSeasons(prev => prev.filter(s => s !== season));
+    } else if (selectedSeasons.length < 4) {
+      setSelectedSeasons(prev => [...prev, season]);
+    }
     updateData({
       ...data,
       seasonalPreferences: selectedSeasons.includes(season)
         ? selectedSeasons.filter(s => s !== season)
-        : [...selectedSeasons, season]
-    })
-  }
-
-  const addCustomSeason = () => {
-    if (newSeason.trim() && !selectedSeasons.includes(newSeason.trim())) {
-      const season = newSeason.trim();
-      setCustomSeasons(prev => [...prev, { icon: "✨", label: season }]);
-      const updatedSeasons = [...selectedSeasons, season];
-      setSelectedSeasons(updatedSeasons);
-      updateData({
-        ...data,
-        seasonalPreferences: updatedSeasons
-      });
-      setNewSeason("");
-    }
+        : selectedSeasons.length < 4 ? [...selectedSeasons, season] : selectedSeasons
+    });
   }
 
   const handleDateSelect = (dates: Date[] | undefined) => {
-    if (!dates) return
-    setSelectedDates(dates)
+    if (!dates) return;
+    setSelectedDates(dates);
     updateData({
       ...data,
       blockedDates: dates.map(date => date.toISOString())
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -93,21 +81,24 @@ export default function AvailabilityStep({ data, updateData }: AvailabilityStepP
           </div>
 
           <div className="grid grid-cols-4 gap-1 mt-2">
-            {[...seasons, ...customSeasons].map(({ icon, label }) => (
+            {seasons.map(({ value, icon, label }) => (
               <div
-                key={label}
+                key={value}
                 className={`flex flex-col items-center justify-center p-1.5 rounded-lg border cursor-pointer transition-all text-center ${
-                  selectedSeasons.includes(label)
+                  selectedSeasons.includes(value)
                     ? "border-indigo-500 bg-indigo-950/50 text-white"
                     : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30"
                 }`}
-                onClick={() => toggleSeason(label)}
+                onClick={() => toggleSeason(value)}
               >
                 <div className="text-base">{icon}</div>
                 <div className="text-xs mt-0.5">{label}</div>
               </div>
             ))}
           </div>
+          {selectedSeasons.length === 4 && (
+            <p className="text-xs text-gray-400 mt-2">Has seleccionado el máximo de temporadas permitidas (4)</p>
+          )}
         </div>
 
         <div className="space-y-3 mt-4">
