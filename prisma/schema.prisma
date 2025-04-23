@@ -117,6 +117,20 @@ model Deliverable {
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model EventItineraryActions {
+  id          String   @id @default(cuid())
+  eventId     String
+  dayTitle    String
+  title       String
+  startTime   String
+  responsible String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("EventItineraryActions")
+}
+
 model Event {
   id              String        @id @default(uuid())
   name            String
@@ -142,6 +156,7 @@ model Event {
   galleryImages   String[]      // Array of gallery image URLs from Pinata
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  itineraryActions EventItineraryActions[]
 }
 
 enum EventCategory {
