@@ -1202,15 +1202,6 @@ export default function ProfilePage() {
                   </div> */}
                 </CardContent>
               </Card>
-
-              {/* Botón de cerrar sesión */}
-              <Button
-                variant="outline"
-                className="w-full border-red-500/30 bg-red-950/20 hover:bg-red-500/20 text-red-400 hover:text-red-300 justify-start"
-                onClick={() => supabase.auth.signOut()}
-              >
-                <LogOut size={16} className="mr-2" /> Cerrar sesión
-              </Button>
             </div>
 
             {/* Columna derecha - Contenido principal */}

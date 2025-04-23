@@ -489,7 +489,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Disponibilidad (%)</Label>
+                                        <Label>Cupo</Label>
                                         <div className="relative">
                                             <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
