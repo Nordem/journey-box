@@ -214,35 +214,118 @@ export default function DiscoverPage() {
           ) : recommendedEvents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recommendedEvents.map((event, index) => (
-                <Card key={index} className="rounded-xl overflow-hidden bg-gradient-to-b from-indigo-900/30 to-purple-900/30 border border-indigo-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-white text-lg md:text-xl">{event.name}</CardTitle>
-                    <CardDescription className="text-indigo-200 text-sm md:text-base">{event.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-indigo-200">Precio</span>
-                        <span className="text-white font-medium">${event.finalPrice || event.originalPrice || 0} MXN</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-indigo-200">Participantes</span>
-                        <span className="text-white font-medium">{event.maxParticipants || 0}</span>
-                      </div>
+                <div key={index} className="relative">
+                  <div className="rounded-xl overflow-hidden bg-gradient-to-b from-indigo-900/30 to-purple-900/30 border border-indigo-500/30">
+                    <div className="relative h-48 w-full">
+                      <Image src={event.imageUrl || "/placeholder.svg"} alt={event.name} fill className="object-cover" />
+
+                      {/* Match score indicator */}
                       {event.matchScore && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-indigo-200">Coincidencia</span>
-                          <span className="text-white font-medium">{event.matchScore}%</span>
+                        <div className="absolute bottom-2 right-24 bg-gradient-to-r from-indigo-600/90 to-purple-600/90 text-white text-xs px-3 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-lg z-10">
+                          <span className="text-yellow-300 font-bold">{event.matchScore}%</span>
+                          <span>de afinidad</span>
                         </div>
                       )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                      <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                        <MapPin size={12} className="text-indigo-300" />
+                        <span>{event.location || "Sin ubicación"}</span>
+                      </div>
+
+                      {/* Action buttons (favorite and share) */}
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        <button
+                          className="p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+                        >
+                          <Heart
+                            size={18}
+                            className="text-white"
+                          />
+                        </button>
+                        <button
+                          className="p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+                        >
+                          <Share2 size={18} className="text-white" />
+                        </button>
+                      </div>
                     </div>
-                    <Button
-                      className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
-                    >
-                      Ver Detalles
-                    </Button>
-                  </CardContent>
-                </Card>
+
+                    <div className="p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-xl font-bold">{event.name}</h3>
+                        <div className="text-indigo-300 font-bold text-sm">
+                          ${(event.finalPrice || 0).toLocaleString("es-MX")} MXN
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 text-sm mb-3">
+                        {(event.startDate && event.endDate) && (
+                          <div className="flex items-center text-gray-300">
+                            <Calendar size={14} className="mr-1 text-indigo-400" />
+                            <span>
+                              {(() => {
+                                const startDate = new Date(event.startDate);
+                                const endDate = new Date(event.endDate);
+
+                                // Months in Spanish
+                                const months = [
+                                  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                                  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+                                ];
+
+                                // Format: if same month, show "20-25 Noviembre, 2024"
+                                if (startDate.getMonth() === endDate.getMonth() &&
+                                  startDate.getFullYear() === endDate.getFullYear()) {
+                                  return `${startDate.getDate()}-${endDate.getDate()} ${months[startDate.getMonth()]}, ${startDate.getFullYear()}`;
+                                }
+                                // Format: if different months, show "30 Abril - 3 Mayo, 2024"
+                                else {
+                                  const sameYear = startDate.getFullYear() === endDate.getFullYear();
+                                  return `${startDate.getDate()} ${months[startDate.getMonth()]}${sameYear ? '' : ', ' + startDate.getFullYear()} - ${endDate.getDate()} ${months[endDate.getMonth()]}, ${endDate.getFullYear()}`;
+                                }
+                              })()}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center text-xs gap-1 mb-1">
+                          <span className="text-gray-300">Disponibilidad:</span>
+                          <div className="relative w-24 h-2 bg-indigo-900/50 rounded-full overflow-hidden">
+                            <div
+                              className="absolute top-0 left-0 h-full bg-indigo-500 rounded-full"
+                              style={{ width: `${((event.maxParticipants - (event.maxParticipants || 0)) / event.maxParticipants) * 100}%` }}
+                            ></div>
+                          </div>
+                          <span className="font-medium text-gray-300">{event.maxParticipants} lugares</span>
+                        </div>
+
+                        {event.tripManager && (
+                          <div className="flex items-center text-gray-300 text-xs">
+                            <User size={12} className="mr-1 text-indigo-400" />
+                            <span>Responsable: {event.tripManager}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* <div className="flex gap-2 mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 border-indigo-500/30 hover:bg-indigo-500/20 text-white"
+                        >
+                          Detalles
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                        >
+                          Reservar
+                        </Button>
+                      </div> */}
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
