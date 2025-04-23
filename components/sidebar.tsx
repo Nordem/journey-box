@@ -25,6 +25,8 @@ import { useUserProfile } from "@/lib/context/user-profile-context"
 interface SidebarProps {
   isAdmin?: boolean
   className?: string
+  isCollapsed: boolean
+  onToggleCollapse: () => void
 }
 
 interface NavItem {
@@ -38,8 +40,9 @@ interface NavItem {
 export default function Sidebar({
   isAdmin = true,
   className,
+  isCollapsed,
+  onToggleCollapse,
 }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -57,10 +60,6 @@ export default function Sidebar({
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed)
-  }
 
   const mainNavItems: NavItem[] = [
     {
@@ -108,7 +107,7 @@ export default function Sidebar({
           variant="ghost"
           size="icon"
           className="absolute -right-3 top-8 h-6 w-6 rounded-full border border-indigo-500/30 bg-black text-white shadow-md"
-          onClick={toggleSidebar}
+          onClick={onToggleCollapse}
         >
           {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </Button>

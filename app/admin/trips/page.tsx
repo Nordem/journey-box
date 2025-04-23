@@ -220,6 +220,7 @@ export default function AdminTripsPage() {
   )
 
   return (
+    <main className="min-h-screen bg-black text-white px-8 py-5">
     <div className="flex flex-col gap-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -356,5 +357,6 @@ export default function AdminTripsPage() {
 
       <Toaster />
     </div>
+    </main>
   )
 }
