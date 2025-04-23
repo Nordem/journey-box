@@ -55,24 +55,6 @@ interface Trip {
   galleryImages?: string[];
 }
 
-// Define initial trips data structure
-const initialTrips: Trip[] = [
-  {
-    id: 1,
-    title: "Sample Event",
-    location: "Sample Location",
-    dates: "Jan 1-5, 2024",
-    availability: 100,
-    employeePrice: 1000,
-    regularPrice: 2000,
-    description: "Sample description",
-    imageUrl: "/placeholder.svg",
-    hasVideo: false,
-    participants: [],
-    tripManager: "John Doe - Events",
-  }
-]
-
 export default function AdminTripsPage() {
   const [showForm, setShowForm] = useState(false)
   const [trips, setTrips] = useState<Trip[]>([])
@@ -149,6 +131,8 @@ export default function AdminTripsPage() {
           hotelAmenities: formData.hotelAmenities,
           hotelIncludes: formData.hotelIncludes,
           hotelExcludes: formData.hotelExcludes,
+          imageUrl: formData.imageUrl,
+          galleryImages: formData.galleryImages
         }),
       })
 
@@ -175,6 +159,8 @@ export default function AdminTripsPage() {
           },
           includes: savedEvent.hotelIncludes,
           excludes: savedEvent.hotelExcludes,
+          imageUrl: savedEvent.imageUrl || "/placeholder.svg",
+          galleryImages: savedEvent.galleryImages || []
         } : trip));
         toast({
           title: "Evento actualizado exitosamente",
@@ -201,7 +187,7 @@ export default function AdminTripsPage() {
           },
           includes: savedEvent.hotelIncludes,
           excludes: savedEvent.hotelExcludes,
-          galleryImages: savedEvent.galleryImages || [],
+          galleryImages: savedEvent.galleryImages || []
         }]);
         toast({
           title: "Evento creado exitosamente",

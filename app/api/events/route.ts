@@ -25,7 +25,9 @@ export async function GET() {
         hotelDescription: true,
         hotelAmenities: true,
         hotelIncludes: true,
-        hotelExcludes: true
+        hotelExcludes: true,
+        imageUrl: true,
+        galleryImages: true
       },
       orderBy: {
         createdAt: "desc",
@@ -57,7 +59,9 @@ export async function GET() {
       hotelDescription: event.hotelDescription,
       hotelAmenities: event.hotelAmenities || [],
       hotelIncludes: event.hotelIncludes || [],
-      hotelExcludes: event.hotelExcludes || []
+      hotelExcludes: event.hotelExcludes || [],
+      imageUrl: event.imageUrl,
+      galleryImages: event.galleryImages || []
     }));
 
     return NextResponse.json({ events: formattedEvents });
@@ -90,6 +94,8 @@ export async function POST(request: Request) {
         hotelAmenities: data.hotelAmenities,
         hotelIncludes: data.hotelIncludes,
         hotelExcludes: data.hotelExcludes,
+        imageUrl: data.imageUrl,
+        galleryImages: data.galleryImages
       },
     });
 
@@ -126,6 +132,8 @@ export async function PUT(request: Request) {
         hotelAmenities: data.hotelAmenities,
         hotelIncludes: data.hotelIncludes,
         hotelExcludes: data.hotelExcludes,
+        imageUrl: data.imageUrl,
+        galleryImages: data.galleryImages
       },
     });
 
