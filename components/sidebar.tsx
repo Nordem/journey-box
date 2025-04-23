@@ -42,7 +42,8 @@ export default function Sidebar({
   className,
   isCollapsed,
   onToggleCollapse,
-}: SidebarProps) {
+  onMobileChange, // New prop
+}: SidebarProps & { onMobileChange?: (isMobile: boolean) => void }) {
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -54,12 +55,14 @@ export default function Sidebar({
   useEffect(() => {
     setMounted(true)
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768) // 768px is the md breakpoint
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      onMobileChange?.(mobile) // Notify parent about mobile state
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  }, [onMobileChange])
 
   const mainNavItems: NavItem[] = [
     {

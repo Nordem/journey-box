@@ -16,6 +16,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false) // Track mobile state
 
   return (
     <html lang="es" suppressHydrationWarning>
@@ -34,12 +35,17 @@ export default function RootLayout({
                 isAdmin={true}
                 isCollapsed={isSidebarCollapsed}
                 onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                onMobileChange={setIsMobile} // Pass callback to update mobile state
               />
 
               {/* Main Content */}
               <main
                 className={`flex-1 overflow-auto transition-all duration-300 ${
-                  isSidebarCollapsed ? 'ml-[70px]' : 'ml-[250px]'
+                  isMobile
+                    ? 'ml-0 mt-6' // No margin when in mobile view
+                    : isSidebarCollapsed
+                    ? 'ml-[70px]'
+                    : 'ml-[250px]'
                 }`}
               >
                 {children}
