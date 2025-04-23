@@ -138,6 +138,8 @@ model Event {
   hotelAmenities  String[]
   hotelIncludes   String[]
   hotelExcludes   String[]
+  imageUrl        String?       // Main event image URL from Pinata
+  galleryImages   String[]      // Array of gallery image URLs from Pinata
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }

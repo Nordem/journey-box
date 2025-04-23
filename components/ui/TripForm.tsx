@@ -36,6 +36,7 @@ import { DateRange, DayPicker } from "react-day-picker"
 import { SelectRangeEventHandler } from "react-day-picker"
 import { Calendar as CalendarIcon } from "lucide-react"
 import "react-day-picker/dist/style.css"
+import { uploadToPinata, removeFromPinata } from "@/lib/pinata"
 
 interface TripFormProps {
     onSubmit: (formData: any) => void
@@ -177,7 +178,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     };
 
     // Handle image upload
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             // Check if file is an image
@@ -190,19 +191,28 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                 return;
             }
 
-            // Create a preview URL
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                setImagePreview(base64String);
-                setFormData(prev => ({ ...prev, imageUrl: base64String }));
-            };
-            reader.readAsDataURL(file);
+            try {
+                const ipfsUrl = await uploadToPinata(file);
+                setImagePreview(ipfsUrl);
+                setFormData(prev => ({ ...prev, imageUrl: ipfsUrl }));
+                
+                toast({
+                    title: "Success",
+                    description: "Image uploaded successfully",
+                });
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to upload image",
+                    variant: "destructive",
+                });
+            }
         }
     };
 
     // Handle gallery image upload
-    const handleGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleGalleryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             // Check if file is an image
@@ -215,22 +225,54 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                 return;
             }
 
-            // Create a preview URL
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
+            try {
+                const ipfsUrl = await uploadToPinata(file);
                 setGalleryImages(prev => [...prev, {
                     id: `gallery-${Date.now()}`,
-                    url: base64String
+                    url: ipfsUrl
                 }]);
-            };
-            reader.readAsDataURL(file);
+                
+                toast({
+                    title: "Success",
+                    description: "Gallery image uploaded successfully",
+                });
+            } catch (error) {
+                console.error('Error uploading gallery image:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to upload gallery image",
+                    variant: "destructive",
+                });
+            }
         }
     };
 
     // Remove gallery image
-    const removeGalleryImage = (id: string) => {
-        setGalleryImages(prev => prev.filter(img => img.id !== id));
+    const removeGalleryImage = async (id: string) => {
+        const imageToRemove = galleryImages.find(img => img.id === id);
+        if (imageToRemove) {
+            try {
+                // Extract IPFS hash from the URL
+                const ipfsHash = imageToRemove.url.split('/').pop();
+                if (ipfsHash) {
+                    await removeFromPinata(ipfsHash);
+                }
+                
+                setGalleryImages(prev => prev.filter(img => img.id !== id));
+                
+                toast({
+                    title: "Success",
+                    description: "Image removed successfully",
+                });
+            } catch (error) {
+                console.error('Error removing image:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to remove image",
+                    variant: "destructive",
+                });
+            }
+        }
     };
 
     const [alert, setAlert] = useState<{ title: string; description: string } | null>(null);

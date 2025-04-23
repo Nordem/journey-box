@@ -286,11 +286,6 @@ export default function DiscoverPage() {
                       <span className="text-white font-medium">{event.maxParticipants || 0}</span>
                     </div>
                   </div>
-                  <Button 
-                    className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-indigo-500/25"
-                  >
-                    Ver Detalles
-                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -299,4 +294,4 @@ export default function DiscoverPage() {
       </Tabs>
     </div>
   )
-} 
+}
