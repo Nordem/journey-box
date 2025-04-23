@@ -201,7 +201,7 @@ export default function DiscoverPage() {
         </div>
 
         {/* Recommended Events Section */}
-        <div>
+        <div className="mb-12">
           <h2 className="text-lg font-bold mb-6">
             <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
               Recomendado para ti, {userProfile?.name?.split(" ")[0].trim()}
@@ -222,7 +222,7 @@ export default function DiscoverPage() {
                       {/* Match score indicator */}
                       {event.matchScore && (
                         <div className="absolute bottom-2 right-24 bg-gradient-to-r from-indigo-600/90 to-purple-600/90 text-white text-xs px-3 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-lg z-10">
-                          <span className="text-yellow-300 font-bold">{event.matchScore}%</span>
+                          <span className="text-yellow-300 font-bold">{event.matchScore}% </span>
                           <span>de afinidad</span>
                         </div>
                       )}
@@ -277,7 +277,7 @@ export default function DiscoverPage() {
                                 // Format: if same month, show "20-25 Noviembre, 2024"
                                 if (startDate.getMonth() === endDate.getMonth() &&
                                   startDate.getFullYear() === endDate.getFullYear()) {
-                                  return `${startDate.getDate()}-${endDate.getDate()} ${months[startDate.getMonth()]}, ${startDate.getFullYear()}`;
+                                  return `${startDate.getDate()} - ${endDate.getDate()} ${months[startDate.getMonth()]}, ${startDate.getFullYear()}`;
                                 }
                                 // Format: if different months, show "30 Abril - 3 Mayo, 2024"
                                 else {
@@ -300,12 +300,10 @@ export default function DiscoverPage() {
                           <span className="font-medium text-gray-300">{event.maxParticipants} lugares</span>
                         </div>
 
-                        {event.tripManager && (
                           <div className="flex items-center text-gray-300 text-xs">
                             <User size={12} className="mr-1 text-indigo-400" />
-                            <span>Responsable: {event.tripManager}</span>
+                            <span>Responsable: {event.tripManager || 'Pendiente de asignar'}</span>
                           </div>
-                        )}
                       </div>
 
                       {/* <div className="flex gap-2 mt-2">
