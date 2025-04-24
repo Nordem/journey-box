@@ -1622,18 +1622,18 @@ export default function ProfilePage() {
                                   size="sm"
                                   className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
                                   onClick={() => {
-                                    setIsEditingInterests(false)
-                                    setEditedInterests([...(userProfile?.hobbiesAndInterests || [])])
+                                  setIsEditingInterests(false)
+                                  setEditedInterests([...(userProfile?.hobbiesAndInterests || [])])
                                   }}
                                 >
-                                  <X size={12} className="mr-1" /> Cancelar
+                                  <X size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Cancelar</span>
                                 </Button>
                                 <Button
                                   size="sm"
                                   className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                                   onClick={handleSaveInterests}
                                 >
-                                  <Save size={12} className="mr-1" /> Guardar
+                                  <Save size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Guardar</span>
                                 </Button>
                               </div>
                             )}
@@ -1802,14 +1802,14 @@ export default function ProfilePage() {
                                     setEditedTraits([...(userProfile?.personalityTraits || [])])
                                   }}
                                 >
-                                  <X size={12} className="mr-1" /> Cancelar
+                                  <X size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Cancelar</span>
                                 </Button>
                                 <Button
                                   size="sm"
                                   className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                                   onClick={handleSaveTraits}
                                 >
-                                  <Save size={12} className="mr-1" /> Guardar
+                                  <Save size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Guardar</span>
                                 </Button>
                               </div>
                             )}
@@ -1955,14 +1955,14 @@ export default function ProfilePage() {
                                 setEditedExperiences([...(eventPreferences?.preferredExperiences || [])])
                               }}
                             >
-                              <X size={12} className="mr-1" /> Cancelar
+                              <X size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Cancelar</span>
                             </Button>
                             <Button
                               size="sm"
                               className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                               onClick={handleSaveExperiences}
                             >
-                              <Save size={12} className="mr-1" /> Guardar
+                              <Save size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Guardar</span>
                             </Button>
                           </div>
                         )}
@@ -2096,14 +2096,14 @@ export default function ProfilePage() {
                                 setEditedDestinations([...(eventPreferences?.preferredDestinations || [])])
                               }}
                             >
-                              <X size={12} className="mr-1" /> Cancelar
+                              <X size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Cancelar</span>
                             </Button>
                             <Button
                               size="sm"
                               className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                               onClick={handleSaveDestinations}
                             >
-                              <Save size={12} className="mr-1" /> Guardar
+                              <Save size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Guardar</span>
                             </Button>
                           </div>
                         )}
@@ -2233,14 +2233,14 @@ export default function ProfilePage() {
                                 setEditedSeasons([...(eventPreferences?.seasonalPreferences || [])])
                               }}
                             >
-                              <X size={12} className="mr-1" /> Cancelar
+                              <X size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Cancelar</span>
                             </Button>
                             <Button
                               size="sm"
                               className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                               onClick={handleSaveSeasons}
                             >
-                              <Save size={12} className="mr-1" /> Guardar
+                              <Save size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Guardar</span>
                             </Button>
                           </div>
                         )}
@@ -2325,14 +2325,14 @@ export default function ProfilePage() {
                               className="h-7 text-xs border-indigo-500/30 bg-indigo-950/50 hover:bg-indigo-500/20"
                               onClick={() => setShowDatePicker(false)}
                             >
-                              <X size={12} className="mr-1" /> Cancelar
+                              <X size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Cancelar</span>
                             </Button>
                             <Button
                               size="sm"
                               className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                               onClick={handleSaveBlockedDates}
                             >
-                              <Save size={12} className="mr-1" /> Guardar
+                              <Save size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Guardar</span>
                             </Button>
                           </div>
                         )}
@@ -2434,14 +2434,14 @@ export default function ProfilePage() {
                                 })
                               }}
                             >
-                              <X size={12} className="mr-1" /> Cancelar
+                              <X size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Cancelar</span>
                             </Button>
                             <Button
                               size="sm"
                               className="h-7 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                               onClick={handleSaveAvailability}
                             >
-                              <Save size={12} className="mr-1" /> Guardar
+                              <Save size={12} className="mr-1 sm:inline" /> <span className="hidden sm:inline">Guardar</span>
                             </Button>
                           </div>
                         )}
