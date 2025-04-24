@@ -436,7 +436,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
     // Add helper function to show required indicator
     const RequiredIndicator = () => (
-        <span className="text-red-500 ml-1">*</span>
+        <span className="text-yellow-500 ml-1">*</span>
     );
 
     // Add helper function to show error message
@@ -481,8 +481,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>
-                                            Título del Evento
-                                            <RequiredIndicator />
+                                            Título del Evento <RequiredIndicator />
                                         </Label>
                                         <Input
                                             id="name"
@@ -497,8 +496,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     </div>
                                     <div className="space-y-2">
                                         <Label>
-                                            Ubicación
-                                            <RequiredIndicator />
+                                            Ubicación <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -591,8 +589,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>
-                                            Cupo
-                                            <RequiredIndicator />
+                                            Cupo <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -614,8 +611,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     </div>
                                     <div className="space-y-2">
                                         <Label>
-                                            Precio Original
-                                            <RequiredIndicator />
+                                            Precio Original <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -640,8 +636,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>
-                                            Precio Final
-                                            <RequiredIndicator />
+                                            Precio Final <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -665,8 +660,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="space-y-2">
                                     <Label>
-                                        Descripción
-                                        <RequiredIndicator />
+                                        Descripción <RequiredIndicator />
                                     </Label>
                                     <Textarea
                                         id="description"
@@ -683,8 +677,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="space-y-2">
                                     <Label>
-                                        Gerente del Evento
-                                        <RequiredIndicator />
+                                        Gerente del Evento <RequiredIndicator />
                                     </Label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -710,7 +703,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelName">
                                             Nombre del Hotel
-                                            <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <Hotel className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -731,7 +723,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelDescription">
                                             Descripción del Hotel
-                                            <RequiredIndicator />
                                         </Label>
                                         <Textarea
                                             id="hotelDescription"
@@ -749,7 +740,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelAmenities">
                                             Amenidades (separadas por coma)
-                                            <RequiredIndicator />
                                         </Label>
                                         <Input
                                             id="hotelAmenities"
@@ -772,7 +762,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelIncludes">
                                             Incluye (un elemento por línea)
-                                            <RequiredIndicator />
                                         </Label>
                                         <Textarea
                                             id="hotelIncludes"
@@ -790,7 +779,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelExcludes">
                                             No Incluye (un elemento por línea)
-                                            <RequiredIndicator />
                                         </Label>
                                         <Textarea
                                             id="hotelExcludes"
