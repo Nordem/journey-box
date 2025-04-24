@@ -234,7 +234,7 @@ export default function DiscoverPage() {
                       </div>
 
                       {/* Action buttons (favorite and share) */}
-                      <div className="absolute top-2 right-2 flex gap-1">
+                      {/* <div className="absolute top-2 right-2 flex gap-1">
                         <button
                           className="p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
                         >
@@ -248,7 +248,7 @@ export default function DiscoverPage() {
                         >
                           <Share2 size={18} className="text-white" />
                         </button>
-                      </div>
+                      </div> */}
                     </div>
 
                     <div className="p-4">
@@ -405,14 +405,14 @@ export default function DiscoverPage() {
                       </div>
 
                       {/* Action buttons (favorite and share) */}
-                      <div className="absolute top-2 right-2 flex gap-1">
+                      {/* <div className="absolute top-2 right-2 flex gap-1">
                         <button className="p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors">
                           <Heart size={18} className="text-white" />
                         </button>
                         <button className="p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors">
                           <Share2 size={18} className="text-white" />
                         </button>
-                      </div>
+                      </div> */}
                     </div>
 
                     <div className="p-4">

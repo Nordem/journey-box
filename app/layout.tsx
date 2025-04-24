@@ -29,7 +29,7 @@ export default function RootLayout({
         <meta name="description" content={metadata.description || 'Default Description'} />
         <meta name="generator" content={metadata.generator || 'Default Generator'} />
       </head>
-      
+
       <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
@@ -44,7 +44,7 @@ export default function RootLayout({
               {/* Sidebar */}
               {pathname !== '/' && pathname !== '/login' && ( // Only show Sidebar if not on the "/" or "/login" page
                 <Sidebar
-                  isAdmin={true}
+                  isAdmin={false}
                   isCollapsed={isSidebarCollapsed}
                   onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                   onMobileChange={setIsMobile} // Pass callback to update mobile state
