@@ -822,7 +822,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 <>
                                                     <Upload className="h-8 w-8 text-muted-foreground" />
                                                     <p className="text-sm text-muted-foreground">
-                                                        Arrastra y suelta la imagen principal o haz click para seleccionar
+                                                        click para seleccionar
                                                     </p>
                                                     <Input
                                                         id="imageUpload"
