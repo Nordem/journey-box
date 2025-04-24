@@ -70,7 +70,10 @@ export async function GET() {
       hotelIncludes: event.hotelIncludes || [],
       hotelExcludes: event.hotelExcludes || [],
       imageUrl: event.imageUrl,
-      galleryImages: event.galleryImages || [],
+      galleryImages: (event.galleryImages || []).map((url: string) => ({
+        url,
+        type: url.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image'
+      })),
       itineraryActions: event.itineraryActions || []
     }));
 
@@ -113,7 +116,7 @@ export async function POST(request: Request) {
         hotelIncludes: data.hotelIncludes || [],
         hotelExcludes: data.hotelExcludes || [],
         imageUrl: data.imageUrl || "",
-        galleryImages: data.galleryImages || [],
+        galleryImages: (data.galleryImages || []).map((media: { url: string; type: string }) => media.url),
         itineraryActions: {
           create: (data.itineraryActions || []).map((action: any) => ({
             dayTitle: action.dayTitle || "",
@@ -177,7 +180,7 @@ export async function PUT(request: Request) {
         hotelIncludes: data.hotelIncludes || [],
         hotelExcludes: data.hotelExcludes || [],
         imageUrl: data.imageUrl || "",
-        galleryImages: data.galleryImages || [],
+        galleryImages: (data.galleryImages || []).map((media: { url: string; type: string }) => media.url),
         itineraryActions: {
           create: (data.itineraryActions || []).map((action: any) => ({
             dayTitle: action.dayTitle || "",
