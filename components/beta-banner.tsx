@@ -29,7 +29,7 @@ export function BetaBanner() {
         <div className="flex items-center space-x-2">
           <AlertTriangle className="h-5 w-5" />
           <span className="font-medium">
-            This application is in <strong>BETA</strong>. Features may change and bugs may occur.
+            Esta aplicación está en <strong>BETA</strong>. Las funciones pueden cambiar y pueden ocurrir errores.
           </span>
         </div>
         <Button
