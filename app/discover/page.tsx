@@ -294,7 +294,7 @@ export default function DiscoverPage() {
                           <div className="relative w-24 h-2 bg-indigo-900/50 rounded-full overflow-hidden">
                             <div
                               className="absolute top-0 left-0 h-full bg-indigo-500 rounded-full"
-                              style={{ width: `${((event.maxParticipants - (event.maxParticipants || 0)) / event.maxParticipants) * 100}%` }}
+                              style={{ width: `${((event.maxParticipants - (event.maxParticipants || 0)) / event.maxParticipants) * 100}` }}
                             ></div>
                           </div>
                           <span className="font-medium text-gray-300">{event.maxParticipants} lugares</span>
