@@ -37,6 +37,7 @@ import { SelectRangeEventHandler } from "react-day-picker"
 import { Calendar as CalendarIcon } from "lucide-react"
 import "react-day-picker/dist/style.css"
 import { uploadToPinata, removeFromPinata } from "@/lib/pinata"
+import { ValidationModal } from "@/components/ui/validation-modal"
 
 interface TripFormProps {
     onSubmit: (formData: any) => void
@@ -358,36 +359,57 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         }));
     };
 
+    // Add new state for validation modal
+    const [validationModal, setValidationModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        missingFields: string[];
+    }>({
+        isOpen: false,
+        title: "",
+        description: "",
+        missingFields: []
+    });
+
     // Modify handleFormSubmit to include validation
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
         // Validate all required fields
         const requiredFields = [
-            'name', 'location', 'description', 'maxParticipants',
-            'originalPrice', 'finalPrice', 'tripManager', 'hotelName',
-            'hotelDescription', 'hotelAmenities', 'hotelIncludes', 'hotelExcludes'
+            { id: 'name', label: 'Nombre del Evento' },
+            { id: 'location', label: 'Ubicación' },
+            { id: 'description', label: 'Descripción' },
+            { id: 'maxParticipants', label: 'Cupo' },
+            { id: 'originalPrice', label: 'Precio Original' },
+            { id: 'finalPrice', label: 'Precio Final' },
+            { id: 'tripManager', label: 'Gerente del Evento' }
         ];
 
-        const isValid = requiredFields.every(field => {
-            const value = formData[field as keyof FormData];
-            return validateField(field, value);
-        });
+        const missingFields = requiredFields
+            .filter(field => {
+                const value = formData[field.id as keyof FormData];
+                return !value || value.toString().trim() === '';
+            })
+            .map(field => field.label);
 
-        if (!isValid) {
-            toast({
+        if (missingFields.length > 0) {
+            setValidationModal({
+                isOpen: true,
                 title: "Error",
                 description: "Por favor completa todos los campos requeridos",
-                variant: "destructive",
+                missingFields
             });
             return;
         }
 
         if (!date?.from || !date?.to) {
-            toast({
+            setValidationModal({
+                isOpen: true,
                 title: "Error",
                 description: "Por favor selecciona un rango de fechas válido",
-                variant: "destructive",
+                missingFields: ["Rango de fechas"]
             });
             return;
         }
@@ -414,7 +436,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
     // Add helper function to show required indicator
     const RequiredIndicator = () => (
-        <span className="text-red-500 ml-1">*</span>
+        <span className="text-yellow-500 ml-1">*</span>
     );
 
     // Add helper function to show error message
@@ -459,8 +481,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>
-                                            Título del Evento
-                                            <RequiredIndicator />
+                                            Título del Evento <RequiredIndicator />
                                         </Label>
                                         <Input
                                             id="name"
@@ -475,8 +496,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     </div>
                                     <div className="space-y-2">
                                         <Label>
-                                            Ubicación
-                                            <RequiredIndicator />
+                                            Ubicación <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -569,8 +589,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>
-                                            Cupo
-                                            <RequiredIndicator />
+                                            Cupo <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -592,8 +611,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     </div>
                                     <div className="space-y-2">
                                         <Label>
-                                            Precio Original
-                                            <RequiredIndicator />
+                                            Precio Original <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -618,8 +636,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>
-                                            Precio Final
-                                            <RequiredIndicator />
+                                            Precio Final <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -643,8 +660,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="space-y-2">
                                     <Label>
-                                        Descripción
-                                        <RequiredIndicator />
+                                        Descripción <RequiredIndicator />
                                     </Label>
                                     <Textarea
                                         id="description"
@@ -661,8 +677,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="space-y-2">
                                     <Label>
-                                        Gerente del Evento
-                                        <RequiredIndicator />
+                                        Gerente del Evento <RequiredIndicator />
                                     </Label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -688,7 +703,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelName">
                                             Nombre del Hotel
-                                            <RequiredIndicator />
                                         </Label>
                                         <div className="relative">
                                             <Hotel className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -709,7 +723,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelDescription">
                                             Descripción del Hotel
-                                            <RequiredIndicator />
                                         </Label>
                                         <Textarea
                                             id="hotelDescription"
@@ -727,7 +740,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelAmenities">
                                             Amenidades (separadas por coma)
-                                            <RequiredIndicator />
                                         </Label>
                                         <Input
                                             id="hotelAmenities"
@@ -750,7 +762,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelIncludes">
                                             Incluye (un elemento por línea)
-                                            <RequiredIndicator />
                                         </Label>
                                         <Textarea
                                             id="hotelIncludes"
@@ -768,7 +779,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <div className="space-y-2">
                                         <Label htmlFor="hotelExcludes">
                                             No Incluye (un elemento por línea)
-                                            <RequiredIndicator />
                                         </Label>
                                         <Textarea
                                             id="hotelExcludes"
@@ -977,6 +987,13 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                     </div>
                 </form>
                 <Toaster />
+                <ValidationModal
+                    isOpen={validationModal.isOpen}
+                    onClose={() => setValidationModal(prev => ({ ...prev, isOpen: false }))}
+                    title={validationModal.title}
+                    description={validationModal.description}
+                    missingFields={validationModal.missingFields}
+                />
             </CardContent>
         </Card>
     )
