@@ -37,6 +37,7 @@ import { SelectRangeEventHandler } from "react-day-picker"
 import { Calendar as CalendarIcon } from "lucide-react"
 import "react-day-picker/dist/style.css"
 import { uploadToPinata, removeFromPinata } from "@/lib/pinata"
+import { ValidationModal } from "@/components/ui/validation-modal"
 
 interface TripFormProps {
     onSubmit: (formData: any) => void
@@ -358,36 +359,57 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         }));
     };
 
+    // Add new state for validation modal
+    const [validationModal, setValidationModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        missingFields: string[];
+    }>({
+        isOpen: false,
+        title: "",
+        description: "",
+        missingFields: []
+    });
+
     // Modify handleFormSubmit to include validation
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
         // Validate all required fields
         const requiredFields = [
-            'name', 'location', 'description', 'maxParticipants',
-            'originalPrice', 'finalPrice', 'tripManager', 'hotelName',
-            'hotelDescription', 'hotelAmenities', 'hotelIncludes', 'hotelExcludes'
+            { id: 'name', label: 'Nombre del Evento' },
+            { id: 'location', label: 'Ubicación' },
+            { id: 'description', label: 'Descripción' },
+            { id: 'maxParticipants', label: 'Cupo' },
+            { id: 'originalPrice', label: 'Precio Original' },
+            { id: 'finalPrice', label: 'Precio Final' },
+            { id: 'tripManager', label: 'Gerente del Evento' }
         ];
 
-        const isValid = requiredFields.every(field => {
-            const value = formData[field as keyof FormData];
-            return validateField(field, value);
-        });
+        const missingFields = requiredFields
+            .filter(field => {
+                const value = formData[field.id as keyof FormData];
+                return !value || value.toString().trim() === '';
+            })
+            .map(field => field.label);
 
-        if (!isValid) {
-            toast({
+        if (missingFields.length > 0) {
+            setValidationModal({
+                isOpen: true,
                 title: "Error",
                 description: "Por favor completa todos los campos requeridos",
-                variant: "destructive",
+                missingFields
             });
             return;
         }
 
         if (!date?.from || !date?.to) {
-            toast({
+            setValidationModal({
+                isOpen: true,
                 title: "Error",
                 description: "Por favor selecciona un rango de fechas válido",
-                variant: "destructive",
+                missingFields: ["Rango de fechas"]
             });
             return;
         }
@@ -977,6 +999,13 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                     </div>
                 </form>
                 <Toaster />
+                <ValidationModal
+                    isOpen={validationModal.isOpen}
+                    onClose={() => setValidationModal(prev => ({ ...prev, isOpen: false }))}
+                    title={validationModal.title}
+                    description={validationModal.description}
+                    missingFields={validationModal.missingFields}
+                />
             </CardContent>
         </Card>
     )
