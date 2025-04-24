@@ -23,6 +23,7 @@ import {
     X,
     ChevronLeft,
     ChevronRight,
+    Play,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
@@ -61,7 +62,7 @@ interface FormData {
     hotelIncludes: string
     hotelExcludes: string
     imageUrl: string
-    galleryImages: string[]
+    galleryImages: Array<{ url: string; type: 'image' | 'video' }>
     itineraryActions: ItineraryAction[]
 }
 
@@ -89,7 +90,7 @@ interface SubmitData {
     hotelIncludes: string[]
     hotelExcludes: string[]
     imageUrl: string
-    galleryImages: string[]
+    galleryImages: Array<{ url: string; type: 'image' | 'video' }>
     itineraryActions: ItineraryAction[]
 }
 
@@ -101,6 +102,12 @@ interface CompleteDateRange {
 // Add new interface for form validation
 interface FormValidation {
     [key: string]: boolean;
+}
+
+interface GalleryMedia {
+    id: string;
+    url: string;
+    type: 'image' | 'video';
 }
 
 export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormProps) {
@@ -128,11 +135,12 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Add state for image preview
     const [imagePreview, setImagePreview] = useState<string>(editingTrip?.imageUrl || "");
 
-    // Add state for gallery images
-    const [galleryImages, setGalleryImages] = useState<Array<{ id: string, url: string }>>(
+    // Add state for gallery media
+    const [galleryMedia, setGalleryMedia] = useState<GalleryMedia[]>(
         editingTrip?.galleryImages?.map((url: string, index: number) => ({
             id: `gallery-${index}`,
-            url
+            url,
+            type: 'image'
         })) || []
     );
 
@@ -176,6 +184,22 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                 galleryImages: editingTrip.galleryImages || [],
                 itineraryActions: editingTrip.itineraryActions || [],
             });
+
+            // Update gallery media state with proper type detection
+            setGalleryMedia(
+                (editingTrip.galleryImages || []).map((media: any, index: number) => {
+                    const url = typeof media === 'string' ? media : media.url;
+                    const type = typeof media === 'string' 
+                        ? (url.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image')
+                        : media.type;
+                    
+                    return {
+                        id: `gallery-${index}`,
+                        url,
+                        type
+                    };
+                })
+            );
         }
     }, [editingTrip]);
 
@@ -255,15 +279,15 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         }
     };
 
-    // Handle gallery image upload
-    const handleGalleryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Handle gallery media upload
+    const handleGalleryMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Check if file is an image
-            if (!file.type.startsWith('image/')) {
+            // Check if file is an image or video
+            if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
                 toast({
                     title: "Invalid file type",
-                    description: "Please upload an image file.",
+                    description: "Please upload an image or video file.",
                     variant: "destructive",
                 });
                 return;
@@ -271,58 +295,61 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
             try {
                 const ipfsUrl = await uploadToPinata(file);
-                setGalleryImages(prev => [...prev, {
+                const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+                
+                setGalleryMedia(prev => [...prev, {
                     id: `gallery-${Date.now()}`,
-                    url: ipfsUrl
+                    url: ipfsUrl,
+                    type: mediaType
                 }]);
                 
                 toast({
                     title: "Success",
-                    description: "Gallery image uploaded successfully",
+                    description: `Media uploaded successfully`,
                 });
             } catch (error) {
-                console.error('Error uploading gallery image:', error);
+                console.error('Error uploading media:', error);
                 toast({
                     title: "Error",
-                    description: "Failed to upload gallery image",
+                    description: "Failed to upload media",
                     variant: "destructive",
                 });
             }
         }
     };
 
-    // Remove gallery image
-    const removeGalleryImage = async (id: string) => {
-        const imageToRemove = galleryImages.find(img => img.id === id);
-        if (imageToRemove) {
+    // Remove gallery media
+    const removeGalleryMedia = async (id: string) => {
+        const mediaToRemove = galleryMedia.find(media => media.id === id);
+        if (mediaToRemove) {
             try {
                 // First remove from UI state
-                setGalleryImages(prev => prev.filter(img => img.id !== id));
+                setGalleryMedia(prev => prev.filter(media => media.id !== id));
                 
                 // Then try to remove from Pinata
-                const ipfsHash = imageToRemove.url.split('/').pop();
+                const ipfsHash = mediaToRemove.url.split('/').pop();
                 if (ipfsHash) {
                     try {
                         await removeFromPinata(ipfsHash);
                         toast({
                             title: "Success",
-                            description: "Image removed successfully",
+                            description: "Media removed successfully",
                         });
                     } catch (error) {
                         console.error('Error removing from Pinata:', error);
                         // Even if Pinata removal fails, we've already removed it from the UI
                         toast({
                             title: "Warning",
-                            description: "Image removed from gallery but may still exist in storage",
+                            description: "Media removed from gallery but may still exist in storage",
                             variant: "default",
                         });
                     }
                 }
             } catch (error) {
-                console.error('Error removing image:', error);
+                console.error('Error removing media:', error);
                 toast({
                     title: "Error",
-                    description: "Failed to remove image",
+                    description: "Failed to remove media",
                     variant: "destructive",
                 });
             }
@@ -424,7 +451,10 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
             hotelAmenities: formData.hotelAmenities.split(",").map(item => item.trim()),
             hotelIncludes: formData.hotelIncludes.split("\n").map(item => item.trim()),
             hotelExcludes: formData.hotelExcludes.split("\n").map(item => item.trim()),
-            galleryImages: galleryImages.map(img => img.url),
+            galleryImages: galleryMedia.map(media => ({
+                url: media.url,
+                type: media.type
+            })),
             itineraryActions: formData.itineraryActions.map(action => ({
                 ...action,
                 id: action.id || undefined
@@ -597,7 +627,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 id="maxParticipants"
                                                 type="number"
                                                 min="0"
-                                                max="100"
+                                                max="10000"
                                                 placeholder="e.g., 75"
                                                 className={cn(
                                                     "pl-10",
@@ -846,22 +876,32 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                     <div className="space-y-2">
                                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                                            <Label htmlFor="galleryImages">Galería de Imágenes</Label>
+                                            <Label htmlFor="galleryMedia">Galería de Medios</Label>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                                            {galleryImages.map((img) => (
-                                                <div key={img.id} className="relative group">
-                                                    <img
-                                                        src={img.url}
-                                                        alt="Gallery"
-                                                        className="w-full h-48 object-cover rounded-lg"
-                                                    />
+                                            {galleryMedia.map((media) => (
+                                                <div key={media.id} className="relative group">
+                                                    {media.type === 'image' ? (
+                                                        <img
+                                                            src={media.url}
+                                                            alt="Gallery"
+                                                            className="w-full h-48 object-cover rounded-lg"
+                                                        />
+                                                    ) : (
+                                                        <video
+                                                            src={media.url}
+                                                            className="w-full h-48 object-cover rounded-lg"
+                                                            controls
+                                                        >
+                                                            <source src={media.url} type="video/mp4" />
+                                                        </video>
+                                                    )}
                                                     <Button
                                                         type="button"
                                                         variant="destructive"
                                                         size="sm"
                                                         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        onClick={() => removeGalleryImage(img.id)}
+                                                        onClick={() => removeGalleryMedia(media.id)}
                                                     >
                                                         <X size={16} />
                                                     </Button>
@@ -873,22 +913,22 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                             <div className="flex flex-col items-center justify-center gap-2">
                                                 <Upload className="h-6 w-6 text-muted-foreground" />
                                                 <p className="text-sm text-muted-foreground">
-                                                    Haz click para agregar más imágenes a la galería
+                                                    Haz click para agregar más medios a la galería
                                                 </p>
                                                 <Input
-                                                    id="galleryUpload"
+                                                    id="galleryMediaUpload"
                                                     type="file"
-                                                    accept="image/*"
+                                                    accept="image/*,video/*"
                                                     className="hidden"
-                                                    onChange={handleGalleryImageUpload}
+                                                    onChange={handleGalleryMediaUpload}
                                                 />
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => document.getElementById("galleryUpload")?.click()}
+                                                    onClick={() => document.getElementById("galleryMediaUpload")?.click()}
                                                 >
-                                                    Agregar Imagen
+                                                    Agregar Medio
                                                 </Button>
                                             </div>
                                         </div>
