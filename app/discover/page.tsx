@@ -50,13 +50,20 @@ export default function DiscoverPage() {
       const currentCount = data.events.length;
       const cachedCount = sessionStorage.getItem('eventsCount');
 
-      // If counts differ or no cached count exists, update the cache
+      // Log the counts
+      console.log('Events in database:', currentCount);
+      console.log('Events in cache:', cachedCount ? parseInt(cachedCount) : 0);
+
+      // If counts differ or no cached count exists, update the cache and clear recommendations
       if (cachedCount === null || parseInt(cachedCount) !== currentCount) {
+        console.log('Counts don\'t match - resetting cache and fetching new recommendations');
         sessionStorage.setItem('eventsCount', currentCount.toString());
-        return true; // Indicate that events count has changed
+        sessionStorage.removeItem('lastRecommendedEvents'); // Clear old recommendations
+        return true; // Indicate that new recommendations are needed
       }
 
-      return false; // Indicate that events count has not changed
+      console.log('Counts match - using cached recommendations');
+      return false; // Indicate that cached recommendations can be used
     } catch (error) {
       console.error('Error fetching events:', error);
       toast({
@@ -111,9 +118,11 @@ export default function DiscoverPage() {
 
           if (!forceRefresh && !eventsCountChanged && cachedResponse) {
             // Use cached response if events count hasn't changed
+            console.log('Using cached recommendations');
             setRecommendedEvents(JSON.parse(cachedResponse));
           } else {
             // Fetch new recommendations
+            console.log('Fetching new recommendations due to count mismatch or force refresh');
             const recommendedEvents = await getRecommendedEvents({
               userProfile: {
                 name: data.userProfile.name,
