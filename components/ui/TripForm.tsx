@@ -272,18 +272,28 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         const imageToRemove = galleryImages.find(img => img.id === id);
         if (imageToRemove) {
             try {
-                // Extract IPFS hash from the URL
-                const ipfsHash = imageToRemove.url.split('/').pop();
-                if (ipfsHash) {
-                    await removeFromPinata(ipfsHash);
-                }
-                
+                // First remove from UI state
                 setGalleryImages(prev => prev.filter(img => img.id !== id));
                 
-                toast({
-                    title: "Success",
-                    description: "Image removed successfully",
-                });
+                // Then try to remove from Pinata
+                const ipfsHash = imageToRemove.url.split('/').pop();
+                if (ipfsHash) {
+                    try {
+                        await removeFromPinata(ipfsHash);
+                        toast({
+                            title: "Success",
+                            description: "Image removed successfully",
+                        });
+                    } catch (error) {
+                        console.error('Error removing from Pinata:', error);
+                        // Even if Pinata removal fails, we've already removed it from the UI
+                        toast({
+                            title: "Warning",
+                            description: "Image removed from gallery but may still exist in storage",
+                            variant: "default",
+                        });
+                    }
+                }
             } catch (error) {
                 console.error('Error removing image:', error);
                 toast({
