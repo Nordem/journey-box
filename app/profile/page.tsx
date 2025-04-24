@@ -3,17 +3,15 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { User, MapPin, Heart, Calendar, Star, Info, Compass, Users, Plane, Map, Trophy, Edit2, Camera, LogOut, Award, Building, Sun, Snowflake, Flower, Leaf, Plus, X, Save, Tv, Music, Palette, Laptop, BookOpen, Utensils, Flame, Flower2, Scissors, Gamepad2, Music2, Moon, Network, Rocket, Car, Trees, Flag, Paintbrush, Music4, Mountain, Film, LayoutGrid, Search, BarChart, Zap, Activity, Mail, Phone } from "lucide-react"
+import { User, MapPin, Heart, Calendar, Info, Compass, Users, Plane, Trophy, Edit2, Camera, Award, Sun, Snowflake, Flower, Leaf, Plus, X, Save, Tv, Music, Palette, Laptop, BookOpen, Utensils, Flame, Flower2, Scissors, Gamepad2, Music2, Moon, Network, Rocket, Car, Trees, Flag, Paintbrush, Music4, Mountain, Film, LayoutGrid, Search, BarChart, Zap, Activity, Mail, Phone } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { CircularProgressbar } from "react-circular-progressbar"
-import { ProfileSkeleton } from "@/components/skeletons/profile-skeleton"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
@@ -141,13 +139,13 @@ export default function ProfilePage() {
   const destinationPreferences = [
     { value: "playa", label: "Playa", icon: "🏖️" },
     { value: "montaña", label: "Montaña", icon: "⛰️" },
-    { value: "ciudades_históricas", label: "Ciudades históricas", icon: "🏰" },
-    { value: "pueblos_magicos", label: "Pueblos Mágicos", icon: "🌾" },
-    { value: "parques_temáticos", label: "Parques temáticos", icon: "🎢" },
-    { value: "destinos_gastronómicos", label: "Destinos gastronómicos", icon: "🍷" },
-    { value: "reservas_naturales", label: "Reservas naturales", icon: "🦁" },
-    { value: "sitios_arqueológicos", label: "Sitios arqueológicos", icon: "🗿" },
-    { value: "destinos_urbanos", label: "Destinos urbanos modernos", icon: "🏙️" },
+    { value: "Ciudades Históricas", label: "Ciudades históricas", icon: "🏰" },
+    { value: "Pueblos Magicos", label: "Pueblos Mágicos", icon: "🌾" },
+    { value: "Parques Temáticos", label: "Parques temáticos", icon: "🎢" },
+    { value: "Destinos Gastronómicos", label: "Destinos gastronómicos", icon: "🍷" },
+    { value: "Reservas Naturales", label: "Reservas naturales", icon: "🦁" },
+    { value: "Sitios Arqueológicos", label: "Sitios arqueológicos", icon: "🗿" },
+    { value: "Destinos Urbanos", label: "Destinos urbanos modernos", icon: "🏙️" },
   ]
 
   const travelSeasons = [
