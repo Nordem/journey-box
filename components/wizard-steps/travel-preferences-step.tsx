@@ -24,15 +24,15 @@ const experiences = [
 ]
 
 const destinations = [
-  { icon: "🏖️", label: "Playa" },
-  { icon: "⛰️", label: "Montaña" },
-  { icon: "🏰", label: "Ciudades históricas" },
-  { icon: "🌾", label: "Pueblos Mágicos" },
-  { icon: "🎢", label: "Parques temáticos" },
-  { icon: "🍷", label: "Destinos gastronómicos" },
-  { icon: "🦁", label: "Reservas naturales" },
-  { icon: "🗿", label: "Sitios arqueológicos" },
-  { icon: "🏙️", label: "Destinos urbanos" }
+  { icon: "🏖️", label: "Playa", value: "playa" },
+  { icon: "⛰️", label: "Montaña", value: "montaña" },
+  { icon: "🏰", label: "Ciudades históricas", value: "ciudades_históricas" },
+  { icon: "🌾", label: "Pueblos Mágicos", value: "pueblos_magicos" },
+  { icon: "🎢", label: "Parques temáticos", value: "parques_temáticos" },
+  { icon: "🍷", label: "Destinos gastronómicos", value: "destinos_gastronómicos" },
+  { icon: "🦁", label: "Reservas naturales", value: "reservas_naturales" },
+  { icon: "🗿", label: "Sitios arqueológicos", value: "sitios_arqueológicos" },
+  { icon: "🏙️", label: "Destinos urbanos", value: "destinos_urbanos" }
 ]
 
 export default function TravelPreferencesStep({ data, updateData }: TravelPreferencesStepProps) {
@@ -41,7 +41,7 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
   const [newExperience, setNewExperience] = useState("")
   const [newDestination, setNewDestination] = useState("")
   const [customExperiences, setCustomExperiences] = useState<Array<{icon: string, label: string}>>([])
-  const [customDestinations, setCustomDestinations] = useState<Array<{icon: string, label: string}>>([])
+  const [customDestinations, setCustomDestinations] = useState<Array<{icon: string, label: string, value: string}>>([])
 
   const toggleExperience = (experience: string) => {
     setSelectedExperiences(prev => 
@@ -70,21 +70,24 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
   }
 
   const toggleDestination = (destination: string) => {
+    const destObj = destinations.find(d => d.label === destination);
+    const value = destObj ? destObj.value : destination;
+    
     setSelectedDestinations(prev => 
-      prev.includes(destination) ? prev.filter(d => d !== destination) : [...prev, destination]
+      prev.includes(value) ? prev.filter(d => d !== value) : [...prev, value]
     )
     updateData({
       ...data,
-      preferredDestinations: selectedDestinations.includes(destination)
-        ? selectedDestinations.filter(d => d !== destination)
-        : [...selectedDestinations, destination]
+      preferredDestinations: selectedDestinations.includes(value)
+        ? selectedDestinations.filter(d => d !== value)
+        : [...selectedDestinations, value]
     })
   }
 
   const addCustomDestination = () => {
     if (newDestination.trim() && !selectedDestinations.includes(newDestination.trim())) {
       const destination = newDestination.trim();
-      setCustomDestinations(prev => [...prev, { icon: "✨", label: destination }]);
+      setCustomDestinations(prev => [...prev, { icon: "✨", label: destination, value: destination }]);
       const updatedDestinations = [...selectedDestinations, destination];
       setSelectedDestinations(updatedDestinations);
       updateData({
@@ -105,11 +108,11 @@ export default function TravelPreferencesStep({ data, updateData }: TravelPrefer
         <p className="text-xs text-gray-400">Selecciona los tipos de destinos que prefieres visitar</p>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mt-2">
-          {[...destinations, ...customDestinations].map(({ icon, label }) => (
+          {[...destinations, ...customDestinations].map(({ icon, label, value }) => (
             <div
-              key={label}
+              key={value || label}
               className={`flex items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-center ${
-                selectedDestinations.includes(label)
+                selectedDestinations.includes(value || label)
                   ? "border-indigo-500 bg-indigo-950/50 text-white"
                   : "border-indigo-500/30 bg-indigo-950/20 text-gray-300 hover:bg-indigo-950/30"
               }`}
