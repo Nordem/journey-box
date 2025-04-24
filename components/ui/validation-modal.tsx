@@ -16,7 +16,7 @@ export function ValidationModal({ isOpen, onClose, title, description, missingFi
 
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <Card className="w-full max-w-md mx-4 border-destructive">
+            <Card className="w-full max-w-md mx-4 border-yellow-500">
                 <CardHeader className="space-y-1">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-yellow-500">Validación Requerida</CardTitle>
@@ -32,7 +32,7 @@ export function ValidationModal({ isOpen, onClose, title, description, missingFi
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Alert variant="destructive" className="bg-destructive/5">
-                        <AlertTitle className="text-destructive">{title}</AlertTitle>
+                        <AlertTitle className="text-yellow-500">{title}</AlertTitle>
                         <AlertDescription className="text-foreground/80 mt-2">
                             {description}
                         </AlertDescription>
@@ -44,7 +44,7 @@ export function ValidationModal({ isOpen, onClose, title, description, missingFi
                             <ul className="space-y-1">
                                 {missingFields.map((field, index) => (
                                     <li key={index} className="flex items-center text-sm text-foreground/80">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-destructive mr-2" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 mr-2" />
                                         {field}
                                     </li>
                                 ))}
