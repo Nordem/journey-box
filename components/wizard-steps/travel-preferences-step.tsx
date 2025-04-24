@@ -24,15 +24,15 @@ const experiences = [
 ]
 
 const destinations = [
-  { icon: "🏖️", label: "Playa", value: "playa" },
-  { icon: "⛰️", label: "Montaña", value: "montaña" },
-  { icon: "🏰", label: "Ciudades históricas", value: "ciudades_históricas" },
-  { icon: "🌾", label: "Pueblos Mágicos", value: "pueblos_magicos" },
-  { icon: "🎢", label: "Parques temáticos", value: "parques_temáticos" },
-  { icon: "🍷", label: "Destinos gastronómicos", value: "destinos_gastronómicos" },
-  { icon: "🦁", label: "Reservas naturales", value: "reservas_naturales" },
-  { icon: "🗿", label: "Sitios arqueológicos", value: "sitios_arqueológicos" },
-  { icon: "🏙️", label: "Destinos urbanos", value: "destinos_urbanos" }
+  { value: "Playa", label: "Playa", icon: "🏖️" },
+    { value: "Montaña", label: "Montaña", icon: "⛰️" },
+    { value: "Ciudades Históricas", label: "Ciudades Históricas", icon: "🏰" },
+    { value: "Pueblos Mágicos", label: "Pueblos Mágicos", icon: "🌾" },
+    { value: "Parques Temáticos", label: "Parques Temáticos", icon: "🎢" },
+    { value: "Destinos Gastronómicos", label: "Destinos Gastronómicos", icon: "🍷" },
+    { value: "Reservas Naturales", label: "Reservas Naturales", icon: "🦁" },
+    { value: "Sitios Arqueológicos", label: "Sitios Arqueológicos", icon: "🗿" },
+    { value: "Destinos Urbanos Modernos", label: "Destinos Urbanos Modernos", icon: "🏙️" }
 ]
 
 export default function TravelPreferencesStep({ data, updateData }: TravelPreferencesStepProps) {

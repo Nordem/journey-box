@@ -137,15 +137,15 @@ export default function ProfilePage() {
   ]
 
   const destinationPreferences = [
-    { value: "playa", label: "Playa", icon: "🏖️" },
-    { value: "montaña", label: "Montaña", icon: "⛰️" },
-    { value: "Ciudades Históricas", label: "Ciudades históricas", icon: "🏰" },
-    { value: "Pueblos Magicos", label: "Pueblos Mágicos", icon: "🌾" },
-    { value: "Parques Temáticos", label: "Parques temáticos", icon: "🎢" },
-    { value: "Destinos Gastronómicos", label: "Destinos gastronómicos", icon: "🍷" },
-    { value: "Reservas Naturales", label: "Reservas naturales", icon: "🦁" },
-    { value: "Sitios Arqueológicos", label: "Sitios arqueológicos", icon: "🗿" },
-    { value: "Destinos Urbanos", label: "Destinos urbanos modernos", icon: "🏙️" },
+    { value: "Playa", label: "Playa", icon: "🏖️" },
+    { value: "Montaña", label: "Montaña", icon: "⛰️" },
+    { value: "Ciudades Históricas", label: "Ciudades Históricas", icon: "🏰" },
+    { value: "Pueblos Mágicos", label: "Pueblos Mágicos", icon: "🌾" },
+    { value: "Parques Temáticos", label: "Parques Temáticos", icon: "🎢" },
+    { value: "Destinos Gastronómicos", label: "Destinos Gastronómicos", icon: "🍷" },
+    { value: "Reservas Naturales", label: "Reservas Naturales", icon: "🦁" },
+    { value: "Sitios Arqueológicos", label: "Sitios Arqueológicos", icon: "🗿" },
+    { value: "Destinos Urbanos Modernos", label: "Destinos Urbanos Modernos", icon: "🏙️" },
   ]
 
   const travelSeasons = [
