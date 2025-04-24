@@ -97,6 +97,11 @@ interface CompleteDateRange {
     to: Date;
 }
 
+// Add new interface for form validation
+interface FormValidation {
+    [key: string]: boolean;
+}
+
 export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormProps) {
     const { toast } = useToast();
     const [formData, setFormData] = useState<FormData>({
@@ -135,6 +140,10 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         from: editingTrip?.startDate ? new Date(editingTrip.startDate) : undefined,
         to: editingTrip?.endDate ? new Date(editingTrip.endDate) : undefined,
     });
+
+    // Add state for form validation
+    const [formValidation, setFormValidation] = useState<FormValidation>({});
+    const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
     // Update form data when editingTrip changes
     useEffect(() => {
@@ -185,15 +194,29 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         }
     }, [date]);
 
-    // Handle input changes
+    // Add validation function
+    const validateField = (fieldId: string, value: string | string[] | ItineraryAction[]) => {
+        if (Array.isArray(value)) {
+            const isValid = value.length > 0;
+            setFormValidation(prev => ({ ...prev, [fieldId]: isValid }));
+            return isValid;
+        }
+        const isValid = value.toString().trim() !== '';
+        setFormValidation(prev => ({ ...prev, [fieldId]: isValid }));
+        return isValid;
+    };
+
+    // Modify handleInputChange to include validation
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value, type } = e.target;
+        setTouchedFields(prev => new Set(prev).add(id));
 
         if (type === 'checkbox') {
             const checkbox = e.target as HTMLInputElement;
             setFormData(prev => ({ ...prev, [id]: checkbox.checked }));
         } else {
             setFormData(prev => ({ ...prev, [id]: value }));
+            validateField(id, value);
         }
     };
 
@@ -335,14 +358,35 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         }));
     };
 
-    // Handle form submission
+    // Modify handleFormSubmit to include validation
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
+        // Validate all required fields
+        const requiredFields = [
+            'name', 'location', 'description', 'maxParticipants',
+            'originalPrice', 'finalPrice', 'tripManager', 'hotelName',
+            'hotelDescription', 'hotelAmenities', 'hotelIncludes', 'hotelExcludes'
+        ];
+
+        const isValid = requiredFields.every(field => {
+            const value = formData[field as keyof FormData];
+            return validateField(field, value);
+        });
+
+        if (!isValid) {
+            toast({
+                title: "Error",
+                description: "Por favor completa todos los campos requeridos",
+                variant: "destructive",
+            });
+            return;
+        }
+
         if (!date?.from || !date?.to) {
             toast({
                 title: "Error",
-                description: "Please select a valid date range",
+                description: "Por favor selecciona un rango de fechas válido",
                 variant: "destructive",
             });
             return;
@@ -366,6 +410,19 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         };
 
         onSubmit(submitData);
+    };
+
+    // Add helper function to show required indicator
+    const RequiredIndicator = () => (
+        <span className="text-red-500 ml-1">*</span>
+    );
+
+    // Add helper function to show error message
+    const ErrorMessage = ({ fieldId }: { fieldId: string }) => {
+        if (!touchedFields.has(fieldId)) return null;
+        return !formValidation[fieldId] ? (
+            <p className="text-sm text-red-500 mt-1">Este campo es requerido</p>
+        ) : null;
     };
 
     return (
@@ -401,28 +458,40 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                             <TabsContent value="general" className="mt-0 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Título del Evento</Label>
+                                        <Label>
+                                            Título del Evento
+                                            <RequiredIndicator />
+                                        </Label>
                                         <Input
                                             id="name"
                                             placeholder="e.g., Summer Conference 2024"
                                             value={formData.name}
                                             onChange={handleInputChange}
-                                            required
+                                            className={cn(
+                                                touchedFields.has('name') && !formValidation['name'] && "border-red-500"
+                                            )}
                                         />
+                                        <ErrorMessage fieldId="name" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Ubicación</Label>
+                                        <Label>
+                                            Ubicación
+                                            <RequiredIndicator />
+                                        </Label>
                                         <div className="relative">
                                             <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
                                                 id="location"
                                                 placeholder="e.g., San Francisco, CA"
-                                                className="pl-10"
+                                                className={cn(
+                                                    "pl-10",
+                                                    touchedFields.has('location') && !formValidation['location'] && "border-red-500"
+                                                )}
                                                 value={formData.location}
                                                 onChange={handleInputChange}
-                                                required
                                             />
                                         </div>
+                                        <ErrorMessage fieldId="location" />
                                     </div>
                                 </div>
 
@@ -499,7 +568,10 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Cupo</Label>
+                                        <Label>
+                                            Cupo
+                                            <RequiredIndicator />
+                                        </Label>
                                         <div className="relative">
                                             <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -508,15 +580,21 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 min="0"
                                                 max="100"
                                                 placeholder="e.g., 75"
-                                                className="pl-10"
+                                                className={cn(
+                                                    "pl-10",
+                                                    touchedFields.has('maxParticipants') && !formValidation['maxParticipants'] && "border-red-500"
+                                                )}
                                                 value={formData.maxParticipants}
                                                 onChange={handleInputChange}
-                                                required
                                             />
                                         </div>
+                                        <ErrorMessage fieldId="maxParticipants" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Precio Original</Label>
+                                        <Label>
+                                            Precio Original
+                                            <RequiredIndicator />
+                                        </Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -525,18 +603,24 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 min="0"
                                                 step="0.01"
                                                 placeholder="e.g., 1500.00"
-                                                className="pl-10"
+                                                className={cn(
+                                                    "pl-10",
+                                                    touchedFields.has('originalPrice') && !formValidation['originalPrice'] && "border-red-500"
+                                                )}
                                                 value={formData.originalPrice}
                                                 onChange={handleInputChange}
-                                                required
                                             />
                                         </div>
+                                        <ErrorMessage fieldId="originalPrice" />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Precio Final</Label>
+                                        <Label>
+                                            Precio Final
+                                            <RequiredIndicator />
+                                        </Label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -545,40 +629,55 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 min="0"
                                                 step="0.01"
                                                 placeholder="e.g., 1200.00"
-                                                className="pl-10"
+                                                className={cn(
+                                                    "pl-10",
+                                                    touchedFields.has('finalPrice') && !formValidation['finalPrice'] && "border-red-500"
+                                                )}
                                                 value={formData.finalPrice}
                                                 onChange={handleInputChange}
-                                                required
                                             />
                                         </div>
+                                        <ErrorMessage fieldId="finalPrice" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Descripción</Label>
+                                    <Label>
+                                        Descripción
+                                        <RequiredIndicator />
+                                    </Label>
                                     <Textarea
                                         id="description"
                                         placeholder="Describe el evento, sus atractivos y experiencias..."
-                                        className="min-h-[120px]"
+                                        className={cn(
+                                            "min-h-[120px]",
+                                            touchedFields.has('description') && !formValidation['description'] && "border-red-500"
+                                        )}
                                         value={formData.description}
                                         onChange={handleInputChange}
-                                        required
                                     />
+                                    <ErrorMessage fieldId="description" />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Gerente del Evento</Label>
+                                    <Label>
+                                        Gerente del Evento
+                                        <RequiredIndicator />
+                                    </Label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             id="tripManager"
                                             placeholder="e.g., John Smith - Recursos Humanos"
-                                            className="pl-10"
+                                            className={cn(
+                                                "pl-10",
+                                                touchedFields.has('tripManager') && !formValidation['tripManager'] && "border-red-500"
+                                            )}
                                             value={formData.tripManager}
                                             onChange={handleInputChange}
-                                            required
                                         />
                                     </div>
+                                    <ErrorMessage fieldId="tripManager" />
                                 </div>
                             </TabsContent>
 
@@ -587,42 +686,60 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <h3 className="text-md font-medium">Información del Hotel</h3>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="hotelName">Nombre del Hotel</Label>
+                                        <Label htmlFor="hotelName">
+                                            Nombre del Hotel
+                                            <RequiredIndicator />
+                                        </Label>
                                         <div className="relative">
                                             <Hotel className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
                                                 id="hotelName"
                                                 placeholder="Ej: Paradisus Playa del Carmen"
-                                                className="pl-10"
+                                                className={cn(
+                                                    "pl-10",
+                                                    touchedFields.has('hotelName') && !formValidation['hotelName'] && "border-red-500"
+                                                )}
                                                 value={formData.hotelName}
                                                 onChange={handleInputChange}
-                                                required
                                             />
                                         </div>
+                                        <ErrorMessage fieldId="hotelName" />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="hotelDescription">Descripción del Hotel</Label>
+                                        <Label htmlFor="hotelDescription">
+                                            Descripción del Hotel
+                                            <RequiredIndicator />
+                                        </Label>
                                         <Textarea
                                             id="hotelDescription"
                                             placeholder="Describe el hotel, sus instalaciones y servicios..."
-                                            className="min-h-[100px]"
+                                            className={cn(
+                                                "min-h-[100px]",
+                                                touchedFields.has('hotelDescription') && !formValidation['hotelDescription'] && "border-red-500"
+                                            )}
                                             value={formData.hotelDescription}
                                             onChange={handleInputChange}
-                                            required
                                         />
                                     </div>
+                                    <ErrorMessage fieldId="hotelDescription" />
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="hotelAmenities">Amenidades (separadas por coma)</Label>
+                                        <Label htmlFor="hotelAmenities">
+                                            Amenidades (separadas por coma)
+                                            <RequiredIndicator />
+                                        </Label>
                                         <Input
                                             id="hotelAmenities"
                                             placeholder="Ej: Todo incluido, Spa, Piscinas, WiFi gratis"
                                             value={formData.hotelAmenities}
                                             onChange={handleInputChange}
-                                            required
+                                            className={cn(
+                                                touchedFields.has('hotelAmenities') && !formValidation['hotelAmenities'] && "border-red-500"
+                                            )}
                                         />
                                     </div>
+                                    <ErrorMessage fieldId="hotelAmenities" />
                                 </div>
 
                                 <Separator className="my-4" />
@@ -631,28 +748,40 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     <h3 className="text-md font-medium">Incluye y No Incluye</h3>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="hotelIncludes">Incluye (un elemento por línea)</Label>
+                                        <Label htmlFor="hotelIncludes">
+                                            Incluye (un elemento por línea)
+                                            <RequiredIndicator />
+                                        </Label>
                                         <Textarea
                                             id="hotelIncludes"
                                             placeholder="Ej: Vuelos redondos Ciudad de México - Cancún&#10;Traslados aeropuerto - hotel - aeropuerto&#10;3 noches de alojamiento en hotel 5 estrellas"
-                                            className="min-h-[120px]"
+                                            className={cn(
+                                                "min-h-[120px]",
+                                                touchedFields.has('hotelIncludes') && !formValidation['hotelIncludes'] && "border-red-500"
+                                            )}
                                             value={formData.hotelIncludes}
                                             onChange={handleInputChange}
-                                            required
                                         />
                                     </div>
+                                    <ErrorMessage fieldId="hotelIncludes" />
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="hotelExcludes">No Incluye (un elemento por línea)</Label>
+                                        <Label htmlFor="hotelExcludes">
+                                            No Incluye (un elemento por línea)
+                                            <RequiredIndicator />
+                                        </Label>
                                         <Textarea
                                             id="hotelExcludes"
                                             placeholder="Ej: Gastos personales y propinas&#10;Actividades no mencionadas en el itinerario&#10;Tratamientos de spa"
-                                            className="min-h-[120px]"
+                                            className={cn(
+                                                "min-h-[120px]",
+                                                touchedFields.has('hotelExcludes') && !formValidation['hotelExcludes'] && "border-red-500"
+                                            )}
                                             value={formData.hotelExcludes}
                                             onChange={handleInputChange}
-                                            required
                                         />
                                     </div>
+                                    <ErrorMessage fieldId="hotelExcludes" />
                                 </div>
                             </TabsContent>
 
@@ -691,7 +820,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                         accept="image/*"
                                                         className="hidden"
                                                         onChange={handleImageUpload}
-
                                                     />
                                                     <Button
                                                         type="button"
@@ -850,8 +978,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                 </form>
                 <Toaster />
             </CardContent>
-
-
         </Card>
     )
 }

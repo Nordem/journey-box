@@ -1036,7 +1036,6 @@ export default function ProfilePage() {
                         size="icon"
                         className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-indigo-950 border border-indigo-500/50"
                       >
-                        <Camera size={14} />
                       </Button>
                     </div>
 
