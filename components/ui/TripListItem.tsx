@@ -83,7 +83,7 @@ export default function TripListItem({ trip, onEdit, onDelete, onViewParticipant
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Disponibilidad</p>
-                <p className="font-medium">{trip.availability}%</p>
+                <p className="font-medium">{trip.availability} personas</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Precio Empleado</p>

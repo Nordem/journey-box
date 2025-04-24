@@ -627,7 +627,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                 id="maxParticipants"
                                                 type="number"
                                                 min="0"
-                                                max="100"
+                                                max="10000"
                                                 placeholder="e.g., 75"
                                                 className={cn(
                                                     "pl-10",
