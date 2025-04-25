@@ -892,6 +892,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                             src={media.url}
                                                             className="w-full h-48 object-cover rounded-lg"
                                                             controls
+                                                            playsInline
                                                         >
                                                             <source src={media.url} type="video/mp4" />
                                                         </video>
