@@ -159,7 +159,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
         if (editingTrip) {
             const startDate = editingTrip.startDate ? new Date(editingTrip.startDate) : undefined;
             const endDate = editingTrip.endDate ? new Date(editingTrip.endDate) : undefined;
-            
+
             setDate({
                 from: startDate,
                 to: endDate
@@ -189,10 +189,10 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
             setGalleryMedia(
                 (editingTrip.galleryImages || []).map((media: any, index: number) => {
                     const url = typeof media === 'string' ? media : media.url;
-                    const type = typeof media === 'string' 
+                    const type = typeof media === 'string'
                         ? (url.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image')
                         : media.type;
-                    
+
                     return {
                         id: `gallery-${index}`,
                         url,
@@ -263,7 +263,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                 const ipfsUrl = await uploadToPinata(file);
                 setImagePreview(ipfsUrl);
                 setFormData(prev => ({ ...prev, imageUrl: ipfsUrl }));
-                
+
                 toast({
                     title: "Success",
                     description: "Image uploaded successfully",
@@ -296,13 +296,13 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
             try {
                 const ipfsUrl = await uploadToPinata(file);
                 const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
-                
+
                 setGalleryMedia(prev => [...prev, {
                     id: `gallery-${Date.now()}`,
                     url: ipfsUrl,
                     type: mediaType
                 }]);
-                
+
                 toast({
                     title: "Success",
                     description: `Media uploaded successfully`,
@@ -325,7 +325,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
             try {
                 // First remove from UI state
                 setGalleryMedia(prev => prev.filter(media => media.id !== id));
-                
+
                 // Then try to remove from Pinata
                 const ipfsHash = mediaToRemove.url.split('/').pop();
                 if (ipfsHash) {
@@ -402,7 +402,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Modify handleFormSubmit to include validation
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
         // Validate all required fields
         const requiredFields = [
             { id: 'name', label: 'Nombre del Evento' },
@@ -875,39 +875,75 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     </div>
 
                                     <div className="space-y-2">
-                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                                            <Label htmlFor="galleryMedia">Galería de Medios</Label>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                                            {galleryMedia.map((media) => (
-                                                <div key={media.id} className="relative group">
-                                                    {media.type === 'image' ? (
-                                                        <img
-                                                            src={media.url}
-                                                            alt="Gallery"
-                                                            className="w-full h-48 object-cover rounded-lg"
-                                                        />
-                                                    ) : (
-                                                        <video
-                                                            src={media.url}
-                                                            className="w-full h-48 object-cover rounded-lg"
-                                                            controls
-                                                            playsInline
-                                                        >
-                                                            <source src={media.url} type="video/mp4" />
-                                                        </video>
-                                                    )}
-                                                    <Button
-                                                        type="button"
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        onClick={() => removeGalleryMedia(media.id)}
-                                                    >
-                                                        <X size={16} />
-                                                    </Button>
+                                        <div className="p-4 border border-dashed rounded-lg text-center">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                                                <Label htmlFor="galleryMedia">Galería de Imágenes</Label>
+                                            </div>
+                                            {galleryMedia.filter((media) => media.type === 'image').length > 0 ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                                                    {galleryMedia
+                                                        .filter((media) => media.type === 'image')
+                                                        .map((media) => (
+                                                            <div key={media.id} className="relative group">
+                                                                <img
+                                                                    src={media.url}
+                                                                    alt="Gallery"
+                                                                    className="w-full h-48 object-cover rounded-lg"
+                                                                />
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    onClick={() => removeGalleryMedia(media.id)}
+                                                                >
+                                                                    <X size={16} />
+                                                                </Button>
+                                                            </div>
+                                                        ))}
                                                 </div>
-                                            ))}
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">
+                                                    No hay imágenes en la galería. Agrega imágenes para mostrarlas aquí.
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="p-4 border border-dashed rounded-lg text-center">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                                                <Label htmlFor="galleryMedia">Galería de Videos</Label>
+                                            </div>
+                                            {galleryMedia.filter((media) => media.type === 'video').length > 0 ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                                                    {galleryMedia
+                                                        .filter((media) => media.type === 'video')
+                                                        .map((media) => (
+                                                            <div key={media.id} className="relative group">
+                                                                <video
+                                                                    src={media.url}
+                                                                    className="w-full h-48 object-cover rounded-lg"
+                                                                    controls
+                                                                    playsInline
+                                                                >
+                                                                    <source src={media.url} type="video/mp4" />
+                                                                </video>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    onClick={() => removeGalleryMedia(media.id)}
+                                                                >
+                                                                    <X size={16} />
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">
+                                                    No hay videos en la galería. Agrega videos para mostrarlos aquí.
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div className="p-4 border border-dashed rounded-lg text-center">

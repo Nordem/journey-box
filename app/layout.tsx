@@ -44,7 +44,7 @@ export default function RootLayout({
               {/* Sidebar */}
               {pathname !== '/' && pathname !== '/login' && ( // Only show Sidebar if not on the "/" or "/login" page
                 <Sidebar
-                  isAdmin={false}
+                  isAdmin={true}
                   isCollapsed={isSidebarCollapsed}
                   onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                   onMobileChange={setIsMobile} // Pass callback to update mobile state
