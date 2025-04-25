@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
+import { format, set } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { DateRange, DayPicker } from "react-day-picker"
@@ -153,6 +153,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
     // Add state for form validation
     const [formValidation, setFormValidation] = useState<FormValidation>({});
     const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+    const [isUploading, setIsUploading] = useState(false);
 
     // Update form data when editingTrip changes
     useEffect(() => {
@@ -307,6 +308,8 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                     title: "Success",
                     description: `Media uploaded successfully`,
                 });
+
+                setIsUploading(false);
             } catch (error) {
                 console.error('Error uploading media:', error);
                 toast({
@@ -314,6 +317,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                     description: "Failed to upload media",
                     variant: "destructive",
                 });
+                setIsUploading(false);
             }
         }
     };
@@ -875,8 +879,8 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                     </div>
 
                                     <div className="space-y-2">
-                                        <div className="p-4 border border-dashed rounded-lg text-center">
-                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                                        <div className="p-4 border border-dashed rounded-lg text-center gap-2">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                                                 <Label htmlFor="galleryMedia">Galería de Imágenes</Label>
                                             </div>
                                             {galleryMedia.filter((media) => media.type === 'image').length > 0 ? (
@@ -910,7 +914,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                         </div>
 
                                         <div className="p-4 border border-dashed rounded-lg text-center">
-                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                                                 <Label htmlFor="galleryMedia">Galería de Videos</Label>
                                             </div>
                                             {galleryMedia.filter((media) => media.type === 'video').length > 0 ? (
@@ -948,25 +952,37 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
 
                                         <div className="p-4 border border-dashed rounded-lg text-center">
                                             <div className="flex flex-col items-center justify-center gap-2">
-                                                <Upload className="h-6 w-6 text-muted-foreground" />
-                                                <p className="text-sm text-muted-foreground">
-                                                    Haz click para agregar más medios a la galería
-                                                </p>
-                                                <Input
-                                                    id="galleryMediaUpload"
-                                                    type="file"
-                                                    accept="image/*,video/*"
-                                                    className="hidden"
-                                                    onChange={handleGalleryMediaUpload}
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => document.getElementById("galleryMediaUpload")?.click()}
-                                                >
-                                                    Agregar Medio
-                                                </Button>
+                                                {isUploading ? (
+                                                    <div className="flex items-center justify-center">
+                                                        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-muted-foreground"></div>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <Upload className="h-6 w-6 text-muted-foreground" />
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Haz click para agregar más medios a la galería
+                                                        </p>
+                                                        <Input
+                                                            id="galleryMediaUpload"
+                                                            type="file"
+                                                            accept="image/*,video/*"
+                                                            className="hidden"
+                                                            onChange={async (e) => {
+                                                                setIsUploading(true);
+                                                                await handleGalleryMediaUpload(e);
+                                                                setIsUploading(false);
+                                                            }}
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => document.getElementById("galleryMediaUpload")?.click()}
+                                                        >
+                                                            Agregar Medio
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
