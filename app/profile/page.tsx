@@ -844,6 +844,9 @@ export default function ProfilePage() {
         setUserProfile(userData.userProfile)
         setEventPreferences(userData.eventPreferences)
 
+        // Log admin status
+        console.log('User admin status:', userData.userProfile?.admin)
+
         // Convert blocked dates from strings to Date objects
         if (userData.eventPreferences?.blockedDates) {
           const blockedDates = userData.eventPreferences.blockedDates.map((dateStr: string) => new Date(dateStr))
