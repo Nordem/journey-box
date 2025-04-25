@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Search, Filter, ArrowRight, MapPin, Heart, Share2, Calendar, User, Star } from "lucide-react"
+import { Search, Filter, ArrowRight, MapPin, Calendar, User, Star, SendHorizonal } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { Event as EventType, UserProfile } from "@/services/userMatchingEvents"
+import { Event as EventType } from "@/services/userMatchingEvents"
 import { getRecommendedEvents } from "@/services/userMatchingEvents"
 import { supabase } from "@/lib/supabase"
 import Loading from "@/components/ui/loading"
@@ -200,15 +199,50 @@ export default function DiscoverPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white px-5">
-      <div className="container px-4 py-8">
+    <main className="min-h-screen bg-black text-white">
+      <div className="container py-5">
         {/* Title and Subtitle */}
-        <div className="mb-8 flex flex-col items-start">
+        <div className="mb-2 flex items-center justify-center bg-black p-4">
+          <div className="flex items-center bg-gradient-to-r from-indigo-900/30 to-purple-900/30 rounded-xl border border-indigo-500/20 shadow-lg shadow-indigo-500/10 p-3 max-w-3xl w-full">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-500/30 mr-4">
+              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
+                <SendHorizonal size={20} className="text-white" />
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <div className="flex items-center">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mr-2">
+                  Journey Box
+                </h1>
+                <div className="h-4 w-px bg-indigo-500/30 mx-2"></div>
+                <p className="text-sm text-gray-300">Viajes exclusivos para colaboradores</p>
+              </div>
+
+              <div className="flex items-center mt-1 text-xs text-gray-400">
+                <div className="flex items-center mr-3">
+                  <MapPin size={12} className="text-indigo-300 mr-1" />
+                  <span>Destinos</span>
+                </div>
+                <div className="flex items-center mr-3">
+                  <Calendar size={12} className="text-indigo-300 mr-1" />
+                  <span>Aventuras</span>
+                </div>
+                <div className="flex items-center">
+                  <SendHorizonal size={12} className="text-indigo-300 mr-1" />
+                  <span>Viajes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* <div className="mb-8 flex flex-col items-start">
           <h1 className="text-2xl font-bold mb-2">Descubre Tu Próxima Aventura</h1>
           <p className="text-gray-400 max-w-2xl">
             Explora destinos únicos, vive experiencias inolvidables y crea recuerdos que durarán toda la vida.
           </p>
-        </div>
+        </div> */}
 
         {/* Recommended Events Section */}
         <div className="mb-12">
@@ -217,9 +251,9 @@ export default function DiscoverPage() {
               Recomendado Para Ti, {userProfile?.name?.split(" ")[0].trim()}
             </span>
             <span className="ml-2 mr-2 inline-block w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
-            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex items-center shadow-[0_0_10px_rgba(129,140,248,0.5)] border border-indigo-400/30">
-              <Star size={14} className="mr-1" />
-              Powered by IA
+            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex items-center shadow-[0_0_10px_rgba(129,140,248,0.5)] border border-indigo-400/30 sm:px-2 sm:py-1 sm:text-transparent sm:bg-transparent sm:shadow-none sm:border-none">
+              <Star size={14} className="sm:mr-1 mr-0 sm:text-white" fill="currentColor" />
+              <span className="hidden sm:inline sm:text-white">Powered by IA</span>
             </span>
           </h2>
 
@@ -233,11 +267,11 @@ export default function DiscoverPage() {
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0">
                       <div className="w-12 h-12 rounded-full bg-indigo-600/20 flex items-center justify-center">
-                        <Heart className="w-6 h-6 text-indigo-400" />
+                        <Star fill="currentColor" className="w-6 h-6 text-indigo-400" />
                       </div>
                     </div>
                     <div className="flex-1">
-                      <p className="text-indigo-200 leading-relaxed">{recommendedEvents[0].summaryRecommendation}</p>
+                      <p className="text-gray-300 text-sm">{recommendedEvents[0].summaryRecommendation}</p>
                     </div>
                   </div>
                 </div>
