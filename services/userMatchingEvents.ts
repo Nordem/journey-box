@@ -67,7 +67,7 @@ export interface UserProfile {
 
 export interface RecommendedEvent extends Event {
   matchScore: number;
-  matchReasons: string[];
+  summaryRecommendation?: string;
 }
 
 const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
@@ -183,38 +183,33 @@ For each event, analyze how well it matches the user's profile and provide:
    - Personality fit (20 points)
    - Price and accessibility (20 points)
 
-2. Specific reasons in Spanish explaining why it matches or doesn't match
+2. Whether it's a recommended event (isMatch: true/false)
 
-3. Whether it's a recommended event (isMatch: true/false)
-
-Scoring Guidelines:
-- Give points for any matching aspect, even if it's not a perfect match
-- Consider partial matches (e.g., if an event matches 2 out of 3 preferred experiences, give partial points)
-- Don't penalize too heavily for non-matching aspects
-- Consider the overall value of the event, not just individual criteria
+3. Provide a comprehensive explanation in Spanish (max 200 characters) that:
+   - Explains why these events are recommended based on the user's profile
+   - References specific preferences from the user's profile
+   - Highlights the common themes across all recommended events
+   - Uses a friendly and engaging tone
 
 Format your response as JSON:
 {
+  "summaryRecommendation": "Basado en tus preferencias de [preferencias específicas], estos eventos son ideales porque [razones específicas]. Todos comparten [temas comunes] que se alinean perfectamente con tus intereses en [intereses específicos].",
   "matches": [
     {
       "eventName": "Event Name",
       "isMatch": true/false,
-      "score": number (0-100),
-      "reasons": [
-        "Reason 1 in Spanish",
-        "Reason 2 in Spanish"
-      ]
+      "score": number (0-100)
     }
   ]
 }
 
 IMPORTANT:
 - Consider events with a score of 40 or higher as potential matches
-- All reasons must be written in Spanish
 - Focus on positive matches rather than negative ones
 - Consider the user's personality traits and interests
 - Take into account the user's preferred experiences and destinations
-- Don't be too strict with the scoring - partial matches are acceptable`;
+- Don't be too strict with the scoring - partial matches are acceptable
+- The summary recommendation should be in Spanish and reference specific user preferences`;
 
     console.log('=== OpenAI Prompt Content ===');
     console.log(prompt);
@@ -227,10 +222,17 @@ IMPORTANT:
         const content = openaiData.choices[0].message.content.trim();
         try {
           // Clean the response to ensure it's valid JSON
-          const cleanContent = content.replace(/^[^{]*({.*})[^}]*$/, '$1');
+          const cleanContent = content
+            .replace(/```json\n?/g, '') // Remove ```json markers
+            .replace(/```\n?/g, '')     // Remove any remaining ``` markers
+            .trim();
+          
           const matchResults = JSON.parse(cleanContent);
           
           if (matchResults.matches) {
+            // Add the summary recommendation to all recommended events
+            const summary = matchResults.summaryRecommendation || "";
+            
             matchResults.matches.forEach((match: any) => {
               if (match.isMatch && match.score >= 40) {
                 const event = events.find((e: Event) => e.name === match.eventName);
@@ -238,7 +240,7 @@ IMPORTANT:
                   recommendedEvents.push({
                     ...event,
                     matchScore: match.score,
-                    matchReasons: match.reasons
+                    summaryRecommendation: summary
                   });
                 }
               }
@@ -247,6 +249,17 @@ IMPORTANT:
         } catch (parseError) {
           console.error("Error parsing OpenAI response:", parseError);
           console.error("Raw response:", content);
+          // If parsing fails, fall back to basic recommendations
+          events.forEach((event: Event) => {
+            const score = calculateMatchScore(event, userProfile);
+            if (score >= 40) {
+              recommendedEvents.push({
+                ...event,
+                matchScore: score,
+                summaryRecommendation: generateMatchReasons(event, userProfile)
+              });
+            }
+          });
         }
       }
     } catch (error) {
@@ -259,7 +272,7 @@ IMPORTANT:
           recommendedEvents.push({
             ...event,
             matchScore: score,
-            matchReasons: generateMatchReasons(event, userProfile)
+            summaryRecommendation: generateMatchReasons(event, userProfile)
           });
         }
       });
@@ -323,7 +336,7 @@ function calculateMatchScore(event: Event, userProfile: UserProfile): number {
   return Math.min(score, maxScore);
 }
 
-function generateMatchReasons(event: Event, userProfile: UserProfile): string[] {
+function generateMatchReasons(event: Event, userProfile: UserProfile): string {
   const reasons: string[] = [];
 
   if (userProfile.eventPreferences.categories?.includes(event.category)) {
@@ -343,5 +356,5 @@ function generateMatchReasons(event: Event, userProfile: UserProfile): string[] 
     reasons.push(`Location matches preferred destinations`);
   }
 
-  return reasons;
+  return reasons.join(", ");
 }
