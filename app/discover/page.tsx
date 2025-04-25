@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Search, Filter, ArrowRight, MapPin, Heart, Share2, Calendar, User } from "lucide-react"
+import { Search, Filter, ArrowRight, MapPin, Heart, Share2, Calendar, User, Star } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Event as EventType, UserProfile } from "@/services/userMatchingEvents"
 import { getRecommendedEvents } from "@/services/userMatchingEvents"
@@ -212,11 +212,15 @@ export default function DiscoverPage() {
 
         {/* Recommended Events Section */}
         <div className="mb-12">
-          <h2 className="text-lg font-bold mb-6">
+          <h2 className="text-lg font-bold mb-6 flex items-center">
             <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              Recomendado para ti, {userProfile?.name?.split(" ")[0].trim()}
+              Recomendado Para Ti, {userProfile?.name?.split(" ")[0].trim()}
             </span>
-            <span className="ml-2 inline-block w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span className="ml-2 mr-2 inline-block w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex items-center shadow-[0_0_10px_rgba(129,140,248,0.5)] border border-indigo-400/30">
+              <Star size={14} className="mr-1" />
+              Powered by IA
+            </span>
           </h2>
 
           {loadingRecommendedEvents ? (
@@ -327,10 +331,10 @@ export default function DiscoverPage() {
                             <span className="font-medium text-gray-300">{event.maxParticipants} lugares</span>
                           </div>
 
-                            <div className="flex items-center text-gray-300 text-xs">
-                              <User size={12} className="mr-1 text-indigo-400" />
-                              <span>Responsable: {event.tripManager || 'Pendiente de asignar'}</span>
-                            </div>
+                          <div className="flex items-center text-gray-300 text-xs">
+                            <User size={12} className="mr-1 text-indigo-400" />
+                            <span>Responsable: {event.tripManager || 'Pendiente de asignar'}</span>
+                          </div>
                         </div>
 
                         {/* <div className="flex gap-2 mt-2">
