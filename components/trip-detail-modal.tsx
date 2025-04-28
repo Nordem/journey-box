@@ -69,15 +69,11 @@ const formatPrice = (price: number): string => {
 export default function TripDetailModal({
     trip,
     isOpen,
-    onClose,
-    onBookTrip,
-    isBooked = false,
+    onClose
 }: {
     trip: Trip;
     isOpen: boolean;
     onClose: () => void;
-    onBookTrip: () => void;
-    isBooked?: boolean;
 }) {
     const [activeTab, setActiveTab] = useState("overview");
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);

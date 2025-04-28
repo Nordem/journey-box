@@ -13,6 +13,7 @@ import { useUserProfile } from "@/lib/context/user-profile-context"
 import { Separator } from "@/components/ui/separator"
 import Image from "next/image"
 import TripDetailModal from "@/components/trip-detail-modal";
+import BookingFlowModal from "@/components/booking-flow-modal"; // Import the modal
 
 interface DashboardEvent extends EventType {
   matchScore?: number;
@@ -30,6 +31,8 @@ export default function DiscoverPage() {
   const router = useRouter()
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState<EventType | null>(null);
 
   const handleOpenModal = (event: EventType) => {
     setSelectedEvent(event);
@@ -39,6 +42,16 @@ export default function DiscoverPage() {
   const handleCloseModal = () => {
     setSelectedEvent(null);
     setIsModalOpen(false);
+  };
+
+  const handleOpenBookingModal = (trip: EventType) => {
+    setSelectedTrip(trip);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseBookingModal = () => {
+    setSelectedTrip(null);
+    setIsBookingModalOpen(false);
   };
 
   // Function to fetch all events
@@ -396,6 +409,7 @@ export default function DiscoverPage() {
                           <Button
                             size="sm"
                             className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                            onClick={() => handleOpenBookingModal(event)} // Open the booking modal
                           >
                             Reservar
                           </Button>
@@ -562,6 +576,7 @@ export default function DiscoverPage() {
                         <Button
                           size="sm"
                           className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white"
+                          onClick={() => handleOpenBookingModal(event)} // Open the booking modal
                         >
                           Reservar
                         </Button>
@@ -583,7 +598,15 @@ export default function DiscoverPage() {
           trip={selectedEvent}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onBookTrip={() => console.log("Booking trip:", selectedEvent)}
+        />
+      )}
+
+      {/* Booking Modal */}
+      {isBookingModalOpen && selectedTrip && (
+        <BookingFlowModal
+          trip={selectedTrip}
+          isOpen={isBookingModalOpen}
+          onClose={handleCloseBookingModal}
         />
       )}
     </main>
