@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase"
 interface UserProfile {
   name: string
   avatar?: string
+  admin?: boolean
 }
 
 interface UserProfileContextType {
@@ -27,7 +28,8 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
           const userData = await response.json()
           setUserProfile({
             name: userData.userProfile?.name || 'Usuario',
-            avatar: userData.userProfile?.avatar
+            avatar: userData.userProfile?.avatar,
+            admin: userData.userProfile?.admin || false,
           })
         }
       }

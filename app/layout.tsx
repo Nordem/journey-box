@@ -38,11 +38,11 @@ export default function RootLayout({
           disableTransitionOnChange
           storageKey="journeybox-theme"
         >
+          {/* Ensure UserProfileProvider wraps the entire tree */}
           <UserProfileProvider>
             <div className="flex h-screen">
-
               {/* Sidebar */}
-              {pathname !== '/' && pathname !== '/login' && ( // Only show Sidebar if not on the "/" or "/login" page
+              {pathname !== '/' && pathname !== '/login' && (
                 <Sidebar
                   isAdmin={false}
                   isCollapsed={isSidebarCollapsed}
@@ -54,18 +54,16 @@ export default function RootLayout({
               {/* Main Content */}
               <main
                 className={`flex-1 overflow-auto transition-all duration-300 ${
-                  pathname === '/' || pathname === '/login' // If on "/" or "/login" page
-                    ? 'ml-0 mt-0' // No margin or padding
+                  pathname === '/' || pathname === '/login'
+                    ? 'ml-0 mt-0'
                     : isMobile
-                    ? 'ml-0 mt-6' // No margin when in mobile view
+                    ? 'ml-0 mt-6'
                     : isSidebarCollapsed
                     ? 'ml-[70px]'
                     : 'ml-[250px]'
                 }`}
               >
-                {/* Beta banner */}
                 <BetaBanner />
-
                 {children}
               </main>
             </div>

@@ -12,6 +12,7 @@ import Loading from "@/components/ui/loading"
 import { useUserProfile } from "@/lib/context/user-profile-context"
 import { Separator } from "@/components/ui/separator"
 import Image from "next/image"
+import TripDetailModal from "@/components/trip-detail-modal";
 
 interface DashboardEvent extends EventType {
   matchScore?: number;
@@ -27,6 +28,18 @@ export default function DiscoverPage() {
   const { userProfile } = useUserProfile()
   const { toast } = useToast()
   const router = useRouter()
+  const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = (event: EventType) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedEvent(null);
+    setIsModalOpen(false);
+  };
 
   // Function to fetch all events
   const fetchAllEvents = async () => {
@@ -371,21 +384,22 @@ export default function DiscoverPage() {
                           </div>
                         </div>
 
-                        {/* <div className="flex gap-2 mt-2">
+                         <div className="flex gap-2 mt-2">
                           <Button
                             variant="outline"
                             size="sm"
                             className="flex-1 border-indigo-500/30 hover:bg-indigo-500/20 text-white"
+                            onClick={() => handleOpenModal(event)}
                           >
                             Detalles
                           </Button>
                           <Button
                             size="sm"
-                            className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                            className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
                           >
                             Reservar
                           </Button>
-                        </div> */}
+                        </div> 
                       </div>
                     </div>
                   </div>
@@ -536,21 +550,22 @@ export default function DiscoverPage() {
                         </div>
                       </div>
 
-                      {/* <div className="flex gap-2 mt-2">
+                      <div className="flex gap-2 mt-2">
                         <Button
                           variant="outline"
                           size="sm"
                           className="flex-1 border-amber-500/30 hover:bg-amber-500/20 text-white"
+                          onClick={() => handleOpenModal(event)}
                         >
                           Detalles
                         </Button>
                         <Button
                           size="sm"
-                          className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+                          className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white"
                         >
                           Reservar
                         </Button>
-                      </div> */}
+                      </div> 
                     </div>
                   </div>
                 </div>
@@ -561,6 +576,16 @@ export default function DiscoverPage() {
           )}
         </div>
       </div>
+
+      {/* Modal */}
+      {isModalOpen && selectedEvent && (
+        <TripDetailModal
+          trip={selectedEvent}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onBookTrip={() => console.log("Booking trip:", selectedEvent)}
+        />
+      )}
     </main>
   )
-} 
+}
