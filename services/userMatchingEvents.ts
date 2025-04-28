@@ -17,6 +17,7 @@ export interface Event {
   country: string;
   description: string;
   imageUrl: string;
+  galleryImages?: string[];
   startDate: string;
   endDate: string;
   activities: string[];
@@ -27,6 +28,21 @@ export interface Event {
   isHighlight: boolean;
   location?: string;
   tripManager?: string;
+  hotelName?: string;
+  hotelDescription?: string;
+  hotelAmenities: string[];
+  hotelIncludes: string[];
+  hotelExcludes: string[];
+  itineraryAction: EventItineraryActions[];
+}
+
+export interface EventItineraryActions {
+  id: string;
+  eventId: string;
+  dayTitle: string;
+  title: string;
+  startTime: string;
+  responsible: string;
 }
 
 export interface UserProfile {
@@ -81,12 +97,12 @@ async function makeOpenAIRequest(prompt: string, retryCount = 0): Promise<OpenAI
       {
         model: "gpt-4-turbo",
         messages: [
-          { 
-            role: "system", 
-            content: "You are an expert event matcher AI. Your task is to analyze multiple events and determine which ones match a user's profile and preferences. Consider all aspects of the user's profile and the event details to make comprehensive match assessments. Respond with JSON only." 
+          {
+            role: "system",
+            content: "You are an expert event matcher AI. Your task is to analyze multiple events and determine which ones match a user's profile and preferences. Consider all aspects of the user's profile and the event details to make comprehensive match assessments. Respond with JSON only."
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: prompt
           }
         ],
@@ -104,12 +120,12 @@ async function makeOpenAIRequest(prompt: string, retryCount = 0): Promise<OpenAI
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const errorMessage = error.response?.data?.error?.message || error.message;
-      
+
       // Handle quota exceeded error
       if (error.response?.status === 429 && errorMessage.includes("quota")) {
         throw new Error("OpenAI API quota exceeded. Please check your billing details or contact support.");
       }
-      
+
       // Handle rate limiting
       if (error.response?.status === 429 && retryCount < MAX_RETRIES) {
         const delay = RETRY_DELAY * Math.pow(2, retryCount);
@@ -117,7 +133,7 @@ async function makeOpenAIRequest(prompt: string, retryCount = 0): Promise<OpenAI
         await new Promise(resolve => setTimeout(resolve, delay));
         return makeOpenAIRequest(prompt, retryCount + 1);
       }
-      
+
       throw new Error(`OpenAI API error: ${error.response?.status} - ${errorMessage}`);
     }
     throw error;
@@ -132,14 +148,14 @@ export async function getRecommendedEvents(userProfile: UserProfile): Promise<Re
         'Content-Type': 'application/json'
       }
     });
-    
+
     if (!eventsResponse.ok) {
       throw new Error(`Failed to fetch events: ${eventsResponse.status}`);
     }
-    
+
     const eventsData = await eventsResponse.json();
     const events = eventsData.events;
-    
+
     if (!events || events.length === 0) {
       console.log("No events found in database");
       return [];
@@ -226,13 +242,13 @@ IMPORTANT:
             .replace(/```json\n?/g, '') // Remove ```json markers
             .replace(/```\n?/g, '')     // Remove any remaining ``` markers
             .trim();
-          
+
           const matchResults = JSON.parse(cleanContent);
-          
+
           if (matchResults.matches) {
             // Add the summary recommendation to all recommended events
             const summary = matchResults.summaryRecommendation || "";
-            
+
             matchResults.matches.forEach((match: any) => {
               if (match.isMatch && match.score >= 40) {
                 const event = events.find((e: Event) => e.name === match.eventName);
@@ -282,7 +298,7 @@ IMPORTANT:
     const sortedEvents = recommendedEvents
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, 5);
-    
+
     console.log('Final recommended events:', sortedEvents);
     return sortedEvents;
   } catch (error) {
@@ -309,13 +325,13 @@ function calculateMatchScore(event: Event, userProfile: UserProfile): number {
   }
 
   // Activities match
-  const matchingActivities = event.activities.filter(activity => 
+  const matchingActivities = event.activities.filter(activity =>
     userProfile.eventPreferences.preferredExperiences?.includes(activity)
   ).length;
   score += (matchingActivities / event.activities.length) * weights.activities;
 
   // Location match
-  if (userProfile.eventPreferences.preferredDestinations?.some(dest => 
+  if (userProfile.eventPreferences.preferredDestinations?.some(dest =>
     event.location?.toLowerCase().includes(dest.toLowerCase())
   )) {
     score += weights.location;
@@ -326,7 +342,7 @@ function calculateMatchScore(event: Event, userProfile: UserProfile): number {
   const matchingPreferences = [
     ...(userProfile.eventPreferences.vibeKeywords || []),
     ...(userProfile.eventPreferences.seasonalPreferences || [])
-  ].filter(pref => 
+  ].filter(pref =>
     event.description.toLowerCase().includes(pref.toLowerCase()) ||
     event.highlights.some(h => h.toLowerCase().includes(pref.toLowerCase()))
   ).length;
@@ -343,14 +359,14 @@ function generateMatchReasons(event: Event, userProfile: UserProfile): string {
     reasons.push(`Category matches user preferences: ${event.category}`);
   }
 
-  const matchingActivities = event.activities.filter(activity => 
+  const matchingActivities = event.activities.filter(activity =>
     userProfile.eventPreferences.preferredExperiences?.includes(activity)
   );
   if (matchingActivities.length > 0) {
     reasons.push(`Activities match user preferences: ${matchingActivities.join(", ")}`);
   }
 
-  if (userProfile.eventPreferences.preferredDestinations?.some(dest => 
+  if (userProfile.eventPreferences.preferredDestinations?.some(dest =>
     event.location?.toLowerCase().includes(dest.toLowerCase())
   )) {
     reasons.push(`Location matches preferred destinations`);
