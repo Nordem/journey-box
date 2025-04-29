@@ -309,7 +309,11 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                     description: `Media uploaded successfully`,
                 });
 
-                setIsUploading(false);
+                // Reset the file input to allow selecting the same file again
+                const fileInput = document.getElementById('galleryMediaUpload') as HTMLInputElement;
+                if (fileInput) {
+                    fileInput.value = '';
+                }
             } catch (error) {
                 console.error('Error uploading media:', error);
                 toast({
@@ -317,7 +321,6 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                     description: "Failed to upload media",
                     variant: "destructive",
                 });
-                setIsUploading(false);
             }
         }
     };
@@ -967,11 +970,7 @@ export default function TripForm({ onSubmit, onCancel, editingTrip }: TripFormPr
                                                             type="file"
                                                             accept="image/*,video/*"
                                                             className="hidden"
-                                                            onChange={async (e) => {
-                                                                setIsUploading(true);
-                                                                await handleGalleryMediaUpload(e);
-                                                                setIsUploading(false);
-                                                            }}
+                                                            onChange={handleGalleryMediaUpload}
                                                         />
                                                         <Button
                                                             type="button"
